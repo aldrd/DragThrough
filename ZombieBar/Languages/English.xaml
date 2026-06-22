@@ -1,0 +1,102 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+    <s:String x:Key="zombiebar_properties">ZombieBar Properties</s:String>
+    <s:String x:Key="taskbar_options">Taskbar Options</s:String>
+    <BitmapImage x:Key="properties_95" UriSource="../Resources/properties.png" />
+    <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/properties_noclock.png" />
+    <s:String x:Key="autostart">Automatically start at _logon</s:String>
+    <s:String x:Key="language_text">Lan_guage:</s:String>
+    <s:String x:Key="language_tip">Select the language to use.</s:String>
+    <s:String x:Key="theme_text">_Theme:</s:String>
+    <s:String x:Key="theme_tip">Install themes in the Themes folder.</s:String>
+    <s:String x:Key="location_text">Locat_ion:</s:String>
+    <s:String x:Key="location_tip">Change the taskbar location on screen.</s:String>
+    <x:Array x:Key="location_values" Type="s:String">
+        <s:String>Left</s:String>
+        <s:String>Top</s:String>
+        <s:String>Right</s:String>
+        <s:String>Bottom</s:String>
+    </x:Array>
+    <s:String x:Key="allow_font_smoothing">_Allow font smoothing</s:String>
+    <s:String x:Key="collapse_tray_icons">Collapse _notification area icons</s:String>
+    <s:String x:Key="show_clock">Show the _clock</s:String>
+    <s:String x:Key="show_quick_launch">Show _Quick Launch</s:String>
+    <s:String x:Key="select_location">_Select location...</s:String>
+    <s:String x:Key="quick_launch_folder">Quick Launch - Choose a folder</s:String>
+    <s:String x:Key="ok_dialog">OK</s:String>
+
+    <s:String x:Key="start_text">Start</s:String>
+    <s:String x:Key="start_text_xp">start</s:String>
+    <s:String x:Key="start_button_tip_98">Click here to begin.</s:String>
+    <s:String x:Key="start_button_tip">Click here to begin</s:String>
+    <s:String x:Key="start_button_tip_vista">Start</s:String>
+
+    <s:String x:Key="zombiebar_title">ZombieBar Taskbar</s:String>
+    <s:String x:Key="toolbars">_Toolbars</s:String>
+    <s:String x:Key="quick_launch">_Quick Launch</s:String>
+    <s:String x:Key="new_toolbar">_New Toolbar...</s:String>
+    <s:String x:Key="show_taskman_2k">Tas_k Manager...</s:String>
+    <s:String x:Key="show_taskman">Tas_k Manager</s:String>
+    <s:String x:Key="tray_properties">P_roperties</s:String>
+    <s:String x:Key="update_available">_Update available...</s:String>
+    <s:String x:Key="exit_zombiebar">_Exit ZombieBar</s:String>
+    <s:String x:Key="taskbar_menu_title">Taskbar with tasks dragging</s:String>
+    <s:String x:Key="remove">Remove</s:String>
+
+    <!-- Tray menu (DragThrough) -->
+    <s:String x:Key="tray_drag_title">Temporarily hide Explorer while dragging files</s:String>
+    <s:String x:Key="tray_use_windows_key">Use Windows key as drag modifier</s:String>
+    <s:String x:Key="tray_enable_shift">Enable Shift modifier (may not work in some apps, e.g. DaVinci Resolve)</s:String>
+    <s:String x:Key="tray_minimize_explorer">Minimize Explorer after successful drag</s:String>
+    <s:String x:Key="tray_dismiss_search">Dismiss Windows Search with Escape</s:String>
+    <s:String x:Key="tray_show_taskbar">Show taskbar</s:String>
+    <s:String x:Key="tray_feedback">Report a problem or suggestion...</s:String>
+    <s:String x:Key="tray_exit">Exit</s:String>
+    <s:String x:Key="tray_tooltip">DragThrough</s:String>
+
+    <!-- Feedback form -->
+    <s:String x:Key="feedback_title">Feedback</s:String>
+    <s:String x:Key="feedback_prompt">Describe the problem or suggestion. You can attach screenshots.</s:String>
+    <s:String x:Key="feedback_screenshots">Screenshots:</s:String>
+    <s:String x:Key="feedback_add_file">Add file...</s:String>
+    <s:String x:Key="feedback_capture">Capture screen</s:String>
+    <s:String x:Key="feedback_remove">Remove</s:String>
+    <s:String x:Key="feedback_no_screenshots">No screenshots attached</s:String>
+    <s:String x:Key="feedback_send">Send</s:String>
+    <s:String x:Key="feedback_cancel">Cancel</s:String>
+    <s:String x:Key="feedback_empty">Please describe the problem or suggestion.</s:String>
+    <s:String x:Key="feedback_screenshot_hint">Drag the screenshots from the opened folder into the GitHub issue, then submit it.</s:String>
+    <s:String x:Key="feedback_clipboard_hint">The text was copied to the clipboard - paste it (Ctrl+V) into the issue.</s:String>
+    <s:String x:Key="feedback_body_screenshots">_Attach the screenshots here (drag them from the opened folder)._</s:String>
+    <s:String x:Key="feedback_image_filter">Images</s:String>
+    <s:String x:Key="feedback_all_files">All files</s:String>
+
+    <!-- Share the app -->
+    <s:String x:Key="share_app">Share the app</s:String>
+    <s:String x:Key="share_copy_link">Copy link</s:String>
+    <s:String x:Key="share_tweet">Tweet (X)</s:String>
+    <s:String x:Key="share_telegram">Post on Telegram</s:String>
+    <s:String x:Key="share_whatsapp">WhatsApp</s:String>
+    <s:String x:Key="share_facebook">Facebook</s:String>
+    <s:String x:Key="share_linkedin">LinkedIn</s:String>
+    <s:String x:Key="share_reddit">Reddit</s:String>
+    <s:String x:Key="share_email">Email</s:String>
+    <s:String x:Key="share_link_copied">Link copied to clipboard</s:String>
+    <s:String x:Key="share_text">ZombieBar - a Windows 11 taskbar replacement</s:String>
+
+    <s:String x:Key="restore">_Restore</s:String>
+    <s:String x:Key="move">_Move</s:String>
+    <s:String x:Key="size">_Size</s:String>
+    <s:String x:Key="minimize">Mi_nimize</s:String>
+    <s:String x:Key="maximize">Ma_ximize</s:String>
+    <s:String x:Key="close">_Close</s:String>
+
+    <s:String x:Key="show_hidden">Show hidden icons</s:String>
+    <s:String x:Key="hide">Hide</s:String>
+
+    <s:String x:Key="set_time">_Adjust Date/Time</s:String>
+
+    <s:String x:Key="open_folder">&amp;Open Folder</s:String>
+</ResourceDictionary>

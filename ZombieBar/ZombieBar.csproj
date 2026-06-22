@@ -1,0 +1,197 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <StartupObject>ZombieBar.App</StartupObject>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyVersion>1.0.0.8</AssemblyVersion>
+    <FileVersion>1.0.0.8</FileVersion>
+    <ApplicationIcon>Resources\zombiebar.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!--
+    Auto-update is for the free GitHub build only. It is enabled by default and compiled in via
+    the AUTOUPDATE constant. The Microsoft Store build (Store handles updates) must turn it off
+    so the whole updater - check, UI notification and self-install - is compiled out:
+        dotnet build /p:EnableAutoUpdate=false      (or publish, etc.)
+  -->
+  <PropertyGroup>
+    <EnableAutoUpdate Condition="'$(EnableAutoUpdate)' == ''">true</EnableAutoUpdate>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(EnableAutoUpdate)' == 'true'">
+    <DefineConstants>$(DefineConstants);AUTOUPDATE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\properties.png" />
+    <None Remove="Resources\properties_noclock.png" />
+    <None Remove="Resources\start9x.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Languages\español.xaml" />
+    <Page Remove="Languages\français.xaml" />
+    <Page Remove="Languages\português.xaml" />
+    <Page Remove="Languages\中文%28简体%29.xaml" />
+    <Page Remove="Languages\русский.xaml" />
+    <Page Remove="Themes\Watercolor.xaml" />
+    <Page Remove="Themes\System.xaml" />
+    <Page Remove="Themes\System 2.xaml" />
+    <Page Remove="Themes\Windows 2000.xaml" />
+    <Page Remove="Themes\Windows 95-98.xaml" />
+    <Page Remove="Themes\Windows Me.xaml" />
+    <Page Remove="Themes\Windows XP Blue.xaml" />
+    <Page Remove="Themes\Windows XP Classic.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Languages\português.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator></Generator>
+    </None>
+    <None Include="Languages\français.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator></Generator>
+    </None>
+    <None Include="Languages\español.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator></Generator>
+    </None>
+    <None Include="Languages\русский.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Languages\中文(简体).xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Themes\Windows 95-98.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Include="Themes\Windows Me.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Include="Themes\Windows XP Blue.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Themes\Watercolor.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Include="Themes\Windows XP Classic.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Include="Themes\Windows 2000.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Themes\System 2.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Themes\System.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Net.Http.Json" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GongSolutions.WPF.DragDrop\GongSolutions.WPF.DragDrop.csproj" />
+    <ProjectReference Include="..\ManagedShell\ManagedShell.AppBar\ManagedShell.AppBar.csproj" />
+    <ProjectReference Include="..\ManagedShell\ManagedShell.WindowsTasks\ManagedShell.WindowsTasks.csproj" />
+    <ProjectReference Include="..\ManagedShell\ManagedShell\ManagedShell.csproj" />
+    <ProjectReference Include="..\Ssz.Utils.Wpf\Ssz.Utils.Wpf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\properties.png" />
+    <Resource Include="Resources\properties_noclock.png" />
+    <Resource Include="Resources\start9x.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- DragThrough tray icon, loaded by AppTray via the manifest resource stream. -->
+    <EmbeddedResource Include="Assets\tray_icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Resources\es\properties.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\es\properties_noclock.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\fr\properties.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\fr\properties_noclock.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\pt\properties.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\pt\properties_noclock.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\startxpblue.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\startxpbluebutton.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\startxpclassic.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\zh\properties.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\zh\properties_noclock.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Languages\English.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
+    <Page Update="Themes\System.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
+</Project>

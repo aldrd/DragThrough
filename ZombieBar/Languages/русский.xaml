@@ -1,0 +1,98 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+    <s:String x:Key="zombiebar_properties">Свойства ZombieBar</s:String>
+    <s:String x:Key="taskbar_options">Параметры панели задач</s:String>
+    <BitmapImage x:Key="properties_95" UriSource="../Resources/properties.png" />
+    <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/properties_noclock.png" />
+    <s:String x:Key="autostart">_Автоматически запускать при входе в систему</s:String>
+    <s:String x:Key="language_text">_Язык:</s:String>
+    <s:String x:Key="language_tip">Выберите язык интерфейса.</s:String>
+    <s:String x:Key="theme_text">_Тема:</s:String>
+    <s:String x:Key="theme_tip">Устанавливайте темы в папку Themes.</s:String>
+    <s:String x:Key="location_text">_Расположение:</s:String>
+    <s:String x:Key="location_tip">Измените расположение панели задач на экране.</s:String>
+    <x:Array x:Key="location_values" Type="s:String">
+        <s:String>Слева</s:String>
+        <s:String>Сверху</s:String>
+        <s:String>Справа</s:String>
+        <s:String>Снизу</s:String>
+    </x:Array>
+    <s:String x:Key="allow_font_smoothing">_Сглаживание шрифтов</s:String>
+    <s:String x:Key="collapse_tray_icons">_Сворачивать значки области уведомлений</s:String>
+    <s:String x:Key="show_clock">Показывать _часы</s:String>
+    <s:String x:Key="show_quick_launch">Показывать панель _быстрого запуска</s:String>
+    <s:String x:Key="select_location">_Выбрать папку...</s:String>
+    <s:String x:Key="quick_launch_folder">Быстрый запуск — выберите папку</s:String>
+    <s:String x:Key="ok_dialog">ОК</s:String>
+
+    <s:String x:Key="start_text">Пуск</s:String>
+    <s:String x:Key="start_text_xp">пуск</s:String>
+    <s:String x:Key="start_button_tip_98">Нажмите здесь, чтобы начать.</s:String>
+    <s:String x:Key="start_button_tip">Нажмите здесь, чтобы начать</s:String>
+    <s:String x:Key="start_button_tip_vista">Пуск</s:String>
+
+    <s:String x:Key="zombiebar_title">Панель задач ZombieBar</s:String>
+    <s:String x:Key="toolbars">_Панели инструментов</s:String>
+    <s:String x:Key="quick_launch">_Быстрый запуск</s:String>
+    <s:String x:Key="new_toolbar">_Создать панель инструментов...</s:String>
+    <s:String x:Key="show_taskman_2k">_Диспетчер задач...</s:String>
+    <s:String x:Key="show_taskman">_Диспетчер задач</s:String>
+    <s:String x:Key="tray_properties">_Свойства</s:String>
+    <s:String x:Key="update_available">_Доступно обновление...</s:String>
+    <s:String x:Key="exit_zombiebar">_Выйти из ZombieBar</s:String>
+    <s:String x:Key="taskbar_menu_title">Панель с перетаскиваемыми задачами</s:String>
+    <s:String x:Key="remove">Убрать</s:String>
+
+    <!-- Tray menu (DragThrough) -->
+    <s:String x:Key="tray_drag_title">Временно скрывать Проводник при перетаскивании файлов</s:String>
+    <s:String x:Key="tray_use_windows_key">Использовать клавишу Windows как модификатор перетаскивания</s:String>
+    <s:String x:Key="tray_enable_shift">Включить модификатор Shift (может не работать в некоторых приложениях, напр. DaVinci Resolve)</s:String>
+    <s:String x:Key="tray_minimize_explorer">Сворачивать Проводник после успешного перетаскивания</s:String>
+    <s:String x:Key="tray_dismiss_search">Закрывать Поиск Windows клавишей Escape</s:String>
+    <s:String x:Key="tray_show_taskbar">Показывать панель задач</s:String>
+    <s:String x:Key="tray_feedback">Сообщить о проблеме/пожелании...</s:String>
+    <s:String x:Key="tray_exit">Выход</s:String>
+    <s:String x:Key="tray_tooltip">DragThrough</s:String>
+
+    <!-- Feedback form -->
+    <s:String x:Key="feedback_title">Обратная связь</s:String>
+    <s:String x:Key="feedback_prompt">Опишите проблему или пожелание. Можно приложить скриншоты.</s:String>
+    <s:String x:Key="feedback_screenshots">Скриншоты:</s:String>
+    <s:String x:Key="feedback_add_file">Добавить файл...</s:String>
+    <s:String x:Key="feedback_capture">Снимок экрана</s:String>
+    <s:String x:Key="feedback_remove">Удалить</s:String>
+    <s:String x:Key="feedback_no_screenshots">Скриншоты не добавлены</s:String>
+    <s:String x:Key="feedback_send">Отправить</s:String>
+    <s:String x:Key="feedback_cancel">Отмена</s:String>
+    <s:String x:Key="feedback_empty">Пожалуйста, опишите проблему или пожелание.</s:String>
+    <s:String x:Key="feedback_screenshot_hint">Перетащите скриншоты из открытой папки в issue на GitHub, затем отправьте его.</s:String>
+    <s:String x:Key="feedback_clipboard_hint">Текст скопирован в буфер обмена - вставьте его (Ctrl+V) в issue.</s:String>
+    <s:String x:Key="feedback_body_screenshots">_Прикрепите скриншоты сюда (перетащите их из открытой папки)._</s:String>
+    <s:String x:Key="feedback_image_filter">Изображения</s:String>
+    <s:String x:Key="feedback_all_files">Все файлы</s:String>
+
+    <!-- Share the app -->
+    <s:String x:Key="share_app">Поделиться приложением</s:String>
+    <s:String x:Key="share_copy_link">Скопировать ссылку</s:String>
+    <s:String x:Key="share_tweet">Твит (X)</s:String>
+    <s:String x:Key="share_telegram">Пост в Telegram</s:String>
+    <s:String x:Key="share_email">Эл. почта</s:String>
+    <s:String x:Key="share_link_copied">Ссылка скопирована в буфер обмена</s:String>
+    <s:String x:Key="share_text">ZombieBar — замена панели задач для Windows 11</s:String>
+
+    <s:String x:Key="restore">_Восстановить</s:String>
+    <s:String x:Key="move">Пере_местить</s:String>
+    <s:String x:Key="size">_Размер</s:String>
+    <s:String x:Key="minimize">_Свернуть</s:String>
+    <s:String x:Key="maximize">_Развернуть</s:String>
+    <s:String x:Key="close">_Закрыть</s:String>
+
+    <s:String x:Key="show_hidden">Показать скрытые значки</s:String>
+    <s:String x:Key="hide">Скрыть</s:String>
+
+    <s:String x:Key="set_time">_Настроить дату и время</s:String>
+
+    <s:String x:Key="open_folder">&amp;Открыть папку</s:String>
+</ResourceDictionary>
