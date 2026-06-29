@@ -6,9 +6,8 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>ZombieBar.App</StartupObject>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AssemblyVersion>1.0.0.8</AssemblyVersion>
-    <FileVersion>1.0.0.8</FileVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>    
+    <FileVersion>1.0.1.0</FileVersion>
     <ApplicationIcon>Resources\zombiebar.ico</ApplicationIcon>
   </PropertyGroup>
 

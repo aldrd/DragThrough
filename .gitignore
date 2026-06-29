@@ -278,3 +278,5 @@ __pycache__/
 
 ### VisualStudio Patch ###
 build/
+# Inno Setup installer output
+installer/Output/

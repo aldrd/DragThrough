@@ -5,6 +5,9 @@ namespace ZombieBar;
 /// <summary>
 /// Single place for every external address the app links to. Change these for your
 /// distribution - nothing here is read from a file or registry, it is all compiled in.
+/// <para>
+/// !!!Warning!!! Some settings duplicated in installer\build.ps1
+/// </para>
 /// </summary>
 public static class AppLinks
 {
