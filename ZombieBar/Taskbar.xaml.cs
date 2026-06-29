@@ -206,7 +206,7 @@ namespace ZombieBar
             // Couldn't install automatically (e.g. read-only install folder); open the releases page.
             Process.Start(new ProcessStartInfo
             {
-                FileName = Updater.ReleasesPageUrl,
+                FileName = AppLinks.ReleasesPageUrl,
                 UseShellExecute = true
             });
         }

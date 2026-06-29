@@ -31,6 +31,7 @@ namespace ZombieBar.Utilities
         private ToolStripMenuItem _dismissSearchItem = null!;
         private ToolStripMenuItem _showTaskbarItem = null!;
         private ToolStripMenuItem _shareItem = null!;
+        private ToolStripMenuItem _coffeeItem = null!;
         private ToolStripMenuItem _feedbackItem = null!;
         private ToolStripMenuItem _exitItem = null!;
 
@@ -102,6 +103,11 @@ namespace ZombieBar.Utilities
             _shareItem = BuildShareMenu();
             menu.Items.Add(_shareItem);
 
+            // Coffee cup on the Buy Me a Coffee brand yellow.
+            _coffeeItem = new ToolStripMenuItem { Image = DrawTile("☕", FromHex("#FFDD00"), FromHex("#3A2A00"), "Segoe UI Symbol", 0.6f) };
+            _coffeeItem.Click += (_, _) => OpenUrl(AppLinks.BuyMeACoffeeUrl);
+            menu.Items.Add(_coffeeItem);
+
             _feedbackItem = new ToolStripMenuItem();
             _feedbackItem.Click += (_, _) => _openFeedback();
             menu.Items.Add(_feedbackItem);
@@ -143,6 +149,7 @@ namespace ZombieBar.Utilities
             {
                 item.Text = Loc(key, fallback);
             }
+            _coffeeItem.Text = Loc("tray_buy_coffee", "Buy me a coffee");
             _feedbackItem.Text = Loc("tray_feedback", "Report a problem or suggestion...");
             _exitItem.Text = Loc("tray_exit", "Exit");
 
@@ -187,7 +194,7 @@ namespace ZombieBar.Utilities
         // Either copies the project link or opens the chosen network's web share intent.
         private void Share(string kind)
         {
-            string url = Updater.ProjectUrl;
+            string url = AppLinks.ProjectUrl;
             string text = Loc("share_text", "ZombieBar - a Windows 11 taskbar replacement");
 
             if (kind == "copy")
@@ -217,8 +224,14 @@ namespace ZombieBar.Utilities
 
             if (target != null)
             {
-                try { Process.Start(new ProcessStartInfo(target) { UseShellExecute = true }); } catch { }
+                OpenUrl(target);
             }
+        }
+
+        // Opens a URL in the user's default browser.
+        private static void OpenUrl(string url)
+        {
+            try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); } catch { }
         }
 
         // === Icon drawing =================================================================
@@ -327,6 +340,11 @@ namespace ZombieBar.Utilities
             x = Math.Max(screen.Left, Math.Min(x, screen.Right - size.Width));
             y = Math.Max(screen.Top, Math.Min(y, screen.Bottom - size.Height));
 
+            // When the menu is shown manually (left click), it does not receive the foreground
+            // focus that WinForms gives it automatically on right click. Without that, clicking
+            // elsewhere does not dismiss the menu. Setting the foreground window restores the
+            // expected "click outside to close" behavior.
+            ManagedShell.Interop.NativeMethods.SetForegroundWindow(menu.Handle);
             menu.Show(new Point(x, y));
         }
 

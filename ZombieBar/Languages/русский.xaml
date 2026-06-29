@@ -52,6 +52,7 @@
     <s:String x:Key="tray_minimize_explorer">Сворачивать Проводник после успешного перетаскивания</s:String>
     <s:String x:Key="tray_dismiss_search">Закрывать Поиск Windows клавишей Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Показывать панель задач</s:String>
+    <s:String x:Key="tray_buy_coffee">Купить мне кофе</s:String>
     <s:String x:Key="tray_feedback">Сообщить о проблеме/пожелании...</s:String>
     <s:String x:Key="tray_exit">Выход</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>

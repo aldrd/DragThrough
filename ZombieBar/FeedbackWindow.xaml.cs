@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using ZombieBar.Utilities;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 
@@ -211,7 +210,7 @@ namespace ZombieBar
             string title = BuildTitle(text);
             string body = BuildBody(text, hasScreenshots);
 
-            string url = Updater.NewIssueUrl +
+            string url = AppLinks.NewIssueUrl +
                          "?title=" + Uri.EscapeDataString(title) +
                          "&body=" + Uri.EscapeDataString(body);
 
@@ -222,7 +221,7 @@ namespace ZombieBar
             }
 
             try { System.Windows.Clipboard.SetText(body); } catch { /* clipboard may be busy */ }
-            string shortUrl = Updater.NewIssueUrl + "?title=" + Uri.EscapeDataString(title);
+            string shortUrl = AppLinks.NewIssueUrl + "?title=" + Uri.EscapeDataString(title);
             Process.Start(new ProcessStartInfo(shortUrl) { UseShellExecute = true });
             MessageBox.Show(this,
                 Loc("feedback_clipboard_hint", "The text was copied to the clipboard - paste it (Ctrl+V) into the issue."),

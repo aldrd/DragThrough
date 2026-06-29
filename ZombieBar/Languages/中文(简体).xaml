@@ -52,6 +52,7 @@
     <s:String x:Key="tray_minimize_explorer">拖动成功后最小化资源管理器</s:String>
     <s:String x:Key="tray_dismiss_search">用 Esc 关闭 Windows 搜索</s:String>
     <s:String x:Key="tray_show_taskbar">显示任务栏</s:String>
+    <s:String x:Key="tray_buy_coffee">请我喝杯咖啡</s:String>
     <s:String x:Key="tray_feedback">报告问题或建议...</s:String>
     <s:String x:Key="tray_exit">退出</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>

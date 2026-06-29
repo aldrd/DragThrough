@@ -21,20 +21,7 @@ namespace ZombieBar.Utilities
     /// </summary>
     public class Updater : IDisposable
     {
-        // === Configure these for your distribution =========================================
-        // Static JSON manifest describing the latest release (schema: see UpdateManifest).
-        // Host it anywhere static, e.g. GitHub Pages of your repo.
-        private const string ManifestUrl = "https://YOUR-GITHUB-USERNAME.github.io/Ssz.TaskBar/update.json";
-
-        // Releases page opened as a fallback when an automatic install can't proceed.
-        public const string ReleasesPageUrl = "https://github.com/YOUR-GITHUB-USERNAME/Ssz.TaskBar/releases";
-
-        // "New issue" page of the same repo, opened (pre-filled) by the tray's feedback form.
-        public const string NewIssueUrl = "https://github.com/YOUR-GITHUB-USERNAME/Ssz.TaskBar/issues/new";
-
-        // Project home page, shared by the tray's "Share the app" submenu.
-        public const string ProjectUrl = "https://github.com/YOUR-GITHUB-USERNAME/Ssz.TaskBar";
-        // ===================================================================================
+        // All external addresses live in AppLinks - see that class to configure your distribution.
 
         // Argument passed to the freshly installed instance so it waits for this (old) instance
         // to exit before registering its app bar.
@@ -101,7 +88,7 @@ namespace ZombieBar.Utilities
         {
             try
             {
-                UpdateManifest? manifest = await _httpClient.GetFromJsonAsync<UpdateManifest>(ManifestUrl);
+                UpdateManifest? manifest = await _httpClient.GetFromJsonAsync<UpdateManifest>(AppLinks.PublishManifestUrl);
 
                 if (manifest != null
                     && Version.TryParse(manifest.Version, out Version? newVersion)

@@ -52,6 +52,7 @@
     <s:String x:Key="tray_minimize_explorer">Minimizar o Explorador após um arrasto bem-sucedido</s:String>
     <s:String x:Key="tray_dismiss_search">Fechar a Pesquisa do Windows com Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Mostrar a barra de tarefas</s:String>
+    <s:String x:Key="tray_buy_coffee">Pague-me um café</s:String>
     <s:String x:Key="tray_feedback">Relatar um problema ou sugestão...</s:String>
     <s:String x:Key="tray_exit">Sair</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>

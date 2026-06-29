@@ -52,6 +52,7 @@
     <s:String x:Key="tray_minimize_explorer">Minimize Explorer after successful drag</s:String>
     <s:String x:Key="tray_dismiss_search">Dismiss Windows Search with Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Show taskbar</s:String>
+    <s:String x:Key="tray_buy_coffee">Buy me a coffee</s:String>
     <s:String x:Key="tray_feedback">Report a problem or suggestion...</s:String>
     <s:String x:Key="tray_exit">Exit</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>
