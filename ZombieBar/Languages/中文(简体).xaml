@@ -116,4 +116,5 @@
     <s:String x:Key="update_title">软件更新</s:String>
     <s:String x:Key="update_downloading">正在下载更新…</s:String>
     <s:String x:Key="update_installing">正在安装…</s:String>
+    <s:String x:Key="update_failed">无法安装更新，请稍后再试。</s:String>
 </ResourceDictionary>

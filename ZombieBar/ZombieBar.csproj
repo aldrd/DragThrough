@@ -9,7 +9,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Single source of truth for the version. Drives AssemblyVersion (shown in the tray
          tooltip and used by the auto-updater), FileVersion and InformationalVersion. -->
-    <Version>1.0.5.0</Version>
+    <Version>1.0.6.0</Version>
     <ApplicationIcon>Resources\zombiebar.ico</ApplicationIcon>
   </PropertyGroup>
 

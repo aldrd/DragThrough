@@ -177,6 +177,7 @@ namespace ZombieBar.Utilities
                 {
                     ShellLogger.Info("Updater: SHA-256 of the downloaded update did not match the manifest; aborting.");
                     TryDelete(downloadPath);
+                    ShowError(progress, "Checksum verification failed.");
                     return InstallResult.Failed;
                 }
 
@@ -188,24 +189,42 @@ namespace ZombieBar.Utilities
                     // the new exe that waits for us to exit, replaces the file and relaunches.
                     : LaunchElevatedApplier(downloadPath, currentExe);
 
-                return swapped ? InstallResult.Installing : InstallResult.Failed;
+                if (swapped)
+                {
+                    // The app is about to shut down and hand off to the new instance; the progress
+                    // window goes away with it.
+                    return InstallResult.Installing;
+                }
+
+                ShowError(progress, "Could not replace the program file.");
+                return InstallResult.Failed;
             }
             catch (OperationCanceledException)
             {
+                // User pressed Cancel - just close the window, no error.
                 ShellLogger.Info("Updater: update download cancelled by the user.");
                 TryDelete(downloadPath);
+                CloseProgressWindow(progress);
                 return InstallResult.Cancelled;
             }
             catch (Exception ex)
             {
+                // Keep the window open showing why it failed (e.g. "404 Not Found"), so the failed
+                // download isn't a silent flash.
                 ShellLogger.Info($"Updater: Failed to install the update: {ex.Message}");
                 TryDelete(downloadPath);
+                ShowError(progress, ex.Message);
                 return InstallResult.Failed;
             }
-            finally
+        }
+
+        private static void ShowError(UpdateProgressWindow? window, string detail)
+        {
+            if (window == null)
             {
-                CloseProgressWindow(progress);
+                return;
             }
+            try { window.Dispatcher.Invoke(() => window.SetError(detail)); } catch { }
         }
 
         // Streams the download to disk in chunks, reporting progress to the window on each whole

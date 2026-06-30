@@ -120,4 +120,5 @@
     <s:String x:Key="update_title">Software update</s:String>
     <s:String x:Key="update_downloading">Downloading update…</s:String>
     <s:String x:Key="update_installing">Installing…</s:String>
+    <s:String x:Key="update_failed">Couldn't install the update. Please try again later.</s:String>
 </ResourceDictionary>

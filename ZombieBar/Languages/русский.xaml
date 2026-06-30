@@ -116,4 +116,5 @@
     <s:String x:Key="update_title">Обновление</s:String>
     <s:String x:Key="update_downloading">Скачивание обновления…</s:String>
     <s:String x:Key="update_installing">Установка…</s:String>
+    <s:String x:Key="update_failed">Не удалось установить обновление. Повторите попытку позже.</s:String>
 </ResourceDictionary>

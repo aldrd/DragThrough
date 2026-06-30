@@ -17,6 +17,7 @@ namespace ZombieBar
     public partial class UpdateProgressWindow : Window
     {
         private readonly CancellationTokenSource _cts = new();
+        private bool _finished;
 
         /// <summary>Cancelled when the user presses Cancel; passed to the download.</summary>
         public CancellationToken CancellationToken => _cts.Token;
@@ -34,6 +35,13 @@ namespace ZombieBar
 
         private void Cancel_OnClick(object sender, RoutedEventArgs e)
         {
+            // After an error the same button becomes "Close".
+            if (_finished)
+            {
+                Close();
+                return;
+            }
+
             _cts.Cancel();
             CancelButton.IsEnabled = false;
         }
@@ -68,6 +76,25 @@ namespace ZombieBar
             StatusText.Text = Loc("update_installing", "Installing…");
             Bar.Value = 100;
             DetailText.Text = "";
+        }
+
+        /// <summary>
+        /// Shows an error and keeps the window open (so the user sees why the update didn't install),
+        /// turning the Cancel button into a Close button. <paramref name="detail"/> is the technical
+        /// reason (HTTP status, exception message, ...), shown smaller for diagnostics.
+        /// </summary>
+        public void SetError(string detail)
+        {
+            _finished = true;
+            StatusText.Text = Loc("update_failed", "Couldn't install the update. Please try again later.");
+            if (TryFindResource("DangerBrush") is Brush danger)
+            {
+                StatusText.Foreground = danger;
+            }
+            Bar.Visibility = Visibility.Collapsed;
+            DetailText.Text = detail;
+            CancelButton.Content = Loc("about_close", "Close");
+            CancelButton.IsEnabled = true;
         }
 
         private static double Mb(long bytes) => bytes / 1048576.0;
