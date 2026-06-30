@@ -113,4 +113,9 @@
     <s:String x:Key="about_update_prompt">Version {0} is available. Install it now?</s:String>
     <s:String x:Key="about_check_failed">Couldn't check for updates. Please try again later.</s:String>
     <s:String x:Key="about_close">Close</s:String>
+
+    <!-- Update progress -->
+    <s:String x:Key="update_title">Software update</s:String>
+    <s:String x:Key="update_downloading">Downloading update…</s:String>
+    <s:String x:Key="update_installing">Installing…</s:String>
 </ResourceDictionary>

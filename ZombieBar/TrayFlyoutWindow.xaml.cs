@@ -1,15 +1,11 @@
 #nullable enable
 using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Microsoft.Win32;
 using ZombieBar.Utilities;
 using Application = System.Windows.Application;
 
@@ -43,7 +39,7 @@ namespace ZombieBar
             InitializeComponent();
             ApplyTheme();
 
-            AppIcon.Source = LoadAppIcon();
+            AppIcon.Source = AppUi.LoadAppIcon();
 
             Version? version = Assembly.GetExecutingAssembly().GetName().Version;
             VersionText.Text = version != null ? $"v{version}" : "";
@@ -231,7 +227,7 @@ namespace ZombieBar
         // (which references them via DynamicResource) recolors on each show.
         private void ApplyTheme()
         {
-            bool dark = IsSystemDark();
+            bool dark = AppUi.IsSystemDark();
 
             SetBrush("BgBrush",          dark ? "#FF202124" : "#FFFFFFFF");
             SetBrush("FgBrush",          dark ? "#FFF2F2F2" : "#FF1A1A1A");
@@ -251,52 +247,6 @@ namespace ZombieBar
             var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
             brush.Freeze();
             Resources[key] = brush;
-        }
-
-        // The app's tray icon (embedded tray_icon.ico), so the header matches the system tray.
-        // Picks the largest frame in the .ico for a crisp result at the header size.
-        private static ImageSource? LoadAppIcon()
-        {
-            try
-            {
-                Assembly asm = Assembly.GetExecutingAssembly();
-                string? name = asm.GetManifestResourceNames()
-                    .FirstOrDefault(n => n.EndsWith("tray_icon.ico", StringComparison.OrdinalIgnoreCase));
-                if (name == null)
-                {
-                    return null;
-                }
-
-                using Stream? stream = asm.GetManifestResourceStream(name);
-                if (stream == null)
-                {
-                    return null;
-                }
-
-                BitmapDecoder decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-                BitmapFrame frame = decoder.Frames.OrderByDescending(f => f.PixelWidth).First();
-                frame.Freeze();
-                return frame;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private static bool IsSystemDark()
-        {
-            try
-            {
-                using RegistryKey? key = Registry.CurrentUser.OpenSubKey(
-                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-                if (key?.GetValue("AppsUseLightTheme") is int v)
-                {
-                    return v == 0;
-                }
-            }
-            catch { /* default to light */ }
-            return false;
         }
 
         private static string Loc(string key, string fallback) =>

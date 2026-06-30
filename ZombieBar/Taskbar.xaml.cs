@@ -195,7 +195,8 @@ namespace ZombieBar
             // Download, verify and swap in the new version, then hand off to it.
             UpdateAvailableMenuItem.IsEnabled = false;
 
-            if (await _updater.InstallUpdateAsync())
+            Updater.InstallResult result = await _updater.InstallUpdateAsync();
+            if (result == Updater.InstallResult.Installing)
             {
                 ((App)Application.Current).ExitGracefully();
                 return;
@@ -203,12 +204,16 @@ namespace ZombieBar
 
             UpdateAvailableMenuItem.IsEnabled = true;
 
-            // Couldn't install automatically (e.g. read-only install folder); open the releases page.
-            Process.Start(new ProcessStartInfo
+            // The user cancelled - leave them be. Only on a real failure (e.g. read-only install
+            // folder or a network error) fall back to the releases page.
+            if (result == Updater.InstallResult.Failed)
             {
-                FileName = AppLinks.ReleasesPageUrl,
-                UseShellExecute = true
-            });
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = AppLinks.ReleasesPageUrl,
+                    UseShellExecute = true
+                });
+            }
         }
 
         private void PropertiesMenuItem_OnClick(object sender, RoutedEventArgs e)

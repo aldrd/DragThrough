@@ -109,4 +109,9 @@
     <s:String x:Key="about_update_prompt">La version {0} est disponible. L'installer maintenant ?</s:String>
     <s:String x:Key="about_check_failed">Impossible de rechercher des mises à jour. Veuillez réessayer plus tard.</s:String>
     <s:String x:Key="about_close">Fermer</s:String>
+
+    <!-- Update progress -->
+    <s:String x:Key="update_title">Mise à jour</s:String>
+    <s:String x:Key="update_downloading">Téléchargement de la mise à jour…</s:String>
+    <s:String x:Key="update_installing">Installation…</s:String>
 </ResourceDictionary>

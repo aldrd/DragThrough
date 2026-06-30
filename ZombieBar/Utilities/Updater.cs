@@ -8,6 +8,7 @@ using System.Net.Http.Json;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -129,63 +130,157 @@ namespace ZombieBar.Utilities
             }
         }
 
+        /// <summary>Outcome of <see cref="InstallUpdateAsync"/>.</summary>
+        public enum InstallResult
+        {
+            /// <summary>The new version is being installed; the caller should now shut down.</summary>
+            Installing,
+            /// <summary>The user cancelled the download.</summary>
+            Cancelled,
+            /// <summary>Nothing was installed (no update, network or verification error).</summary>
+            Failed
+        }
+
         /// <summary>
-        /// Downloads the new executable, verifies its SHA-256, then replaces the running
-        /// executable and starts the new one. When the install folder is writable this happens
-        /// in-process; otherwise an elevated copy of the new exe is launched (UAC prompt) to do
-        /// the swap. Returns true if an install was started and the caller should now shut down
-        /// so the new instance can take over; false if nothing was changed.
+        /// Downloads the new executable (showing a progress window with a Cancel button), verifies
+        /// its SHA-256, then replaces the running executable and starts the new one. When the
+        /// install folder is writable this happens in-process; otherwise an elevated copy of the
+        /// new exe is launched (UAC prompt) to do the swap.
         /// </summary>
-        public async Task<bool> InstallUpdateAsync()
+        public async Task<InstallResult> InstallUpdateAsync()
         {
             if (string.IsNullOrEmpty(_downloadUrl))
             {
-                return false;
+                return InstallResult.Failed;
             }
 
             string? currentExe = Environment.ProcessPath;
             if (string.IsNullOrEmpty(currentExe))
             {
-                return false;
+                return InstallResult.Failed;
             }
 
             string appDir = Path.GetDirectoryName(currentExe)!;
             bool writable = IsDirectoryWritable(appDir);
             string downloadPath = Path.Combine(writable ? appDir : Path.GetTempPath(), UpdateFileName);
 
+            // The progress window is shown for every install - whether started from the About
+            // window or the periodic update notification - so the (large) download is always visible.
+            UpdateProgressWindow? progress = ShowProgressWindow();
+            CancellationToken token = progress?.CancellationToken ?? CancellationToken.None;
             try
             {
-                using (HttpResponseMessage response =
-                       await _httpClient.GetAsync(_downloadUrl, HttpCompletionOption.ResponseHeadersRead))
-                {
-                    response.EnsureSuccessStatusCode();
-                    using FileStream fs = File.Create(downloadPath);
-                    await response.Content.CopyToAsync(fs);
-                }
+                await DownloadWithProgressAsync(_downloadUrl, downloadPath, progress, token);
 
                 if (!string.IsNullOrWhiteSpace(_expectedSha256)
                     && !VerifySha256(downloadPath, _expectedSha256!))
                 {
                     ShellLogger.Info("Updater: SHA-256 of the downloaded update did not match the manifest; aborting.");
                     TryDelete(downloadPath);
-                    return false;
+                    return InstallResult.Failed;
                 }
 
-                if (writable)
-                {
-                    return SwapInProcess(currentExe, downloadPath);
-                }
+                InvokeOnWindow(progress, w => w.SetInstalling());
 
-                // Read-only install folder (e.g. Program Files): hand off to an elevated copy of
-                // the new exe that waits for us to exit, replaces the file and relaunches.
-                return LaunchElevatedApplier(downloadPath, currentExe);
+                bool swapped = writable
+                    ? SwapInProcess(currentExe, downloadPath)
+                    // Read-only install folder (e.g. Program Files): hand off to an elevated copy of
+                    // the new exe that waits for us to exit, replaces the file and relaunches.
+                    : LaunchElevatedApplier(downloadPath, currentExe);
+
+                return swapped ? InstallResult.Installing : InstallResult.Failed;
+            }
+            catch (OperationCanceledException)
+            {
+                ShellLogger.Info("Updater: update download cancelled by the user.");
+                TryDelete(downloadPath);
+                return InstallResult.Cancelled;
             }
             catch (Exception ex)
             {
                 ShellLogger.Info($"Updater: Failed to install the update: {ex.Message}");
                 TryDelete(downloadPath);
-                return false;
+                return InstallResult.Failed;
             }
+            finally
+            {
+                CloseProgressWindow(progress);
+            }
+        }
+
+        // Streams the download to disk in chunks, reporting progress to the window on each whole
+        // percent. Using ResponseHeadersRead means HttpClient.Timeout doesn't bound the body, so a
+        // large file on a slow connection is fine. Throws OperationCanceledException if cancelled.
+        private async Task DownloadWithProgressAsync(string url, string destPath, UpdateProgressWindow? progress,
+                                                     CancellationToken token)
+        {
+            using HttpResponseMessage response =
+                await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
+            response.EnsureSuccessStatusCode();
+
+            long total = response.Content.Headers.ContentLength ?? -1;
+            using Stream source = await response.Content.ReadAsStreamAsync(token);
+            using FileStream fs = File.Create(destPath);
+
+            byte[] buffer = new byte[81920];
+            long received = 0;
+            int lastPercent = -1;
+            int read;
+
+            while ((read = await source.ReadAsync(buffer, token).ConfigureAwait(false)) > 0)
+            {
+                await fs.WriteAsync(buffer.AsMemory(0, read), token).ConfigureAwait(false);
+                received += read;
+
+                if (progress == null)
+                {
+                    continue;
+                }
+
+                // Marshal to the UI thread only when the whole-percent value changes.
+                int percent = total > 0 ? (int)(received * 100 / total) : -1;
+                if (percent != lastPercent)
+                {
+                    lastPercent = percent;
+                    long r = received, t = total;
+                    progress.Dispatcher.Invoke(() => progress.SetProgress(r, t));
+                }
+            }
+        }
+
+        private static UpdateProgressWindow? ShowProgressWindow()
+        {
+            System.Windows.Threading.Dispatcher? dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null)
+            {
+                return null;
+            }
+
+            return dispatcher.Invoke(() =>
+            {
+                var window = new UpdateProgressWindow();
+                window.Show();
+                window.Activate();
+                return window;
+            });
+        }
+
+        private static void InvokeOnWindow(UpdateProgressWindow? window, Action<UpdateProgressWindow> action)
+        {
+            if (window == null)
+            {
+                return;
+            }
+            try { window.Dispatcher.Invoke(() => action(window)); } catch { }
+        }
+
+        private static void CloseProgressWindow(UpdateProgressWindow? window)
+        {
+            if (window == null)
+            {
+                return;
+            }
+            try { window.Dispatcher.Invoke(window.Close); } catch { }
         }
 
         // Writable install folder: rename the running exe aside and drop the new one in place

@@ -71,13 +71,13 @@ namespace ZombieBar
                     if (MessageBox.Show(this, prompt, Loc("about_title", "About"),
                             MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        if (await _updater.InstallUpdateAsync())
+                        if (await _updater.InstallUpdateAsync() == Updater.InstallResult.Installing)
                         {
                             ((App)Application.Current).ExitGracefully();
                             return;
                         }
 
-                        ShowStatus(Loc("about_check_failed", "Couldn't check for updates. Please try again later."));
+                        // Cancelled or failed: keep the "version available" status shown above.
                     }
                     break;
             }
