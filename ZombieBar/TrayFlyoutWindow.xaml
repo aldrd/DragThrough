@@ -1,0 +1,250 @@
+<Window x:Class="ZombieBar.TrayFlyoutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="Manual"
+        FontFamily="Segoe UI"
+        TextOptions.TextFormattingMode="Display"
+        PreviewKeyDown="Window_PreviewKeyDown">
+
+    <Window.Resources>
+        <!-- Toggle-switch row: the whole row is clickable; the switch animates to the accent color. -->
+        <Style x:Key="SwitchRow" TargetType="ToggleButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource FgBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="bg" Background="Transparent" CornerRadius="6" Padding="10,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,12,0"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                                <Border Grid.Column="1"
+                                        x:Name="track"
+                                        Width="36" Height="20"
+                                        CornerRadius="10"
+                                        VerticalAlignment="Center"
+                                        Background="{DynamicResource TrackOffBrush}"
+                                        BorderBrush="{DynamicResource SwitchBorderBrush}"
+                                        BorderThickness="1">
+                                    <Ellipse x:Name="thumb"
+                                             Width="12" Height="12"
+                                             HorizontalAlignment="Left"
+                                             Margin="4,0,0,0"
+                                             Fill="{DynamicResource ThumbBrush}" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource HoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="track" Property="Background" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="track" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="thumb" Property="Margin" Value="0,0,4,0" />
+                                <Setter TargetName="thumb" Property="Fill" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Flat action row with a hover highlight. -->
+        <Style x:Key="MenuButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource FgBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bg" Background="Transparent" CornerRadius="6" Padding="10,8">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource HoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RowIcon" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Symbol" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource SubFgBrush}" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+    <!-- Outer margin leaves room for the drop shadow. -->
+    <Border Width="312"
+            Margin="16"
+            CornerRadius="10"
+            Background="{DynamicResource BgBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.30" Color="Black" />
+        </Border.Effect>
+
+        <StackPanel Margin="6">
+            <!-- Header -->
+            <Grid Margin="10,10,10,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0"
+                        Width="26" Height="26"
+                        CornerRadius="6"
+                        Background="{DynamicResource AccentBrush}"
+                        Margin="0,0,10,0">
+                    <TextBlock Text="&#x21F2;"
+                               FontFamily="Segoe UI Symbol"
+                               Foreground="White"
+                               FontSize="14"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Grid.Column="1"
+                           Text="{DynamicResource tray_tooltip}"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource FgBrush}" />
+                <TextBlock Grid.Column="2"
+                           x:Name="VersionText"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Foreground="{DynamicResource SubFgBrush}" />
+            </Grid>
+
+            <TextBlock Text="{DynamicResource tray_drag_title}"
+                       Margin="10,0,10,6"
+                       TextWrapping="Wrap"
+                       FontSize="11"
+                       Foreground="{DynamicResource SubFgBrush}" />
+
+            <!-- Toggles -->
+            <ToggleButton x:Name="WinKeyToggle" Style="{StaticResource SwitchRow}" Click="WinKeyToggle_Click">
+                <TextBlock Text="{DynamicResource tray_use_windows_key}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="ShiftToggle" Style="{StaticResource SwitchRow}" Click="ShiftToggle_Click">
+                <TextBlock Text="{DynamicResource tray_enable_shift}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="MinimizeToggle" Style="{StaticResource SwitchRow}" Click="MinimizeToggle_Click">
+                <TextBlock Text="{DynamicResource tray_minimize_explorer}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="DismissSearchToggle" Style="{StaticResource SwitchRow}" Click="DismissSearchToggle_Click">
+                <TextBlock Text="{DynamicResource tray_dismiss_search}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="ShowTaskbarToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarToggle_Click">
+                <TextBlock Text="{DynamicResource tray_show_taskbar}" TextWrapping="Wrap" />
+            </ToggleButton>
+
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
+            <!-- Actions -->
+            <Button x:Name="ShareButton" Style="{StaticResource MenuButton}" Click="Share_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x2197;" />
+                    <TextBlock Grid.Column="1" Text="{DynamicResource share_app}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource RowIcon}" Text="&#x203A;" Margin="6,0,0,0" />
+                </Grid>
+            </Button>
+
+            <Button Style="{StaticResource MenuButton}" Click="Coffee_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x2615;" />
+                    <TextBlock Grid.Column="1" Text="{DynamicResource tray_buy_coffee}" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+
+            <Button Style="{StaticResource MenuButton}" Click="Feedback_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x270E;" />
+                    <TextBlock Grid.Column="1" Text="{DynamicResource tray_feedback}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+
+            <Button Style="{StaticResource MenuButton}" Click="About_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x24D8;" />
+                    <TextBlock Grid.Column="1" Text="{DynamicResource tray_about}" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
+            <Button Style="{StaticResource MenuButton}" Click="Exit_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x23FB;" Foreground="{DynamicResource DangerBrush}" />
+                    <TextBlock Grid.Column="1" Text="{DynamicResource tray_exit}" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+        </StackPanel>
+    </Border>
+
+    <!-- Share submenu, anchored to the Share row. Items are added in code from AppShare.Targets. -->
+    <Popup x:Name="SharePopup"
+           PlacementTarget="{Binding ElementName=ShareButton}"
+           Placement="Right"
+           HorizontalOffset="-6"
+           AllowsTransparency="True"
+           StaysOpen="False"
+           PopupAnimation="Fade">
+        <Border Margin="10"
+                Width="220"
+                CornerRadius="10"
+                Background="{DynamicResource BgBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.30" Color="Black" />
+            </Border.Effect>
+            <StackPanel x:Name="SharePanel" Margin="6" />
+        </Border>
+    </Popup>
+    </Grid>
+</Window>
