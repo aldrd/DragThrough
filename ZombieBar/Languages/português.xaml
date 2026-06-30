@@ -96,4 +96,17 @@
     <s:String x:Key="set_time">Aj_ustar data/hora</s:String>
 
     <s:String x:Key="open_folder">&amp;Abrir pasta</s:String>
+
+    <!-- About window -->
+    <s:String x:Key="tray_about">Sobre</s:String>
+    <s:String x:Key="about_title">Sobre o DragThrough</s:String>
+    <s:String x:Key="about_version">Versão</s:String>
+    <s:String x:Key="about_tagline">Um substituto da barra de tarefas do Windows 11</s:String>
+    <s:String x:Key="about_check_updates">Procurar atualizações</s:String>
+    <s:String x:Key="about_checking">Procurando atualizações…</s:String>
+    <s:String x:Key="about_up_to_date">Você tem a versão mais recente.</s:String>
+    <s:String x:Key="about_update_available">A versão {0} está disponível.</s:String>
+    <s:String x:Key="about_update_prompt">A versão {0} está disponível. Instalar agora?</s:String>
+    <s:String x:Key="about_check_failed">Não foi possível procurar atualizações. Tente novamente mais tarde.</s:String>
+    <s:String x:Key="about_close">Fechar</s:String>
 </ResourceDictionary>

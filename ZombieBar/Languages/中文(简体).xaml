@@ -96,4 +96,17 @@
     <s:String x:Key="set_time">调整日期/时间(_A)</s:String>
 
     <s:String x:Key="open_folder">&amp;打开文件夹</s:String>
+
+    <!-- About window -->
+    <s:String x:Key="tray_about">关于</s:String>
+    <s:String x:Key="about_title">关于 DragThrough</s:String>
+    <s:String x:Key="about_version">版本</s:String>
+    <s:String x:Key="about_tagline">Windows 11 任务栏替代工具</s:String>
+    <s:String x:Key="about_check_updates">检查更新</s:String>
+    <s:String x:Key="about_checking">正在检查更新…</s:String>
+    <s:String x:Key="about_up_to_date">您使用的已是最新版本。</s:String>
+    <s:String x:Key="about_update_available">有新版本 {0} 可用。</s:String>
+    <s:String x:Key="about_update_prompt">有新版本 {0} 可用。立即安装？</s:String>
+    <s:String x:Key="about_check_failed">无法检查更新，请稍后再试。</s:String>
+    <s:String x:Key="about_close">关闭</s:String>
 </ResourceDictionary>

@@ -96,4 +96,17 @@
     <s:String x:Key="set_time">Ajuster la _date/l'heure</s:String>
 
     <s:String x:Key="open_folder">&amp;Ouvrir le dossier</s:String>
+
+    <!-- About window -->
+    <s:String x:Key="tray_about">À propos</s:String>
+    <s:String x:Key="about_title">À propos de DragThrough</s:String>
+    <s:String x:Key="about_version">Version</s:String>
+    <s:String x:Key="about_tagline">Un remplacement de la barre des tâches de Windows 11</s:String>
+    <s:String x:Key="about_check_updates">Rechercher des mises à jour</s:String>
+    <s:String x:Key="about_checking">Recherche de mises à jour…</s:String>
+    <s:String x:Key="about_up_to_date">Vous disposez de la dernière version.</s:String>
+    <s:String x:Key="about_update_available">La version {0} est disponible.</s:String>
+    <s:String x:Key="about_update_prompt">La version {0} est disponible. L'installer maintenant ?</s:String>
+    <s:String x:Key="about_check_failed">Impossible de rechercher des mises à jour. Veuillez réessayer plus tard.</s:String>
+    <s:String x:Key="about_close">Fermer</s:String>
 </ResourceDictionary>

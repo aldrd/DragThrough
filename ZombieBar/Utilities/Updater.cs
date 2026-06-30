@@ -67,24 +67,43 @@ namespace ZombieBar.Utilities
             _updateCheck.Start();
         }
 
+        /// <summary>Outcome of an update check.</summary>
+        public enum UpdateCheckResult
+        {
+            UpToDate,
+            UpdateAvailable,
+            Failed
+        }
+
         private async void UpdateCheck_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
             // First tick is shortly after startup; afterwards check at the slower interval.
             _updateCheck.Interval = _recheckInterval;
-
-            if (!await CheckForUpdate())
-            {
-                return;
-            }
-
-            IsUpdateAvailable = true;
-            _updateCheck.Stop();
-
-            Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
-                UpdateAvailable?.Invoke(this, EventArgs.Empty)));
+            await CheckForUpdatesNowAsync();
         }
 
-        private async Task<bool> CheckForUpdate()
+        /// <summary>
+        /// Checks the manifest right now (e.g. from the "Check for updates" button). When a newer
+        /// version is found it records it and raises <see cref="UpdateAvailable"/> (on the UI
+        /// thread) so the taskbar's update notification appears too.
+        /// </summary>
+        public async Task<UpdateCheckResult> CheckForUpdatesNowAsync()
+        {
+            UpdateCheckResult result = await CheckForUpdate();
+
+            if (result == UpdateCheckResult.UpdateAvailable)
+            {
+                IsUpdateAvailable = true;
+                _updateCheck.Stop();
+
+                Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+                    UpdateAvailable?.Invoke(this, EventArgs.Empty)));
+            }
+
+            return result;
+        }
+
+        private async Task<UpdateCheckResult> CheckForUpdate()
         {
             try
             {
@@ -98,15 +117,16 @@ namespace ZombieBar.Utilities
                     _downloadUrl = manifest.Url;
                     _expectedSha256 = manifest.Sha256;
                     AvailableVersion = newVersion;
-                    return true;
+                    return UpdateCheckResult.UpdateAvailable;
                 }
+
+                return UpdateCheckResult.UpToDate;
             }
             catch (Exception ex)
             {
                 ShellLogger.Info($"Updater: Unable to check for updates: {ex.Message}");
+                return UpdateCheckResult.Failed;
             }
-
-            return false;
         }
 
         /// <summary>

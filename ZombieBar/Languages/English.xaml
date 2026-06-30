@@ -100,4 +100,17 @@
     <s:String x:Key="set_time">_Adjust Date/Time</s:String>
 
     <s:String x:Key="open_folder">&amp;Open Folder</s:String>
+
+    <!-- About window -->
+    <s:String x:Key="tray_about">About</s:String>
+    <s:String x:Key="about_title">About DragThrough</s:String>
+    <s:String x:Key="about_version">Version</s:String>
+    <s:String x:Key="about_tagline">A Windows 11 taskbar replacement</s:String>
+    <s:String x:Key="about_check_updates">Check for updates</s:String>
+    <s:String x:Key="about_checking">Checking for updates…</s:String>
+    <s:String x:Key="about_up_to_date">You have the latest version.</s:String>
+    <s:String x:Key="about_update_available">Version {0} is available.</s:String>
+    <s:String x:Key="about_update_prompt">Version {0} is available. Install it now?</s:String>
+    <s:String x:Key="about_check_failed">Couldn't check for updates. Please try again later.</s:String>
+    <s:String x:Key="about_close">Close</s:String>
 </ResourceDictionary>

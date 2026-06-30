@@ -22,6 +22,7 @@ namespace ZombieBar.Utilities
         private readonly NotifyIcon _tray;
         private readonly Action<bool> _setTaskbarVisible;
         private readonly Action _openFeedback;
+        private readonly Action _openAbout;
         private readonly Action _exit;
 
         private ToolStripMenuItem _titleItem = null!;
@@ -33,6 +34,7 @@ namespace ZombieBar.Utilities
         private ToolStripMenuItem _shareItem = null!;
         private ToolStripMenuItem _coffeeItem = null!;
         private ToolStripMenuItem _feedbackItem = null!;
+        private ToolStripMenuItem _aboutItem = null!;
         private ToolStripMenuItem _exitItem = null!;
 
         // Localizable items of the "Share the app" submenu, refreshed with the menu (key + fallback).
@@ -40,11 +42,13 @@ namespace ZombieBar.Utilities
 
         /// <param name="setTaskbarVisible">Shows (true) or hides (false) the additional taskbar.</param>
         /// <param name="openFeedback">Opens the feedback form ("Report a problem or suggestion").</param>
+        /// <param name="openAbout">Opens the "About" window.</param>
         /// <param name="exit">Quits the whole application.</param>
-        public AppTray(Action<bool> setTaskbarVisible, Action openFeedback, Action exit)
+        public AppTray(Action<bool> setTaskbarVisible, Action openFeedback, Action openAbout, Action exit)
         {
             _setTaskbarVisible = setTaskbarVisible;
             _openFeedback = openFeedback;
+            _openAbout = openAbout;
             _exit = exit;
 
             _tray = new NotifyIcon
@@ -112,6 +116,11 @@ namespace ZombieBar.Utilities
             _feedbackItem.Click += (_, _) => _openFeedback();
             menu.Items.Add(_feedbackItem);
 
+            // "About" - the second-to-last item, just above Exit.
+            _aboutItem = new ToolStripMenuItem();
+            _aboutItem.Click += (_, _) => _openAbout();
+            menu.Items.Add(_aboutItem);
+
             menu.Items.Add(new ToolStripSeparator());
 
             _exitItem = new ToolStripMenuItem();
@@ -151,6 +160,7 @@ namespace ZombieBar.Utilities
             }
             _coffeeItem.Text = Loc("tray_buy_coffee", "Buy me a coffee");
             _feedbackItem.Text = Loc("tray_feedback", "Report a problem or suggestion...");
+            _aboutItem.Text = Loc("tray_about", "About");
             _exitItem.Text = Loc("tray_exit", "Exit");
 
             _winKeyItem.Checked = Settings.Instance.EnableWindowsKeyModifier;

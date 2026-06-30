@@ -75,6 +75,23 @@ namespace ZombieBar
             _feedbackWindow.Activate();
         }
 
+        // Single-instance "About" window, opened from the tray menu.
+        private AboutWindow _aboutWindow;
+
+        private void OpenAboutWindow()
+        {
+            if (_aboutWindow != null)
+            {
+                _aboutWindow.Activate();
+                return;
+            }
+
+            _aboutWindow = new AboutWindow(_updater);
+            _aboutWindow.Closed += (_, _) => _aboutWindow = null;
+            _aboutWindow.Show();
+            _aboutWindow.Activate();
+        }
+
         public void ReopenTaskbar()
         {
             closeTaskbar();
@@ -133,7 +150,7 @@ namespace ZombieBar
 
             // Tray icon and the "drag through" monitor run for the whole app lifetime.
             _dragMonitor.Start();
-            _appTray = new AppTray(SetAdditionalTaskbarVisible, OpenFeedbackWindow, ExitGracefully);
+            _appTray = new AppTray(SetAdditionalTaskbarVisible, OpenFeedbackWindow, OpenAboutWindow, ExitGracefully);
 
             // The additional taskbar is shown on first run (default) and whenever it was left
             // visible; "Remove" / the tray toggle persist the hidden state.
