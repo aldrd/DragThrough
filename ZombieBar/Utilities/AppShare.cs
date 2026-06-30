@@ -33,7 +33,10 @@ namespace ZombieBar.Utilities
         public static bool Share(string kind)
         {
             string url = AppLinks.ProjectUrl;
-            string text = Loc("share_text", "ZombieBar - a Windows 11 taskbar replacement");
+            // Shared blurb: the app name (the header / tray title) plus the About description.
+            string name = Loc("tray_tooltip", "DragThrough");
+            string tagline = Loc("about_tagline", "Windows helpers app");
+            string text = $"{name} — {tagline}";
 
             if (kind == "copy")
             {

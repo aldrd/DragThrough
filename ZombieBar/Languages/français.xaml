@@ -81,7 +81,6 @@
     <s:String x:Key="share_telegram">Publier sur Telegram</s:String>
     <s:String x:Key="share_email">E-mail</s:String>
     <s:String x:Key="share_link_copied">Lien copié dans le presse-papiers</s:String>
-    <s:String x:Key="share_text">ZombieBar — un remplacement de la barre des tâches de Windows 11</s:String>
 
     <s:String x:Key="restore">_Restaurer</s:String>
     <s:String x:Key="move">Dép_lacer</s:String>

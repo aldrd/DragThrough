@@ -81,7 +81,6 @@
     <s:String x:Key="share_telegram">分享到 Telegram</s:String>
     <s:String x:Key="share_email">电子邮件</s:String>
     <s:String x:Key="share_link_copied">链接已复制到剪贴板</s:String>
-    <s:String x:Key="share_text">ZombieBar — Windows 11 任务栏替代工具</s:String>
 
     <s:String x:Key="restore">恢复(_R)</s:String>
     <s:String x:Key="move">移动(_M)</s:String>

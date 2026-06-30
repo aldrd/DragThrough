@@ -81,7 +81,6 @@
     <s:String x:Key="share_telegram">Пост в Telegram</s:String>
     <s:String x:Key="share_email">Эл. почта</s:String>
     <s:String x:Key="share_link_copied">Ссылка скопирована в буфер обмена</s:String>
-    <s:String x:Key="share_text">ZombieBar — замена панели задач для Windows 11</s:String>
 
     <s:String x:Key="restore">_Восстановить</s:String>
     <s:String x:Key="move">Пере_местить</s:String>

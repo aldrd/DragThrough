@@ -85,7 +85,6 @@
     <s:String x:Key="share_reddit">Reddit</s:String>
     <s:String x:Key="share_email">Email</s:String>
     <s:String x:Key="share_link_copied">Link copied to clipboard</s:String>
-    <s:String x:Key="share_text">ZombieBar - a Windows 11 taskbar replacement</s:String>
 
     <s:String x:Key="restore">_Restore</s:String>
     <s:String x:Key="move">_Move</s:String>
