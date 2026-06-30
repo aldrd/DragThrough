@@ -11,7 +11,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using ZombieBar.Utilities;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 
@@ -43,9 +45,20 @@ namespace ZombieBar
         public FeedbackWindow()
         {
             InitializeComponent();
+            AppUi.ApplyDialogTheme(this);
+            AppIcon.Source = AppUi.LoadAppIcon();
+
             AttachmentsList.ItemsSource = _attachments;
             _attachments.CollectionChanged += (_, _) => UpdateHint();
             UpdateHint();
+        }
+
+        private void Header_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
+            }
         }
 
         private void UpdateHint()

@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Input;
 using ZombieBar.Utilities;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
@@ -23,6 +24,9 @@ namespace ZombieBar
         {
             _updater = updater;
             InitializeComponent();
+            AppUi.ApplyDialogTheme(this);
+
+            AppIcon.Source = AppUi.LoadAppIcon();
 
             Version? version = Assembly.GetExecutingAssembly().GetName().Version;
             VersionText.Text = $"{Loc("about_version", "Version")} {version?.ToString() ?? ""}".Trim();
@@ -30,6 +34,14 @@ namespace ZombieBar
             if (_updater == null)
             {
                 CheckUpdatesButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void Header_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
             }
         }
 

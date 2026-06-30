@@ -9,6 +9,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Images.xaml" />
+                <ResourceDictionary Source="Resources/DialogStyles.xaml" />
                 <ResourceDictionary Source="Languages/English.xaml" />
                 <ResourceDictionary Source="Themes/Base.xaml" />
             </ResourceDictionary.MergedDictionaries>

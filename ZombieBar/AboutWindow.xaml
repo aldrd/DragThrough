@@ -2,51 +2,92 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{DynamicResource about_title}"
-        Width="440"
+        Width="420"
         SizeToContent="Height"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        ShowInTaskbar="True">
-    <StackPanel Margin="20">
-        <TextBlock Text="{DynamicResource tray_tooltip}"
-                   FontSize="22"
-                   FontWeight="SemiBold" />
+        ShowInTaskbar="True"
+        FontFamily="Segoe UI"
+        TextOptions.TextFormattingMode="Display">
+    <Border Margin="16"
+            CornerRadius="10"
+            Background="{DynamicResource BgBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.30" Color="Black" />
+        </Border.Effect>
 
-        <TextBlock x:Name="VersionText"
-                   Foreground="Gray"
-                   Margin="0,2,0,0" />
+        <StackPanel>
+            <!-- Title bar (draggable). -->
+            <Grid Margin="18,12,10,0" Background="Transparent" MouseLeftButtonDown="Header_MouseDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0"
+                       x:Name="AppIcon"
+                       Width="20" Height="20"
+                       Margin="0,0,8,0"
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <TextBlock Grid.Column="1"
+                           Text="{DynamicResource about_title}"
+                           VerticalAlignment="Center"
+                           FontSize="12"
+                           Foreground="{DynamicResource SubFgBrush}" />
+                <Button Grid.Column="2"
+                        Style="{StaticResource DialogCloseButton}"
+                        IsCancel="True"
+                        Click="Close_OnClick" />
+            </Grid>
 
-        <TextBlock Text="{DynamicResource about_tagline}"
-                   TextWrapping="Wrap"
-                   Margin="0,12,0,0" />
+            <!-- Body -->
+            <StackPanel Margin="18,10,18,18">
+                <TextBlock Text="{DynamicResource tray_tooltip}"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource FgBrush}" />
 
-        <TextBlock x:Name="UpdateStatus"
-                   Foreground="Gray"
-                   TextWrapping="Wrap"
-                   Margin="0,14,0,0"
-                   Visibility="Collapsed" />
+                <TextBlock x:Name="VersionText"
+                           Foreground="{DynamicResource SubFgBrush}"
+                           Margin="0,2,0,0" />
 
-        <StackPanel Orientation="Horizontal"
-                    Margin="0,18,0,0">
-            <Button x:Name="CoffeeButton"
-                    Content="{DynamicResource tray_buy_coffee}"
-                    Click="Coffee_OnClick"
-                    Padding="12,5"
-                    Margin="0,0,8,0" />
-            <Button x:Name="CheckUpdatesButton"
-                    Content="{DynamicResource about_check_updates}"
-                    Click="CheckUpdates_OnClick"
-                    Padding="12,5" />
+                <TextBlock Text="{DynamicResource about_tagline}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource FgBrush}"
+                           Margin="0,12,0,0" />
+
+                <TextBlock x:Name="UpdateStatus"
+                           Foreground="{DynamicResource SubFgBrush}"
+                           TextWrapping="Wrap"
+                           Margin="0,14,0,0"
+                           Visibility="Collapsed" />
+
+                <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                    <Button x:Name="CoffeeButton"
+                            Style="{StaticResource DialogButton}"
+                            Content="{DynamicResource tray_buy_coffee}"
+                            Click="Coffee_OnClick"
+                            Margin="0,0,8,0" />
+                    <Button x:Name="CheckUpdatesButton"
+                            Style="{StaticResource DialogButton}"
+                            Content="{DynamicResource about_check_updates}"
+                            Click="CheckUpdates_OnClick" />
+                </StackPanel>
+
+                <Button x:Name="CloseButton"
+                        Style="{StaticResource DialogPrimaryButton}"
+                        Content="{DynamicResource about_close}"
+                        IsDefault="True"
+                        Click="Close_OnClick"
+                        HorizontalAlignment="Right"
+                        Margin="0,18,0,0" />
+            </StackPanel>
         </StackPanel>
-
-        <Button x:Name="CloseButton"
-                Content="{DynamicResource about_close}"
-                IsCancel="True"
-                IsDefault="True"
-                Click="Close_OnClick"
-                HorizontalAlignment="Right"
-                MinWidth="92"
-                Padding="12,5"
-                Margin="0,20,0,0" />
-    </StackPanel>
+    </Border>
 </Window>

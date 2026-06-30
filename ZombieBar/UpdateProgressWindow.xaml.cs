@@ -24,7 +24,7 @@ namespace ZombieBar
         public UpdateProgressWindow()
         {
             InitializeComponent();
-            ApplyTheme();
+            AppUi.ApplyDialogTheme(this);
 
             AppIcon.Source = AppUi.LoadAppIcon();
 
@@ -71,26 +71,6 @@ namespace ZombieBar
         }
 
         private static double Mb(long bytes) => bytes / 1048576.0;
-
-        private void ApplyTheme()
-        {
-            bool dark = AppUi.IsSystemDark();
-
-            SetBrush("BgBrush",     dark ? "#FF202124" : "#FFFFFFFF");
-            SetBrush("FgBrush",     dark ? "#FFF2F2F2" : "#FF1A1A1A");
-            SetBrush("SubFgBrush",  dark ? "#FFA8A8A8" : "#FF6B6B6B");
-            SetBrush("BorderBrush", dark ? "#FF3A3A3D" : "#FFE5E5E5");
-            SetBrush("AccentBrush", dark ? "#FF4CC2FF" : "#FF0067C0");
-            SetBrush("TrackBrush",  dark ? "#FF3A3A3D" : "#FFE9E9EA");
-            SetBrush("HoverBrush",  dark ? "#1AFFFFFF" : "#14000000");
-        }
-
-        private void SetBrush(string key, string hex)
-        {
-            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
-            brush.Freeze();
-            Resources[key] = brush;
-        }
 
         private static string Loc(string key, string fallback) =>
             Application.Current?.TryFindResource(key) as string ?? fallback;
