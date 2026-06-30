@@ -77,7 +77,7 @@ Copy-Item -LiteralPath $exe -Destination (Join-Path $outputDir $AssetName) -Forc
 # Generate the auto-update manifest for this build: version, download url (with the version
 # substituted into the release tag) and the sha256 of the exact exe we just published.
 $hash        = (Get-FileHash -Algorithm SHA256 -LiteralPath $exe).Hash.ToLowerInvariant()
-$downloadUrl = "https://github.com/$RepoSlug/releases/tag/$Version/$AssetName"
+$downloadUrl = "https://github.com/$RepoSlug/DragThrough/releases/download/$Version/$AssetName"
 $manifestJson = @"
 {
   "version": "$Version",
