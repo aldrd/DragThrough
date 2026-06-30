@@ -99,7 +99,7 @@ namespace ZombieBar.Utilities
         {
             string name = Loc("tray_tooltip", "DragThrough");
             Version? version = Assembly.GetExecutingAssembly().GetName().Version;
-            return version != null ? $"{name} {version}" : name;
+            return version != null ? $"{name} v{version}" : name;
         }
 
         private static string Loc(string key, string fallback) =>

@@ -114,18 +114,12 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0"
-                        Width="26" Height="26"
-                        CornerRadius="6"
-                        Background="{DynamicResource AccentBrush}"
-                        Margin="0,0,10,0">
-                    <TextBlock Text="&#x21F2;"
-                               FontFamily="Segoe UI Symbol"
-                               Foreground="White"
-                               FontSize="14"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
-                </Border>
+                <Image Grid.Column="0"
+                       x:Name="AppIcon"
+                       Width="24" Height="24"
+                       Margin="0,0,10,0"
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
                 <TextBlock Grid.Column="1"
                            Text="{DynamicResource tray_tooltip}"
                            FontSize="15"

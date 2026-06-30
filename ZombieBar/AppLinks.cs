@@ -16,7 +16,7 @@ public static class AppLinks
     private const string RepoUrl = "https://github.com/aldrd/DragThrough";
 
     // Project home page, shared by the tray's "Share the app" submenu.
-    public const string ProjectUrl = RepoUrl + "/releases";
+    public const string ProjectUrl = RepoUrl + "/releases/latest";
 
     // Releases page, opened as a fallback when an automatic install can't proceed.
     public const string ReleasesPageUrl = RepoUrl + "/releases";
