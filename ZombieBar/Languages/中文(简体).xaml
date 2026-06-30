@@ -101,7 +101,7 @@
     <s:String x:Key="tray_about">关于</s:String>
     <s:String x:Key="about_title">关于 DragThrough</s:String>
     <s:String x:Key="about_version">版本</s:String>
-    <s:String x:Key="about_tagline">Windows 11 任务栏替代工具</s:String>
+    <s:String x:Key="about_tagline">Windows helpers app</s:String>
     <s:String x:Key="about_check_updates">检查更新</s:String>
     <s:String x:Key="about_checking">正在检查更新…</s:String>
     <s:String x:Key="about_up_to_date">您使用的已是最新版本。</s:String>
