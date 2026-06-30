@@ -124,7 +124,7 @@ namespace ZombieBar
 
         private void openTaskbar()
         {
-            _taskbar = new Taskbar(_shellManager, _startMenuMonitor, _updater, ScreenInfo.FromPrimaryScreen(), (AppBarEdge)Settings.Instance.Edge);
+            _taskbar = new Taskbar(_shellManager, _startMenuMonitor, ScreenInfo.FromPrimaryScreen(), (AppBarEdge)Settings.Instance.Edge);
             _taskbar.Show();
         }
 
@@ -151,6 +151,18 @@ namespace ZombieBar
             // Tray icon and the "drag through" monitor run for the whole app lifetime.
             _dragMonitor.Start();
             _appTray = new AppTray(SetAdditionalTaskbarVisible, OpenFeedbackWindow, OpenAboutWindow, ExitGracefully);
+
+            // The auto-updater runs for the whole app lifetime (not tied to the taskbar, which can
+            // be hidden). When an update is found, mark it on the tray's "About" item; the user
+            // installs it from the About window.
+            if (_updater != null)
+            {
+                _updater.UpdateAvailable += (_, _) => _appTray?.SetUpdateAvailable();
+                if (_updater.IsUpdateAvailable)
+                {
+                    _appTray.SetUpdateAvailable();
+                }
+            }
 
             // The additional taskbar is shown on first run (default) and whenever it was left
             // visible; "Remove" / the tray toggle persist the hidden state.

@@ -69,11 +69,6 @@
                            Visibility="Collapsed" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
-                    <Button x:Name="CoffeeButton"
-                            Style="{StaticResource DialogButton}"
-                            Content="{DynamicResource tray_buy_coffee}"
-                            Click="Coffee_OnClick"
-                            Margin="0,0,8,0" />
                     <Button x:Name="CheckUpdatesButton"
                             Style="{StaticResource DialogButton}"
                             Content="{DynamicResource about_check_updates}"

@@ -60,7 +60,7 @@
         </DockPanel>
     </ContentControl>
     <appbar:AppBarWindow.ContextMenu>
-        <ContextMenu Opened="ContextMenu_Opened">
+        <ContextMenu>
             <!-- TODO: Add when desk bands and additional taskbars are supported. -->
             <!-- MenuItem Header="{DynamicResource toolbars}">
                 <MenuItem Header="{DynamicResource quick_launch}" IsCheckable="true"
@@ -78,9 +78,6 @@
             <MenuItem Header="{DynamicResource exit_zombiebar}" Name="ExitMenuItem" Click="ExitMenuItem_OnClick" />-->
             <MenuItem Header="{DynamicResource taskbar_menu_title}" IsEnabled="False" />
             <Separator />
-            <MenuItem Header="{DynamicResource update_available}" Name="UpdateAvailableMenuItem"
-                      Click="UpdateAvailableMenuItem_OnClick"
-                      FontWeight="Bold" Visibility="Collapsed" />
             <MenuItem Name="RemoveMenuItem" Header="{DynamicResource remove}"
               Click="RemoveMenuItem_OnClick">
                 <MenuItem.Icon>

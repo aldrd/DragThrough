@@ -109,6 +109,8 @@
     <s:String x:Key="about_update_prompt">有新版本 {0} 可用。立即安装？</s:String>
     <s:String x:Key="about_check_failed">无法检查更新，请稍后再试。</s:String>
     <s:String x:Key="about_close">关闭</s:String>
+    <s:String x:Key="about_update_badge">有可用更新</s:String>
+    <s:String x:Key="about_install_update">安装更新</s:String>
 
     <!-- Update progress -->
     <s:String x:Key="update_title">软件更新</s:String>

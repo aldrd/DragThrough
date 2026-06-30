@@ -24,27 +24,17 @@ namespace ZombieBar
     {
         private bool _isReopening;
         private ShellManager _shellManager;
-        private Updater _updater;
 
-        public Taskbar(ShellManager shellManager, StartMenuMonitor startMenuMonitor, Updater updater, ScreenInfo screen, AppBarEdge edge)
+        public Taskbar(ShellManager shellManager, StartMenuMonitor startMenuMonitor, ScreenInfo screen, AppBarEdge edge)
             : base(shellManager.AppBarManager, shellManager.ExplorerHelper, shellManager.FullScreenHelper, screen, edge, 0)
         {
             _shellManager = shellManager;
-            _updater = updater;
 
             InitializeComponent();
 
-            // Reveal the update notification as soon as one is found (null when the auto-updater
-            // is compiled out of the Microsoft Store build).
-            if (_updater != null)
-            {
-                _updater.UpdateAvailable += Updater_UpdateAvailable;
-                if (_updater.IsUpdateAvailable)
-                {
-                    UpdateAvailableMenuItem.Visibility = Visibility.Visible;
-                }
-            }
-            
+            // The auto-updater is owned by the App (it runs even when this taskbar is hidden); an
+            // available update is surfaced on the tray's "About" item, not here.
+
             DataContext = _shellManager;
             
             //StartButton.StartMenuMonitor = startMenuMonitor;
@@ -180,42 +170,6 @@ namespace ZombieBar
             ShellHelper.StartTaskManager();
         }
 
-        private void Updater_UpdateAvailable(object sender, EventArgs e)
-        {
-            UpdateAvailableMenuItem.Visibility = Visibility.Visible;
-        }
-
-        private async void UpdateAvailableMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (_updater == null)
-            {
-                return;
-            }
-
-            // Download, verify and swap in the new version, then hand off to it.
-            UpdateAvailableMenuItem.IsEnabled = false;
-
-            Updater.InstallResult result = await _updater.InstallUpdateAsync();
-            if (result == Updater.InstallResult.Installing)
-            {
-                ((App)Application.Current).ExitGracefully();
-                return;
-            }
-
-            UpdateAvailableMenuItem.IsEnabled = true;
-
-            // The user cancelled - leave them be. Only on a real failure (e.g. read-only install
-            // folder or a network error) fall back to the releases page.
-            if (result == Updater.InstallResult.Failed)
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = AppLinks.ReleasesPageUrl,
-                    UseShellExecute = true
-                });
-            }
-        }
-
         private void PropertiesMenuItem_OnClick(object sender, RoutedEventArgs e)
         {
             PropertiesWindow.Open(((App)Application.Current).DictionaryManager);
@@ -235,19 +189,6 @@ namespace ZombieBar
                 QuickLaunchToolbar.Visibility = Visibility.Collapsed;
 
                 Settings.Instance.PropertyChanged -= Settings_PropertyChanged;
-
-                if (_updater != null)
-                {
-                    _updater.UpdateAvailable -= Updater_UpdateAvailable;
-                }
-            }
-        }
-
-        private void ContextMenu_Opened(object sender, RoutedEventArgs e)
-        {
-            if (_updater != null && _updater.IsUpdateAvailable)
-            {
-                UpdateAvailableMenuItem.Visibility = Visibility.Visible;
             }
         }
     }

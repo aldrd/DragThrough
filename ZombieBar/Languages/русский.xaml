@@ -109,6 +109,8 @@
     <s:String x:Key="about_update_prompt">Доступна версия {0}. Установить сейчас?</s:String>
     <s:String x:Key="about_check_failed">Не удалось проверить обновления. Повторите попытку позже.</s:String>
     <s:String x:Key="about_close">Закрыть</s:String>
+    <s:String x:Key="about_update_badge">Доступно обновление</s:String>
+    <s:String x:Key="about_install_update">Установить обновление</s:String>
 
     <!-- Update progress -->
     <s:String x:Key="update_title">Обновление</s:String>

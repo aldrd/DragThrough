@@ -68,6 +68,12 @@ namespace ZombieBar
             ManagedShell.Interop.NativeMethods.SetForegroundWindow(new WindowInteropHelper(this).Handle);
         }
 
+        /// <summary>Shows or hides the "Update available" badge next to the About item.</summary>
+        public void SetUpdateAvailable(bool available)
+        {
+            AboutUpdateBadge.Visibility = available ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         /// <summary>Reflects the current settings in the toggles (also call after an external change).</summary>
         public void SyncFromSettings()
         {
@@ -236,6 +242,7 @@ namespace ZombieBar
             SetBrush("SepBrush",         dark ? "#FF3A3A3D" : "#FFE6E6E6");
             SetBrush("HoverBrush",       dark ? "#1AFFFFFF" : "#14000000");
             SetBrush("AccentBrush",      dark ? "#FF4CC2FF" : "#FF0067C0");
+            SetBrush("AccentFgBrush",    dark ? "#FF101114" : "#FFFFFFFF");
             SetBrush("TrackOffBrush",    dark ? "#FF3A3A3D" : "#FFE9E9EA");
             SetBrush("SwitchBorderBrush",dark ? "#FF9A9A9A" : "#FF8A8A8A");
             SetBrush("ThumbBrush",       dark ? "#FFC8C8C8" : "#FF5B5B5B");

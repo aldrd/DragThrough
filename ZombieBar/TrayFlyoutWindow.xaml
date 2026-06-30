@@ -198,10 +198,25 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x24D8;" />
                     <TextBlock Grid.Column="1" Text="{DynamicResource tray_about}" VerticalAlignment="Center" />
+                    <!-- Shown only when an update is available. -->
+                    <Border Grid.Column="2"
+                            x:Name="AboutUpdateBadge"
+                            Visibility="Collapsed"
+                            Background="{DynamicResource AccentBrush}"
+                            CornerRadius="4"
+                            Padding="6,1"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left">
+                        <TextBlock Text="{DynamicResource about_update_badge}"
+                                   Foreground="{DynamicResource AccentFgBrush}"
+                                   FontSize="10" />
+                    </Border>
                 </Grid>
             </Button>
 

@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
@@ -35,6 +34,12 @@ namespace ZombieBar
             {
                 CheckUpdatesButton.Visibility = Visibility.Collapsed;
             }
+            else if (_updater.IsUpdateAvailable)
+            {
+                // A periodic check already found an update: say so and offer to install it directly.
+                ShowStatus(string.Format(Loc("about_update_available", "Version {0} is available."), _updater.AvailableVersion));
+                CheckUpdatesButton.Content = Loc("about_install_update", "Install update");
+            }
         }
 
         private void Header_MouseDown(object sender, MouseButtonEventArgs e)
@@ -48,12 +53,6 @@ namespace ZombieBar
         private static string Loc(string key, string fallback) =>
             Application.Current?.TryFindResource(key) as string ?? fallback;
 
-        private void Coffee_OnClick(object sender, RoutedEventArgs e)
-        {
-            try { Process.Start(new ProcessStartInfo(AppLinks.BuyMeACoffeeUrl) { UseShellExecute = true }); }
-            catch { /* no browser available */ }
-        }
-
         private async void CheckUpdates_OnClick(object sender, RoutedEventArgs e)
         {
             if (_updater == null)
@@ -62,9 +61,18 @@ namespace ZombieBar
             }
 
             CheckUpdatesButton.IsEnabled = false;
-            ShowStatus(Loc("about_checking", "Checking for updates…"));
 
-            Updater.UpdateCheckResult result = await _updater.CheckForUpdatesNowAsync();
+            // If a periodic check already found an update, skip re-checking and go straight to it.
+            Updater.UpdateCheckResult result;
+            if (_updater.IsUpdateAvailable)
+            {
+                result = Updater.UpdateCheckResult.UpdateAvailable;
+            }
+            else
+            {
+                ShowStatus(Loc("about_checking", "Checking for updates…"));
+                result = await _updater.CheckForUpdatesNowAsync();
+            }
 
             switch (result)
             {
@@ -78,6 +86,7 @@ namespace ZombieBar
 
                 case Updater.UpdateCheckResult.UpdateAvailable:
                     ShowStatus(string.Format(Loc("about_update_available", "Version {0} is available."), _updater.AvailableVersion));
+                    CheckUpdatesButton.Content = Loc("about_install_update", "Install update");
 
                     string prompt = string.Format(Loc("about_update_prompt", "Version {0} is available. Install it now?"), _updater.AvailableVersion);
                     if (MessageBox.Show(this, prompt, Loc("about_title", "About"),

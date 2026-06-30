@@ -22,6 +22,7 @@ namespace ZombieBar.Utilities
         private readonly Action _exit;
 
         private TrayFlyoutWindow? _flyout;
+        private bool _updateAvailable;
 
         // When the icon is clicked while the flyout is open, that same click first deactivates (and
         // hides) the flyout. Within this window we treat the click as "dismiss", not "reopen".
@@ -58,6 +59,13 @@ namespace ZombieBar.Utilities
             }
         }
 
+        /// <summary>Marks that an update is available; the flyout's "About" item then says so.</summary>
+        public void SetUpdateAvailable()
+        {
+            _updateAvailable = true;
+            _flyout?.SetUpdateAvailable(true);
+        }
+
         private void TrayMouseUp(object? sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left && e.Button != MouseButtons.Right)
@@ -86,6 +94,7 @@ namespace ZombieBar.Utilities
                 };
             }
 
+            _flyout.SetUpdateAvailable(_updateAvailable);
             _flyout.ShowAtCursor();
         }
 
