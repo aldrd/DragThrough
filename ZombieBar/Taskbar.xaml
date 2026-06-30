@@ -84,9 +84,14 @@
             <MenuItem Name="RemoveMenuItem" Header="{DynamicResource remove}"
               Click="RemoveMenuItem_OnClick">
                 <MenuItem.Icon>
-                    <Image Width="16"
-                       Height="16"
-                       Source="{StaticResource Exit}" />
+                    <!-- "Hide" (eye with a slash): removing the taskbar only hides this panel,
+                         it does not quit the app (Exit lives in the tray menu). -->
+                    <TextBlock Text="&#xED1A;"
+                               FontFamily="Segoe MDL2 Assets"
+                               FontSize="14"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}" />
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
