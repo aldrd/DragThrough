@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib"
-                    xmlns:u="clr-namespace:ZombieBar.Utilities;assembly=ZombieBar">
+                    xmlns:u="clr-namespace:ZombieBar.Utilities">
 
     <!--
         The default "System" theme: the same flat buttons as the "Watercolor" theme, but the

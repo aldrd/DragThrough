@@ -33,6 +33,25 @@ namespace ZombieBar.Utilities
         private const string THEME_FOLDER = "Themes";
         private const string THEME_EXT = DICT_EXT;
 
+        // Built-in dictionaries are compiled into the exe (no loose files ship next to it). These
+        // lists give their display names (with the original casing the UI and settings expect);
+        // the matching .xaml are loaded via application pack URIs. Users can still add custom
+        // dictionaries as loose .xaml files in a Themes/Languages folder next to the exe.
+        private static readonly string[] BuiltInThemes =
+        {
+            THEME_BASE, "System", "System 2", "Watercolor",
+            "Windows 2000", "Windows 95-98", "Windows Me",
+            "Windows XP Blue", "Windows XP Classic"
+        };
+
+        private static readonly string[] BuiltInLanguages =
+        {
+            LANG_FALLBACK, "español", "français", "português", "русский", "中文(简体)"
+        };
+
+        private static string[] BuiltInNames(string dictFolder) =>
+            dictFolder == THEME_FOLDER ? BuiltInThemes : BuiltInLanguages;
+
         public DictionaryManager()
         {
             Settings.Instance.PropertyChanged += Settings_PropertyChanged;
@@ -102,72 +121,68 @@ namespace ZombieBar.Utilities
 
         private void SetDictionary(string dictionary, string dictFolder, string dictDefault, string dictExtension, int dictType)
         {
-            string dictFilePath;
-
-            if (dictionary == dictDefault)
+            if (dictType == 0 && dictionary == dictDefault)
             {
-                if (dictType == 0)
-                {
-                    ClearPreviousThemes();
-                }
-                dictFilePath = Path.ChangeExtension(Path.Combine(dictFolder, dictDefault), dictExtension);
-            }
-            else
-            {
-                dictFilePath = Path.ChangeExtension(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, dictFolder, dictionary),
-                                                    dictExtension);
-
-                if (!File.Exists(dictFilePath))
-                {
-                    dictFilePath = // Custom dictionary in app directory
-                        Path.ChangeExtension(Path.Combine(Path.GetDirectoryName(ExePath.GetExecutablePath()), dictFolder, dictionary),
-                                             dictExtension);
-
-                    if (!File.Exists(dictFilePath))
-                    {
-                        return;
-                    }
-                }
+                ClearPreviousThemes();
             }
 
-            GetMergedDictionaries().Add(new ResourceDictionary()
+            Uri source = ResolveDictionary(dictionary, dictFolder, dictExtension);
+            if (source == null)
             {
-                Source = new Uri(dictFilePath, UriKind.RelativeOrAbsolute)
-            });
+                return;
+            }
+
+            GetMergedDictionaries().Add(new ResourceDictionary() { Source = source });
+        }
+
+        // Resolves a dictionary to its source URI. A loose .xaml of the same name next to the exe
+        // wins (lets users override a built-in or add a custom one); otherwise a built-in is loaded
+        // from the assembly via an application pack URI. Returns null if neither exists.
+        private static Uri ResolveDictionary(string dictionary, string dictFolder, string dictExtension)
+        {
+            string fileName = dictionary + "." + dictExtension;
+            string exeDir = Path.GetDirectoryName(ExePath.GetExecutablePath()) ?? AppDomain.CurrentDomain.BaseDirectory;
+            string loosePath = Path.Combine(exeDir, dictFolder, fileName);
+
+            if (File.Exists(loosePath))
+            {
+                return new Uri(loosePath, UriKind.Absolute);
+            }
+
+            if (BuiltInNames(dictFolder).Contains(dictionary))
+            {
+                // Application-relative pack URI -> the dictionary compiled into this exe.
+                return new Uri($"{dictFolder}/{fileName}", UriKind.Relative);
+            }
+
+            return null;
         }
 
         public List<string> GetThemes()
         {
             // The hidden base theme is never user-selectable.
-            return GetDictionaries(THEME_DEFAULT, THEME_FOLDER, THEME_EXT)
+            return GetDictionaries(THEME_FOLDER, THEME_EXT)
                 .Where(t => t != THEME_BASE)
                 .ToList();
         }
 
         public List<string> GetLanguages()
         {
+            // "System" follows the OS language; the rest are the built-in (and any custom) dictionaries.
             List<string> languages = new List<string> { LANG_DEFAULT };
-            languages.AddRange(GetDictionaries(LANG_FALLBACK, LANG_FOLDER, LANG_EXT));
+            languages.AddRange(GetDictionaries(LANG_FOLDER, LANG_EXT));
             return languages;
         }
 
-        private List<string> GetDictionaries(string dictDefault, string dictFolder, string dictExtension)
+        // The built-in dictionaries compiled into the exe, plus any custom .xaml the user dropped
+        // in a Themes/Languages folder next to the exe (single-file apps extract to a temp dir, so
+        // we look beside the real executable, not in BaseDirectory).
+        private List<string> GetDictionaries(string dictFolder, string dictExtension)
         {
-            List<string> dictionaries = new List<string> { dictDefault };
+            List<string> dictionaries = new List<string>(BuiltInNames(dictFolder));
 
-            foreach (string subStr in Directory.GetFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, dictFolder))
-                                               .Where(s => Path.GetExtension(s).Contains(dictExtension)))
-            {
-                string name = Path.GetFileNameWithoutExtension(subStr);
-                if (!dictionaries.Contains(name))
-                {
-                    dictionaries.Add(name);
-                }
-            }
-
-            // Because ZombieBar is published as a single-file app, it gets extracted to a temp directory, so custom dictionaries won't be there.
-            // Get the executable path to find the custom dictionaries directory when not a debug build.
-            string customDictDir = Path.Combine(Path.GetDirectoryName(ExePath.GetExecutablePath()), dictFolder);
+            string exeDir = Path.GetDirectoryName(ExePath.GetExecutablePath()) ?? AppDomain.CurrentDomain.BaseDirectory;
+            string customDictDir = Path.Combine(exeDir, dictFolder);
 
             if (Directory.Exists(customDictDir))
             {

@@ -43,11 +43,11 @@ $outputDir  = Join-Path $PSScriptRoot "Output"
 # published exe and the file name in the manifest url.
 $AssetName = "ZombieBar.exe"
 
-# Derive the version from the csproj <FileVersion> when not supplied.
+# Derive the version from the csproj <Version> (the single source of truth) when not supplied.
 if (-not $Version) {
     $csproj  = Get-Content $project -Raw
-    if ($csproj -match '<FileVersion>([^<]+)</FileVersion>') { $Version = $Matches[1] }
-    elseif ($csproj -match '<AssemblyVersion>([^<]+)</AssemblyVersion>') { $Version = $Matches[1] }
+    if ($csproj -match '<Version>([^<]+)</Version>') { $Version = $Matches[1] }
+    elseif ($csproj -match '<FileVersion>([^<]+)</FileVersion>') { $Version = $Matches[1] }
     else { $Version = "1.0.0.0" }
 }
 Write-Host "Building DragThrough $Version ($Configuration / $Runtime)" -ForegroundColor Cyan
