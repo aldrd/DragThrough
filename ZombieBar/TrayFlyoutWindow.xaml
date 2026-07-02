@@ -169,7 +169,15 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x2197;" />
+                    <!-- iOS-style "Share" icon (box with an up arrow), drawn as a vector to match the
+                         design. Sized/left-aligned to line up with the Segoe glyph icons in the other
+                         rows; the arrow's shaft keeps a gap from the box top so they don't merge. -->
+                    <Viewbox Grid.Column="0" Height="14" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <Path Data="M12,3 L12,13 M8.5,6.5 L12,3 L15.5,6.5 M9,10 L7,10 Q5,10 5,12 L5,20 Q5,22 7,22 L17,22 Q19,22 19,20 L19,12 Q19,10 17,10 L15,10"
+                              Stroke="{DynamicResource SubFgBrush}"
+                              StrokeThickness="2"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                    </Viewbox>
                     <TextBlock Grid.Column="1" Text="{DynamicResource share_app}" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="2" Style="{StaticResource RowIcon}" Text="&#x203A;" Margin="6,0,0,0" />
                 </Grid>
