@@ -1,6 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:c="clr-namespace:Ssz.Utils.Wpf.Converters;assembly=Ssz.Utils.Wpf">
+                    xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:c="clr-namespace:Ssz.Utils.Wpf.Converters;assembly=Ssz.Utils.Wpf"
+                    xmlns:conv="clr-namespace:ZombieBar.Converters">
+
+    <!-- Builds the fade opacity mask for a task-button label, but only when the title is truncated. -->
+    <conv:OverflowFadeConverter x:Key="OverflowFadeConverter" />
 
 
     <!--
@@ -631,16 +635,16 @@
                     <!-- The fade mask lives on this Grid, not the inner Canvas: a Grid's bounding box
                          is always the stable visible cell width, so the gradient maps correctly no
                          matter which way the text overflows. (On a Canvas the mask fails to fade when
-                         the child overflows to the right, i.e. for start-trimmed titles.) Inline brush
-                         so it never depends on resource resolution inside the merged theme dictionary;
-                         a title that fits leaves the faded zone empty, so it stays crisp. -->
+                         the child overflows to the right, i.e. for start-trimmed titles.) The mask is
+                         applied only when the text is wider than the cell (OverflowFadeConverter
+                         returns null otherwise), so titles that fit stay fully crisp. "Right" fades
+                         the trailing edge. -->
                     <Grid ClipToBounds="True">
                         <Grid.OpacityMask>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="Black" Offset="0" />
-                                <GradientStop Color="Black" Offset="0.5" />
-                                <GradientStop Color="Transparent" Offset="0.96" />
-                            </LinearGradientBrush>
+                            <MultiBinding Converter="{StaticResource OverflowFadeConverter}" ConverterParameter="Right">
+                                <Binding ElementName="Content" Path="ActualWidth" />
+                                <Binding ElementName="Canvas" Path="ActualWidth" />
+                            </MultiBinding>
                         </Grid.OpacityMask>
                         <Canvas x:Name="Canvas"
                             ClipToBounds="True"
@@ -705,15 +709,15 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Label}">
                     <!-- Fade mask on the Grid (stable cell-width bounding box) rather than the inner
-                         Canvas; see the start-trimmed label above. Fades the truncated leading (left)
-                         edge of an end-trimmed title, e.g. a file path that keeps its deepest folder. -->
+                         Canvas; see the start-trimmed label above. Applied only when truncated. "Left"
+                         fades the leading edge of an end-trimmed title, e.g. a file path that keeps its
+                         deepest folder. -->
                     <Grid ClipToBounds="True">
                         <Grid.OpacityMask>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="Transparent" Offset="0.04" />
-                                <GradientStop Color="Black" Offset="0.5" />
-                                <GradientStop Color="Black" Offset="1" />
-                            </LinearGradientBrush>
+                            <MultiBinding Converter="{StaticResource OverflowFadeConverter}" ConverterParameter="Left">
+                                <Binding ElementName="Content" Path="ActualWidth" />
+                                <Binding ElementName="Canvas" Path="ActualWidth" />
+                            </MultiBinding>
                         </Grid.OpacityMask>
                         <Canvas x:Name="Canvas"
                             ClipToBounds="True"
