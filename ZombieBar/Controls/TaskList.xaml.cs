@@ -19,6 +19,7 @@ namespace ZombieBar.Controls
         private double TaskButtonLeftMargin;
         private double TaskButtonRightMargin;
         private ListCollectionView _windowsView;
+        private TabStripDragHandler _dragHandler;
 
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
@@ -82,8 +83,8 @@ namespace ZombieBar.Controls
                     Tasks.Windows.CollectionChanged += GroupedWindows_CollectionChanged;
 
                     TasksOrderManager orderManager = (Application.Current as App)?.TasksOrderManager;
-                    if (orderManager != null)
-                        GongSolutions.Wpf.DragDrop.DragDrop.SetDropHandler(TasksList, new TaskListDropHandler(orderManager, _windowsView));
+                    if (orderManager != null && _dragHandler == null)
+                        _dragHandler = new TabStripDragHandler(TasksList, _windowsView, orderManager);
                 }
 
                 isLoaded = true;

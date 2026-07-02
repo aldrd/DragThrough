@@ -70,7 +70,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GongSolutions.WPF.DragDrop\GongSolutions.WPF.DragDrop.csproj" />
     <ProjectReference Include="..\ManagedShell\ManagedShell.AppBar\ManagedShell.AppBar.csproj" />
     <ProjectReference Include="..\ManagedShell\ManagedShell.WindowsTasks\ManagedShell.WindowsTasks.csproj" />
     <ProjectReference Include="..\ManagedShell\ManagedShell\ManagedShell.csproj" />

@@ -5,25 +5,10 @@
              xmlns:converters="clr-namespace:ZombieBar.Converters"
              Loaded="TaskList_OnLoaded"
              Unloaded="TaskList_OnUnloaded"
-             xmlns:dd="urn:gong-wpf-dragdrop"
              SizeChanged="TaskList_OnSizeChanged">
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:EdgeOrientationConverter x:Key="orientationConverter" />
-            <DataTemplate x:Key="DragAdorner">
-                <Border Background="Silver"
-                            BorderBrush="Gray"
-                            BorderThickness="1"
-                            CornerRadius="2"
-                            SnapsToDevicePixels="True">
-                    <StackPanel Margin="4" Orientation="Horizontal">
-                        <!--<iconPacks:PackIconMaterial VerticalAlignment="Center" Kind="MoveResizeVariant" />-->
-                        <TextBlock Margin="6 0 0 0"
-                                       VerticalAlignment="Center"
-                                       Text="{Binding}" />
-                    </StackPanel>
-                </Border>
-            </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
     <ScrollViewer Style="{DynamicResource TaskListScrollViewer}"
@@ -32,11 +17,6 @@
         <ItemsControl x:Name="TasksList"
                       Focusable="False"
                       Margin="{DynamicResource TaskListMargin}"
-                      dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}"
-                      dd:DragDrop.DragDropContext="OuterContext"
-                      dd:DragDrop.IsDragSource="True"
-                      dd:DragDrop.IsDropTarget="True"
-                      dd:DragDrop.UseDefaultEffectDataTemplate="True"                      
                       HorizontalAlignment="Stretch">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
