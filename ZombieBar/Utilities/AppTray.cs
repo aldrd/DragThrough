@@ -17,6 +17,8 @@ namespace ZombieBar.Utilities
     {
         private readonly NotifyIcon _tray;
         private readonly Action<bool> _setTaskbarVisible;
+        private readonly Action<bool> _setTaskbarVisibleThisDesktop;
+        private readonly Func<bool> _isTaskbarVisibleThisDesktop;
         private readonly Action _openFeedback;
         private readonly Action _openAbout;
         private readonly Action _exit;
@@ -29,13 +31,18 @@ namespace ZombieBar.Utilities
         private long _flyoutHiddenAt;
         private const long ReopenGuardMs = 250;
 
-        /// <param name="setTaskbarVisible">Shows (true) or hides (false) the additional taskbar.</param>
+        /// <param name="setTaskbarVisible">Shows/hides the additional taskbar on all virtual desktops.</param>
+        /// <param name="setTaskbarVisibleThisDesktop">Shows/hides it only on the current virtual desktop.</param>
+        /// <param name="isTaskbarVisibleThisDesktop">Whether it is currently shown on the current desktop.</param>
         /// <param name="openFeedback">Opens the feedback form ("Report a problem or suggestion").</param>
         /// <param name="openAbout">Opens the "About" window.</param>
         /// <param name="exit">Quits the whole application.</param>
-        public AppTray(Action<bool> setTaskbarVisible, Action openFeedback, Action openAbout, Action exit)
+        public AppTray(Action<bool> setTaskbarVisible, Action<bool> setTaskbarVisibleThisDesktop,
+                       Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback, Action openAbout, Action exit)
         {
             _setTaskbarVisible = setTaskbarVisible;
+            _setTaskbarVisibleThisDesktop = setTaskbarVisibleThisDesktop;
+            _isTaskbarVisibleThisDesktop = isTaskbarVisibleThisDesktop;
             _openFeedback = openFeedback;
             _openAbout = openAbout;
             _exit = exit;
@@ -86,7 +93,8 @@ namespace ZombieBar.Utilities
         {
             if (_flyout == null)
             {
-                _flyout = new TrayFlyoutWindow(_setTaskbarVisible, _openFeedback, _openAbout, _exit, ShowBalloon);
+                _flyout = new TrayFlyoutWindow(_setTaskbarVisible, _setTaskbarVisibleThisDesktop,
+                    _isTaskbarVisibleThisDesktop, _openFeedback, _openAbout, _exit, ShowBalloon);
                 _flyout.Deactivated += (_, _) =>
                 {
                     _flyoutHiddenAt = Environment.TickCount64;

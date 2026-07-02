@@ -64,6 +64,32 @@ namespace ZombieBar
 
             SetBlur(AllowsTransparency);
         }
+
+        /// <summary>
+        /// Shows or hides this taskbar without destroying it, releasing/reserving its app-bar space
+        /// with it. Used to switch per-desktop visibility cheaply on desktop changes (no window
+        /// re-creation, so no leaked windows or app-bar re-registration churn).
+        /// </summary>
+        public void SetShown(bool shown)
+        {
+            if (shown)
+            {
+                if (!IsVisible)
+                {
+                    Show();
+                }
+                RegisterAppBar();
+                SetPosition();
+            }
+            else
+            {
+                UnregisterAppBar();
+                if (IsVisible)
+                {
+                    Hide();
+                }
+            }
+        }
         
         protected override IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
@@ -177,8 +203,9 @@ namespace ZombieBar
 
         private void RemoveMenuItem_OnClick(object sender, RoutedEventArgs e)
         {
-            // "Remove" only hides the additional taskbar; the app keeps running in the tray.
-            ((App)Application.Current).SetAdditionalTaskbarVisible(false);
+            // "Remove" hides the additional taskbar on this virtual desktop only; the app keeps
+            // running in the tray, and other desktops are unaffected.
+            ((App)Application.Current).SetCurrentDesktopTaskbarVisible(false);
         }
 
         protected override void CustomClosing()

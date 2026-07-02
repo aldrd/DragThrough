@@ -51,7 +51,8 @@
     <s:String x:Key="tray_enable_shift">Habilitar el modificador Mayús (puede no funcionar en algunas apps, p. ej. DaVinci Resolve)</s:String>
     <s:String x:Key="tray_minimize_explorer">Minimizar el Explorador tras un arrastre correcto</s:String>
     <s:String x:Key="tray_dismiss_search">Cerrar la Búsqueda de Windows con Escape</s:String>
-    <s:String x:Key="tray_show_taskbar">Mostrar la barra de tareas</s:String>
+    <s:String x:Key="tray_show_taskbar">Mostrar la barra de tareas en todos los escritorios</s:String>
+    <s:String x:Key="tray_show_taskbar_this_desktop">Mostrar la barra de tareas en este escritorio</s:String>
     <s:String x:Key="tray_buy_coffee">Invítame a un café</s:String>
     <s:String x:Key="tray_feedback">Informar de un problema o sugerencia...</s:String>
     <s:String x:Key="tray_exit">Salir</s:String>

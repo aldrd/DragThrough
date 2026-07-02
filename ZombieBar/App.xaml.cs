@@ -2,6 +2,7 @@
 using ManagedShell;
 using ZombieBar.Utilities;
 using System.Windows;
+using System.Windows.Threading;
 using ManagedShell.AppBar;
 using ManagedShell.Common.Helpers;
 using ManagedShell.Interop;
@@ -17,6 +18,12 @@ namespace ZombieBar
         public DictionaryManager DictionaryManager { get; }
 
         public TasksOrderManager TasksOrderManager { get; }
+
+        // Virtual-desktop awareness: the TaskList reads this to filter windows to the current desktop.
+        public VirtualDesktopService VirtualDesktopService { get; private set; }
+
+        // Per-desktop show/hide state for the additional taskbar (persisted, keyed by desktop GUID).
+        private DesktopTaskbarVisibility _desktopVisibility;
 
         private ManagedShellLogger _logger;
         private Taskbar _taskbar;
@@ -46,6 +53,10 @@ namespace ZombieBar
             _startMenuMonitor = new StartMenuMonitor(new AppVisibilityHelper(false));
             DictionaryManager = new DictionaryManager();
             TasksOrderManager = new TasksOrderManager(_shellManager.Tasks.Windows);
+
+            _desktopVisibility = new DesktopTaskbarVisibility();
+            VirtualDesktopService = new VirtualDesktopService();
+            VirtualDesktopService.DesktopChanged += VirtualDesktopService_DesktopChanged;
 #if AUTOUPDATE
             _updater = new Updater();
 #endif
@@ -95,17 +106,39 @@ namespace ZombieBar
         public void ReopenTaskbar()
         {
             closeTaskbar();
-            openTaskbar();
+            // Recreate only if the current desktop should show it.
+            ApplyCurrentDesktopVisibility();
         }
 
         /// <summary>
-        /// Shows or hides the additional taskbar and persists the choice. Hiding it (the taskbar's
-        /// "Remove" item or the tray's "Show taskbar" toggle) leaves the app running in the tray;
-        /// only the tray's Exit quits the whole application.
+        /// Shows or hides the additional taskbar on ALL virtual desktops (the tray's "Show taskbar"
+        /// toggle): sets the global default and clears any per-desktop overrides. Hiding it leaves the
+        /// app running in the tray; only the tray's Exit quits the whole application.
         /// </summary>
         public void SetAdditionalTaskbarVisible(bool visible)
         {
-            Settings.Instance.ShowAdditionalTaskbar = visible;
+            _desktopVisibility.SetAll(visible);
+            ApplyCurrentDesktopVisibility();
+        }
+
+        /// <summary>Shows or hides the additional taskbar only on the current virtual desktop.</summary>
+        public void SetCurrentDesktopTaskbarVisible(bool visible)
+        {
+            _desktopVisibility.SetCurrent(VirtualDesktopService.CurrentDesktop, visible);
+            ApplyCurrentDesktopVisibility();
+        }
+
+        /// <summary>Whether the additional taskbar is shown on the current virtual desktop.</summary>
+        public bool IsTaskbarVisibleOnCurrentDesktop =>
+            _desktopVisibility.IsVisibleOn(VirtualDesktopService.CurrentDesktop);
+
+        // Brings the taskbar window's presence in line with the current desktop's stored state. Called
+        // on startup, on desktop switches, and whenever a visibility toggle changes. The window is
+        // created once and then shown/hidden in place (not destroyed) so switching desktops doesn't
+        // churn the app-bar registration.
+        private void ApplyCurrentDesktopVisibility()
+        {
+            bool visible = _desktopVisibility.IsVisibleOn(VirtualDesktopService.CurrentDesktop);
 
             if (visible)
             {
@@ -113,13 +146,24 @@ namespace ZombieBar
                 {
                     openTaskbar();
                 }
+                else
+                {
+                    _taskbar.SetShown(true);
+                }
             }
             else
             {
-                closeTaskbar();
+                _taskbar?.SetShown(false);
             }
 
             _appTray?.UpdateShowTaskbarCheck();
+        }
+
+        private void VirtualDesktopService_DesktopChanged(object sender, EventArgs e)
+        {
+            // The TaskList re-filters itself (it also listens for DesktopChanged); here we just apply
+            // this desktop's show/hide state to the taskbar window.
+            ApplyCurrentDesktopVisibility();
         }
 
         private void openTaskbar()
@@ -150,7 +194,8 @@ namespace ZombieBar
 
             // Tray icon and the "drag through" monitor run for the whole app lifetime.
             _dragMonitor.Start();
-            _appTray = new AppTray(SetAdditionalTaskbarVisible, OpenFeedbackWindow, OpenAboutWindow, ExitGracefully);
+            _appTray = new AppTray(SetAdditionalTaskbarVisible, SetCurrentDesktopTaskbarVisible,
+                () => IsTaskbarVisibleOnCurrentDesktop, OpenFeedbackWindow, OpenAboutWindow, ExitGracefully);
 
             // The auto-updater runs for the whole app lifetime (not tied to the taskbar, which can
             // be hidden). When an update is found, mark it on the tray's "About" item; the user
@@ -164,12 +209,13 @@ namespace ZombieBar
                 }
             }
 
-            // The additional taskbar is shown on first run (default) and whenever it was left
-            // visible; "Remove" / the tray toggle persist the hidden state.
-            if (Settings.Instance.ShowAdditionalTaskbar)
-            {
-                openTaskbar();
-            }
+            // Create the taskbar window once up front, then show/hide it for the current desktop.
+            // Keeping a single window alive (rather than creating it on a later desktop switch) avoids
+            // fragile app-bar re-registration mid-switch, and Show/Hide is far cheaper than re-creating.
+            openTaskbar();
+            // Apply the initial per-desktop visibility once the app-bar has finished registering, so
+            // hiding it on a hidden-by-default desktop isn't undone by a late app-bar arrange message.
+            Dispatcher.BeginInvoke(new Action(ApplyCurrentDesktopVisibility), DispatcherPriority.ApplicationIdle);
         }
 
         private void App_OnExit(object sender, ExitEventArgs e)
@@ -214,6 +260,12 @@ namespace ZombieBar
             // Compact all order identifiers and persist them before tearing down.
             TasksOrderManager?.SaveCompacted();
             TasksOrderManager?.Dispose();
+
+            if (VirtualDesktopService != null)
+            {
+                VirtualDesktopService.DesktopChanged -= VirtualDesktopService_DesktopChanged;
+                VirtualDesktopService.Dispose();
+            }
 
             _appTray?.Dispose();
             _dragMonitor?.Dispose();

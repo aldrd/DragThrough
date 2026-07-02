@@ -2,9 +2,13 @@
 using ManagedShell.WindowsTasks;
 using ZombieBar.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace ZombieBar.Controls
 {
@@ -20,6 +24,14 @@ namespace ZombieBar.Controls
         private double TaskButtonRightMargin;
         private ListCollectionView _windowsView;
         private TabStripDragHandler _dragHandler;
+        private VirtualDesktopService _virtualDesktopService;
+
+        // Handles of windows on the current virtual desktop. The filter only does a set lookup here;
+        // the actual (COM) desktop query is done off the hot path in RecomputeDesktopMembership,
+        // because COM STA calls pump messages and would re-enter ListCollectionView's live shaping.
+        // Null = not yet computed / no desktop info -> show everything (fail open).
+        private HashSet<IntPtr> _currentDesktopWindows;
+        private bool _desktopRefreshScheduled;
 
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
@@ -67,11 +79,18 @@ namespace ZombieBar.Controls
             {
                 if (Tasks.Windows != null)
                 {
-                    // Independent view (not the shared default view): show only taskbar windows,
-                    // ordered by their order identifier, with live re-sort/re-filter on changes.
+                    App app = Application.Current as App;
+                    _virtualDesktopService = app?.VirtualDesktopService;
+
+                    // Independent view (not the shared default view): show only taskbar windows that
+                    // belong to the current virtual desktop, ordered by their order identifier, with
+                    // live re-sort/re-filter on changes.
                     _windowsView = new ListCollectionView(Tasks.Windows)
                     {
-                        Filter = w => w is ApplicationWindow window && window.ShowInTaskbar,
+                        Filter = w => w is ApplicationWindow window
+                                      && window.ShowInTaskbar
+                                      && (_currentDesktopWindows == null
+                                          || _currentDesktopWindows.Contains(window.Handle)),
                         CustomSort = TasksOrderManager.Comparer,
                         IsLiveFiltering = true,
                         IsLiveSorting = true
@@ -82,9 +101,16 @@ namespace ZombieBar.Controls
                     TasksList.ItemsSource = _windowsView;
                     Tasks.Windows.CollectionChanged += GroupedWindows_CollectionChanged;
 
-                    TasksOrderManager orderManager = (Application.Current as App)?.TasksOrderManager;
+                    // Re-filter when the user switches virtual desktops.
+                    if (_virtualDesktopService != null)
+                        _virtualDesktopService.DesktopChanged += VirtualDesktopService_DesktopChanged;
+
+                    TasksOrderManager orderManager = app?.TasksOrderManager;
                     if (orderManager != null && _dragHandler == null)
                         _dragHandler = new TabStripDragHandler(TasksList, _windowsView, orderManager);
+
+                    // Compute the initial current-desktop set.
+                    ScheduleDesktopRefresh();
                 }
 
                 isLoaded = true;
@@ -100,14 +126,63 @@ namespace ZombieBar.Controls
                 Tasks.Windows.CollectionChanged -= GroupedWindows_CollectionChanged;
             }
 
+            if (_virtualDesktopService != null)
+            {
+                _virtualDesktopService.DesktopChanged -= VirtualDesktopService_DesktopChanged;
+                _virtualDesktopService = null;
+            }
+
             TasksList.ItemsSource = null;
             _windowsView = null;
             isLoaded = false;
         }
 
+        // Current virtual desktop changed: recompute which windows belong to it and re-filter.
+        private void VirtualDesktopService_DesktopChanged(object sender, EventArgs e)
+        {
+            ScheduleDesktopRefresh();
+        }
+
+        // Determining desktop membership calls into COM, which pumps the message loop; doing that on
+        // the UI thread mid-refresh re-enters ListCollectionView live shaping and crashes. So snapshot
+        // the handles on the UI thread, query on a background thread, then apply the result and refresh
+        // (coalesced, so an uncloak storm collapses to one pass). The filter only reads the resulting
+        // set, so Refresh() itself never pumps.
+        private void ScheduleDesktopRefresh()
+        {
+            if (_desktopRefreshScheduled || _virtualDesktopService == null)
+                return;
+
+            _desktopRefreshScheduled = true;
+
+            VirtualDesktopService service = _virtualDesktopService;
+            List<IntPtr> handles = Tasks?.Windows?.OfType<ApplicationWindow>()
+                                        .Select(w => w.Handle).ToList() ?? new List<IntPtr>();
+
+            Task.Run(() =>
+            {
+                HashSet<IntPtr> onCurrent = service.GetWindowsOnCurrentDesktop(handles);
+
+                Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                {
+                    _desktopRefreshScheduled = false;
+                    if (!isLoaded)
+                        return;
+
+                    _currentDesktopWindows = onCurrent; // null => show all (fail open)
+                    _windowsView?.Refresh();
+                }));
+            });
+        }
+
         private void GroupedWindows_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             SetTaskButtonWidth();
+
+            // A window opened/closed: refresh which of them are on the current desktop so a newly
+            // opened window on this desktop shows up (scheduled off this handler to stay off the
+            // ListCollectionView/COM re-entrancy path).
+            ScheduleDesktopRefresh();
         }
 
         private void TaskList_OnSizeChanged(object sender, SizeChangedEventArgs e)

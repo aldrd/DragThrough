@@ -155,6 +155,9 @@
             <ToggleButton x:Name="ShowTaskbarToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarToggle_Click">
                 <TextBlock Text="{DynamicResource tray_show_taskbar}" TextWrapping="Wrap" />
             </ToggleButton>
+            <ToggleButton x:Name="ShowTaskbarThisDesktopToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarThisDesktopToggle_Click">
+                <TextBlock Text="{DynamicResource tray_show_taskbar_this_desktop}" TextWrapping="Wrap" />
+            </ToggleButton>
 
             <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
 

@@ -20,6 +20,8 @@ namespace ZombieBar
     public partial class TrayFlyoutWindow : Window
     {
         private readonly Action<bool> _setTaskbarVisible;
+        private readonly Action<bool> _setTaskbarVisibleThisDesktop;
+        private readonly Func<bool> _isTaskbarVisibleThisDesktop;
         private readonly Action _openFeedback;
         private readonly Action _openAbout;
         private readonly Action _exit;
@@ -27,10 +29,13 @@ namespace ZombieBar
 
         private bool _syncing;
 
-        public TrayFlyoutWindow(Action<bool> setTaskbarVisible, Action openFeedback, Action openAbout,
+        public TrayFlyoutWindow(Action<bool> setTaskbarVisible, Action<bool> setTaskbarVisibleThisDesktop,
+                                Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback, Action openAbout,
                                 Action exit, Action<string, string> showBalloon)
         {
             _setTaskbarVisible = setTaskbarVisible;
+            _setTaskbarVisibleThisDesktop = setTaskbarVisibleThisDesktop;
+            _isTaskbarVisibleThisDesktop = isTaskbarVisibleThisDesktop;
             _openFeedback = openFeedback;
             _openAbout = openAbout;
             _exit = exit;
@@ -83,6 +88,7 @@ namespace ZombieBar
             MinimizeToggle.IsChecked = Settings.Instance.MinimizeExplorerAfterSuccessfulDrag;
             DismissSearchToggle.IsChecked = Settings.Instance.DismissWindowsSearchWithEscape;
             ShowTaskbarToggle.IsChecked = Settings.Instance.ShowAdditionalTaskbar;
+            ShowTaskbarThisDesktopToggle.IsChecked = _isTaskbarVisibleThisDesktop();
             _syncing = false;
         }
 
@@ -134,6 +140,12 @@ namespace ZombieBar
         {
             if (_syncing) return;
             _setTaskbarVisible(ShowTaskbarToggle.IsChecked == true);
+        }
+
+        private void ShowTaskbarThisDesktopToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (_syncing) return;
+            _setTaskbarVisibleThisDesktop(ShowTaskbarThisDesktopToggle.IsChecked == true);
         }
 
         // === Actions ======================================================================
