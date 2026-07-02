@@ -83,11 +83,9 @@ namespace ZombieBar
         public void SyncFromSettings()
         {
             _syncing = true;
-            WinKeyToggle.IsChecked = Settings.Instance.EnableWindowsKeyModifier;
             ShiftToggle.IsChecked = Settings.Instance.EnableShiftModifier;
+            WinKeyToggle.IsChecked = Settings.Instance.EnableWindowsKeyModifier;
             MinimizeToggle.IsChecked = Settings.Instance.MinimizeExplorerAfterSuccessfulDrag;
-            DismissSearchToggle.IsChecked = Settings.Instance.DismissWindowsSearchWithEscape;
-            ShowTaskbarToggle.IsChecked = Settings.Instance.ShowAdditionalTaskbar;
             ShowTaskbarThisDesktopToggle.IsChecked = _isTaskbarVisibleThisDesktop();
             _syncing = false;
         }
@@ -130,17 +128,6 @@ namespace ZombieBar
             Settings.Instance.MinimizeExplorerAfterSuccessfulDrag = MinimizeToggle.IsChecked == true;
         }
 
-        private void DismissSearchToggle_Click(object sender, RoutedEventArgs e)
-        {
-            if (_syncing) return;
-            Settings.Instance.DismissWindowsSearchWithEscape = DismissSearchToggle.IsChecked == true;
-        }
-
-        private void ShowTaskbarToggle_Click(object sender, RoutedEventArgs e)
-        {
-            if (_syncing) return;
-            _setTaskbarVisible(ShowTaskbarToggle.IsChecked == true);
-        }
 
         private void ShowTaskbarThisDesktopToggle_Click(object sender, RoutedEventArgs e)
         {

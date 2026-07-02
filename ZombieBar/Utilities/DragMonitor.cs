@@ -75,7 +75,8 @@ namespace ZombieBar.Utilities
         private static bool CfgWindowsKey => Settings.Instance.EnableWindowsKeyModifier;
         private static bool CfgShift => Settings.Instance.EnableShiftModifier;
         private static bool CfgMinimize => Settings.Instance.MinimizeExplorerAfterSuccessfulDrag;
-        private static bool CfgDismissSearch => Settings.Instance.DismissWindowsSearchWithEscape;
+        // Always on: the tray toggle for this was removed; Escape always dismisses Windows Search.
+        private static bool CfgDismissSearch => true;
 
         public void Start()
         {

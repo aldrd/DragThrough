@@ -47,12 +47,12 @@
 
     <!-- Tray menu (DragThrough) -->
     <s:String x:Key="tray_drag_title">Ocultar temporariamente o Explorador ao arrastar ficheiros</s:String>
-    <s:String x:Key="tray_use_windows_key">Usar a tecla Windows como modificador de arrasto</s:String>
-    <s:String x:Key="tray_enable_shift">Ativar o modificador Shift (pode não funcionar em algumas apps, por ex. DaVinci Resolve)</s:String>
-    <s:String x:Key="tray_minimize_explorer">Minimizar o Explorador após um arrasto bem-sucedido</s:String>
+    <s:String x:Key="tray_use_windows_key">Com a tecla Windows</s:String>
+    <s:String x:Key="tray_enable_shift">Ocultar temporariamente o Explorador ao arrastar arquivos com a tecla Shift</s:String>
+    <s:String x:Key="tray_minimize_explorer">Minimizar o Explorador após arrastar</s:String>
     <s:String x:Key="tray_dismiss_search">Fechar a Pesquisa do Windows com Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Mostrar a barra de tarefas em todas as áreas de trabalho</s:String>
-    <s:String x:Key="tray_show_taskbar_this_desktop">Mostrar a barra de tarefas nesta área de trabalho</s:String>
+    <s:String x:Key="tray_show_taskbar_this_desktop">Mostrar a barra de tarefas adicional com tarefas arrastáveis</s:String>
     <s:String x:Key="tray_buy_coffee">Pague-me um café</s:String>
     <s:String x:Key="tray_feedback">Relatar um problema ou sugestão...</s:String>
     <s:String x:Key="tray_exit">Sair</s:String>

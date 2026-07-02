@@ -133,28 +133,23 @@
                            Foreground="{DynamicResource SubFgBrush}" />
             </Grid>
 
-            <TextBlock Text="{DynamicResource tray_drag_title}"
-                       Margin="10,0,10,6"
-                       TextWrapping="Wrap"
-                       FontSize="11"
-                       Foreground="{DynamicResource SubFgBrush}" />
-
-            <!-- Toggles -->
-            <ToggleButton x:Name="WinKeyToggle" Style="{StaticResource SwitchRow}" Click="WinKeyToggle_Click">
-                <TextBlock Text="{DynamicResource tray_use_windows_key}" TextWrapping="Wrap" />
-            </ToggleButton>
+            <!-- Drag modifiers: hide Explorer while dragging files with Shift / with Windows. -->
             <ToggleButton x:Name="ShiftToggle" Style="{StaticResource SwitchRow}" Click="ShiftToggle_Click">
                 <TextBlock Text="{DynamicResource tray_enable_shift}" TextWrapping="Wrap" />
             </ToggleButton>
+            <ToggleButton x:Name="WinKeyToggle" Style="{StaticResource SwitchRow}" Click="WinKeyToggle_Click">
+                <TextBlock Text="{DynamicResource tray_use_windows_key}" TextWrapping="Wrap" />
+            </ToggleButton>
+
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
             <ToggleButton x:Name="MinimizeToggle" Style="{StaticResource SwitchRow}" Click="MinimizeToggle_Click">
                 <TextBlock Text="{DynamicResource tray_minimize_explorer}" TextWrapping="Wrap" />
             </ToggleButton>
-            <ToggleButton x:Name="DismissSearchToggle" Style="{StaticResource SwitchRow}" Click="DismissSearchToggle_Click">
-                <TextBlock Text="{DynamicResource tray_dismiss_search}" TextWrapping="Wrap" />
-            </ToggleButton>
-            <ToggleButton x:Name="ShowTaskbarToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarToggle_Click">
-                <TextBlock Text="{DynamicResource tray_show_taskbar}" TextWrapping="Wrap" />
-            </ToggleButton>
+
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
+            <!-- Additional taskbar: shows/hides it on the current virtual desktop only. -->
             <ToggleButton x:Name="ShowTaskbarThisDesktopToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarThisDesktopToggle_Click">
                 <TextBlock Text="{DynamicResource tray_show_taskbar_this_desktop}" TextWrapping="Wrap" />
             </ToggleButton>

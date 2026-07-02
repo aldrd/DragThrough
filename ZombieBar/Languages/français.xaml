@@ -47,12 +47,12 @@
 
     <!-- Tray menu (DragThrough) -->
     <s:String x:Key="tray_drag_title">Masquer temporairement l'Explorateur pendant le glissement de fichiers</s:String>
-    <s:String x:Key="tray_use_windows_key">Utiliser la touche Windows comme modificateur de glissement</s:String>
-    <s:String x:Key="tray_enable_shift">Activer le modificateur Maj (peut ne pas fonctionner dans certaines applis, par ex. DaVinci Resolve)</s:String>
-    <s:String x:Key="tray_minimize_explorer">Réduire l'Explorateur après un glissement réussi</s:String>
+    <s:String x:Key="tray_use_windows_key">Avec la touche Windows</s:String>
+    <s:String x:Key="tray_enable_shift">Masquer temporairement l'Explorateur lors du glisser de fichiers avec la touche Maj</s:String>
+    <s:String x:Key="tray_minimize_explorer">Réduire l'Explorateur après le glisser</s:String>
     <s:String x:Key="tray_dismiss_search">Fermer la Recherche Windows avec Échap</s:String>
     <s:String x:Key="tray_show_taskbar">Afficher la barre des tâches sur tous les bureaux</s:String>
-    <s:String x:Key="tray_show_taskbar_this_desktop">Afficher la barre des tâches sur ce bureau</s:String>
+    <s:String x:Key="tray_show_taskbar_this_desktop">Afficher la barre des tâches supplémentaire avec des tâches déplaçables</s:String>
     <s:String x:Key="tray_buy_coffee">Offrez-moi un café</s:String>
     <s:String x:Key="tray_feedback">Signaler un problème ou une suggestion...</s:String>
     <s:String x:Key="tray_exit">Quitter</s:String>

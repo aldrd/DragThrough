@@ -47,12 +47,12 @@
 
     <!-- Tray menu (DragThrough) -->
     <s:String x:Key="tray_drag_title">Temporarily hide Explorer while dragging files</s:String>
-    <s:String x:Key="tray_use_windows_key">Use Windows key as drag modifier</s:String>
-    <s:String x:Key="tray_enable_shift">Enable Shift modifier (may not work in some apps, e.g. DaVinci Resolve)</s:String>
-    <s:String x:Key="tray_minimize_explorer">Minimize Explorer after successful drag</s:String>
+    <s:String x:Key="tray_use_windows_key">With the Windows key</s:String>
+    <s:String x:Key="tray_enable_shift">Temporarily hide Explorer when dragging files with the Shift key</s:String>
+    <s:String x:Key="tray_minimize_explorer">Minimize Explorer after dragging</s:String>
     <s:String x:Key="tray_dismiss_search">Dismiss Windows Search with Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Show taskbar on all desktops</s:String>
-    <s:String x:Key="tray_show_taskbar_this_desktop">Show taskbar on this desktop</s:String>
+    <s:String x:Key="tray_show_taskbar_this_desktop">Show the additional taskbar with draggable tasks</s:String>
     <s:String x:Key="tray_buy_coffee">Buy coffee for the author</s:String>
     <s:String x:Key="tray_feedback">Report a problem or suggestion...</s:String>
     <s:String x:Key="tray_exit">Exit</s:String>
