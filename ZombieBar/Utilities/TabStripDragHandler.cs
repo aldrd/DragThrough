@@ -87,6 +87,11 @@ namespace ZombieBar.Utilities
             if (container.DataContext is not ApplicationWindow data)
                 return;
 
+            // Pressing the task button's close (X) button must not start a drag; let the button
+            // handle its own click.
+            if (IsOnCloseButton(e.OriginalSource))
+                return;
+
             _horizontal = Settings.Instance.Edge != (int)AppBarEdge.Left &&
                           Settings.Instance.Edge != (int)AppBarEdge.Right;
             _dragData = data;
@@ -99,6 +104,19 @@ namespace ZombieBar.Utilities
             // ItemsControl, so the drag is driven from here while the Button keeps capture -- which
             // means the pressed background is shown for free during the whole drag, and an ordinary
             // click that never crosses the threshold still activates/minimises the window as before.
+        }
+
+        // Walks up the visual tree from the pressed element looking for the task button's close button.
+        private static bool IsOnCloseButton(object originalSource)
+        {
+            DependencyObject node = originalSource as DependencyObject;
+            while (node != null)
+            {
+                if (node is FrameworkElement fe && fe.Name == "CloseButton")
+                    return true;
+                node = VisualTreeHelper.GetParent(node);
+            }
+            return false;
         }
 
         private void OnPreviewMouseMove(object sender, MouseEventArgs e)

@@ -1,4 +1,4 @@
-; Inno Setup script for DragThrough.
+﻿; Inno Setup script for DragThrough.
 ;
 ; Per-user install (no admin rights needed) into %LocalAppData%\Programs\DragThrough.
 ; This matches the app: it runs as the signed-in user (asInvoker) and its built-in

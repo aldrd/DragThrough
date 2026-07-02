@@ -177,6 +177,13 @@ namespace ZombieBar.Controls
             Window?.Close();
         }
 
+        private void CloseButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            // Don't let the click bubble to the task button (which would activate/minimize the window).
+            e.Handled = true;
+            Window?.Close();
+        }
+
         private void RestoreMenuItem_OnClick(object sender, RoutedEventArgs e)
         {
             Window?.Restore();

@@ -2,11 +2,13 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:ZombieBar.Converters"
+             xmlns:local="clr-namespace:ZombieBar.Controls"
              Loaded="TaskButton_OnLoaded"
              Unloaded="TaskButton_OnUnloaded">
     <UserControl.Resources>
         <converters:TaskButtonTextConverter x:Key="TaskButtonTextConverter"/>
         <converters:TaskButtonTrimVisibilityConverter x:Key="TaskButtonTrimVisibilityConverter"/>
+        <converters:MinWidthVisibilityConverter x:Key="MinWidthVisibilityConverter"/>
     </UserControl.Resources>
     <Button Name="AppButton"
             ToolTip="{Binding Path=Title}"
@@ -20,6 +22,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Image Source="{Binding Path=Icon, Mode=OneWay}"
                    Grid.Column="0"
@@ -58,6 +61,13 @@
                     </MultiBinding>
                 </Label.Content>
             </Label>
+            <!-- Close (X) button, shown only when the task button is wide enough to fit it. Styled
+                 like the main taskbar's window-close button (red on hover). -->
+            <Button x:Name="CloseButton"
+                    Grid.Column="2"
+                    Style="{DynamicResource TaskButtonCloseButton}"
+                    Click="CloseButton_OnClick"
+                    Visibility="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type local:TaskButton}}, Converter={StaticResource MinWidthVisibilityConverter}, ConverterParameter=90}" />
         </Grid>
         <Button.ContextMenu>
             <ContextMenu>
