@@ -133,19 +133,19 @@
                            Foreground="{DynamicResource SubFgBrush}" />
             </Grid>
 
-            <!-- Drag modifiers: hide Explorer while dragging files with Shift / with Windows. -->
-            <ToggleButton x:Name="ShiftToggle" Style="{StaticResource SwitchRow}" Click="ShiftToggle_Click">
-                <TextBlock Text="{DynamicResource tray_enable_shift}" TextWrapping="Wrap" />
-            </ToggleButton>
-            <ToggleButton x:Name="WinKeyToggle" Style="{StaticResource SwitchRow}" Click="WinKeyToggle_Click">
-                <TextBlock Text="{DynamicResource tray_use_windows_key}" TextWrapping="Wrap" />
-            </ToggleButton>
-
-            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
-
-            <ToggleButton x:Name="MinimizeToggle" Style="{StaticResource SwitchRow}" Click="MinimizeToggle_Click">
-                <TextBlock Text="{DynamicResource tray_minimize_explorer}" TextWrapping="Wrap" />
-            </ToggleButton>
+            <!-- Drag modifiers + minimize. Equal-height rows (UniformGrid) so the switches are spaced
+                 evenly regardless of how many lines each label wraps to. -->
+            <UniformGrid Columns="1">
+                <ToggleButton x:Name="ShiftToggle" Style="{StaticResource SwitchRow}" Click="ShiftToggle_Click">
+                    <TextBlock Text="{DynamicResource tray_enable_shift}" TextWrapping="Wrap" />
+                </ToggleButton>
+                <ToggleButton x:Name="WinKeyToggle" Style="{StaticResource SwitchRow}" Click="WinKeyToggle_Click">
+                    <TextBlock Text="{DynamicResource tray_use_windows_key}" TextWrapping="Wrap" />
+                </ToggleButton>
+                <ToggleButton x:Name="MinimizeToggle" Style="{StaticResource SwitchRow}" Click="MinimizeToggle_Click">
+                    <TextBlock Text="{DynamicResource tray_minimize_explorer}" TextWrapping="Wrap" />
+                </ToggleButton>
+            </UniformGrid>
 
             <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
 

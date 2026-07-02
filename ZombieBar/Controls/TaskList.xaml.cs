@@ -1,10 +1,8 @@
 ﻿using ManagedShell.AppBar;
+using ManagedShell.Interop;
 using ManagedShell.WindowsTasks;
 using ZombieBar.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -26,13 +24,9 @@ namespace ZombieBar.Controls
         private TabStripDragHandler _dragHandler;
         private VirtualDesktopService _virtualDesktopService;
 
-        // Handles of windows on the current virtual desktop. The filter only does a set lookup here;
-        // the actual (COM) desktop query is done off the hot path in RecomputeDesktopMembership,
-        // because COM STA calls pump messages and would re-enter ListCollectionView's live shaping.
-        // Null = not yet computed / no desktop info -> show everything (fail open).
-        private HashSet<IntPtr> _currentDesktopWindows;
-        private bool _desktopRefreshScheduled;
-        private bool _desktopRefreshDirty;
+        // After a desktop switch the DWM cloak/uncloak of each window can lag the registry flag we
+        // poll, so we re-run the filter once more a moment later to catch late-settling windows.
+        private DispatcherTimer _desktopSettleTimer;
 
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
@@ -90,8 +84,7 @@ namespace ZombieBar.Controls
                     {
                         Filter = w => w is ApplicationWindow window
                                       && window.ShowInTaskbar
-                                      && (_currentDesktopWindows == null
-                                          || _currentDesktopWindows.Contains(window.Handle)),
+                                      && IsOnCurrentDesktop(window.Handle),
                         CustomSort = TasksOrderManager.Comparer,
                         IsLiveFiltering = true,
                         IsLiveSorting = true
@@ -106,12 +99,15 @@ namespace ZombieBar.Controls
                     if (_virtualDesktopService != null)
                         _virtualDesktopService.DesktopChanged += VirtualDesktopService_DesktopChanged;
 
+                    _desktopSettleTimer = new DispatcherTimer(DispatcherPriority.Background)
+                    {
+                        Interval = TimeSpan.FromMilliseconds(400)
+                    };
+                    _desktopSettleTimer.Tick += DesktopSettleTimer_Tick;
+
                     TasksOrderManager orderManager = app?.TasksOrderManager;
                     if (orderManager != null && _dragHandler == null)
                         _dragHandler = new TabStripDragHandler(TasksList, _windowsView, orderManager);
-
-                    // Compute the initial current-desktop set.
-                    ScheduleDesktopRefresh();
                 }
 
                 isLoaded = true;
@@ -127,6 +123,13 @@ namespace ZombieBar.Controls
                 Tasks.Windows.CollectionChanged -= GroupedWindows_CollectionChanged;
             }
 
+            if (_desktopSettleTimer != null)
+            {
+                _desktopSettleTimer.Stop();
+                _desktopSettleTimer.Tick -= DesktopSettleTimer_Tick;
+                _desktopSettleTimer = null;
+            }
+
             if (_virtualDesktopService != null)
             {
                 _virtualDesktopService.DesktopChanged -= VirtualDesktopService_DesktopChanged;
@@ -138,66 +141,54 @@ namespace ZombieBar.Controls
             isLoaded = false;
         }
 
-        // Current virtual desktop changed: recompute which windows belong to it and re-filter.
-        private void VirtualDesktopService_DesktopChanged(object sender, EventArgs e)
+        // A window on another virtual desktop is DWM-cloaked (DWMWA_CLOAKED != 0); one on the current
+        // desktop is not — including minimized windows. This is the same signal ManagedShell uses for
+        // ShowInTaskbar, but read live here: a window that uncloaks/settles after a desktop switch is
+        // then re-evaluated immediately. (ManagedShell only re-checks on uncloak, and the previous
+        // COM-based approach cached a stale membership set that missed such windows — the cause of
+        // "sometimes not all windows show; restoring one makes it appear".) DwmGetWindowAttribute is a
+        // plain P/Invoke with no message pump, so unlike the COM API it is safe to call from the filter.
+        private static bool IsOnCurrentDesktop(IntPtr hwnd)
         {
-            ScheduleDesktopRefresh();
+            if (hwnd == IntPtr.Zero)
+                return true;
+
+            try
+            {
+                int hr = NativeMethods.DwmGetWindowAttribute(
+                    hwnd, NativeMethods.DWMWINDOWATTRIBUTE.DWMWA_CLOAKED, out uint cloaked, sizeof(uint));
+                if (hr != 0)
+                    return true; // couldn't determine -> don't hide it (fail open)
+                return cloaked == 0;
+            }
+            catch
+            {
+                return true;
+            }
         }
 
-        // Determining desktop membership calls into COM, which pumps the message loop; doing that on
-        // the UI thread mid-refresh re-enters ListCollectionView live shaping and crashes. So snapshot
-        // the handles on the UI thread, query on a background thread, then apply the result and refresh
-        // (coalesced, so an uncloak storm collapses to one pass). The filter only reads the resulting
-        // set, so Refresh() itself never pumps.
-        private void ScheduleDesktopRefresh()
+        // Current virtual desktop changed: re-run the filter so windows that were cloaked/uncloaked by
+        // the switch are re-evaluated.
+        private void VirtualDesktopService_DesktopChanged(object sender, EventArgs e)
         {
-            if (_virtualDesktopService == null)
-                return;
+            _windowsView?.Refresh();
 
-            // A query is already in flight: remember that state changed so we re-run once it finishes.
-            // Without this, a burst of window opens/closes during the query would be dropped and those
-            // windows would stay wrongly filtered out.
-            if (_desktopRefreshScheduled)
-            {
-                _desktopRefreshDirty = true;
-                return;
-            }
+            // The cloak/uncloak that accompanies the switch can lag the registry flag we poll, so
+            // re-run once more shortly after to catch windows whose cloak state settled late.
+            _desktopSettleTimer?.Stop();
+            _desktopSettleTimer?.Start();
+        }
 
-            _desktopRefreshScheduled = true;
-            _desktopRefreshDirty = false;
-
-            VirtualDesktopService service = _virtualDesktopService;
-            List<IntPtr> handles = Tasks?.Windows?.OfType<ApplicationWindow>()
-                                        .Select(w => w.Handle).ToList() ?? new List<IntPtr>();
-
-            Task.Run(() =>
-            {
-                HashSet<IntPtr> onCurrent = service.GetWindowsOnCurrentDesktop(handles);
-
-                Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
-                {
-                    _desktopRefreshScheduled = false;
-                    if (!isLoaded)
-                        return;
-
-                    _currentDesktopWindows = onCurrent; // null => show all (fail open)
-                    _windowsView?.Refresh();
-
-                    // Windows changed while the query was running: run once more to catch up.
-                    if (_desktopRefreshDirty)
-                        ScheduleDesktopRefresh();
-                }));
-            });
+        private void DesktopSettleTimer_Tick(object sender, EventArgs e)
+        {
+            _desktopSettleTimer?.Stop();
+            if (isLoaded)
+                _windowsView?.Refresh();
         }
 
         private void GroupedWindows_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             SetTaskButtonWidth();
-
-            // A window opened/closed: refresh which of them are on the current desktop so a newly
-            // opened window on this desktop shows up (scheduled off this handler to stay off the
-            // ListCollectionView/COM re-entrancy path).
-            ScheduleDesktopRefresh();
         }
 
         private void TaskList_OnSizeChanged(object sender, SizeChangedEventArgs e)
