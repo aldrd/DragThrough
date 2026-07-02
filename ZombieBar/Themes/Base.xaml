@@ -622,8 +622,8 @@
          button: a subtle glyph normally, a red fill with a white X on hover. -->
     <Style x:Key="TaskButtonCloseButton" TargetType="Button">
         <Setter Property="OverridesDefaultStyle" Value="True" />
-        <Setter Property="Width" Value="18" />
-        <Setter Property="Height" Value="18" />
+        <Setter Property="Width" Value="13.5" />
+        <Setter Property="Height" Value="13.5" />
         <Setter Property="Margin" Value="1,0,2,0" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Focusable" Value="False" />
@@ -637,7 +637,7 @@
                         <TextBlock x:Name="glyph"
                                    Text="&#xE8BB;"
                                    FontFamily="Segoe MDL2 Assets"
-                                   FontSize="10"
+                                   FontSize="7.5"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Foreground="{TemplateBinding Foreground}" />
