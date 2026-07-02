@@ -54,7 +54,7 @@ namespace ZombieBar.Utilities
         private bool _pending;
         private bool _dragging;
         private Point _startPoint;
-        private ApplicationWindow.WindowState _pressedState; // window state captured on press, for the synthesized click
+        private UIElement _captureElement; // the inner Button that owns mouse capture during the gesture
 
         private ApplicationWindow _dragData;
         private readonly List<Slot> _slots = new();
@@ -74,7 +74,6 @@ namespace ZombieBar.Utilities
             _itemsControl.PreviewMouseLeftButtonDown += OnPreviewMouseLeftButtonDown;
             _itemsControl.PreviewMouseMove += OnPreviewMouseMove;
             _itemsControl.PreviewMouseLeftButtonUp += OnPreviewMouseLeftButtonUp;
-            _itemsControl.LostMouseCapture += OnLostMouseCapture;
             _itemsControl.PreviewKeyDown += OnPreviewKeyDown;
         }
 
@@ -91,16 +90,15 @@ namespace ZombieBar.Utilities
             _horizontal = Settings.Instance.Edge != (int)AppBarEdge.Left &&
                           Settings.Instance.Edge != (int)AppBarEdge.Right;
             _dragData = data;
-            _pressedState = data.State;
             _startPoint = e.GetPosition(_itemsControl);
             _pending = true;
 
-            // Capture the whole gesture on the strip up front and stop the event before the inner
-            // Button can grab it: a Button that owns mouse capture would swallow the drag. We
-            // reproduce the button's click ourselves on release when no drag happened (see
-            // PerformClick), so ordinary clicks still activate/minimise the window.
-            _itemsControl.CaptureMouse();
-            e.Handled = true;
+            // Deliberately do NOT capture or mark the event handled: the inner Button captures the
+            // mouse itself and enters its pressed visual state (the background change the themes drive
+            // from the IsPressed trigger). WPF still tunnels the following moves through this
+            // ItemsControl, so the drag is driven from here while the Button keeps capture -- which
+            // means the pressed background is shown for free during the whole drag, and an ordinary
+            // click that never crosses the threshold still activates/minimises the window as before.
         }
 
         private void OnPreviewMouseMove(object sender, MouseEventArgs e)
@@ -116,7 +114,6 @@ namespace ZombieBar.Utilities
 
             if (e.LeftButton != MouseButtonState.Pressed)
             {
-                _itemsControl.ReleaseMouseCapture();
                 Reset();
                 return;
             }
@@ -138,47 +135,25 @@ namespace ZombieBar.Utilities
             if (_dragging)
             {
                 e.Handled = true;
-                EndDrag(); // releases capture and glides the button into place
-                return;
+                EndDrag(); // glides the button into place, then commits
             }
 
-            if (_pending)
-            {
-                e.Handled = true;
-                ApplicationWindow clicked = _dragData;
-                ApplicationWindow.WindowState state = _pressedState;
-                _itemsControl.ReleaseMouseCapture();
-                Reset();
-                PerformClick(clicked, state);
-            }
+            // A press that never became a drag falls through untouched, so the Button raises its own
+            // Click and activates/minimises the window exactly as before.
         }
 
-        private void OnLostMouseCapture(object sender, MouseEventArgs e)
+        // The Button that captured the mouse lost it unexpectedly mid-drag (alt-tab, another app,
+        // a context menu). Detached before we release capture ourselves, so this only runs for
+        // genuine external loss; finish the reorder in place.
+        private void OnCaptureLost(object sender, MouseEventArgs e)
         {
-            // Capture stolen from us mid-gesture (e.g. a context menu or focus change): finish cleanly.
-            if (_dragging)
-            {
-                _dragging = false;
-                Commit(Snapshot());
-                Reset();
-            }
-            else if (_pending)
-            {
-                Reset();
-            }
-        }
-
-        // Reproduces TaskButton's click behaviour, since capturing the gesture up front means the
-        // inner Button never raises its own Click.
-        private static void PerformClick(ApplicationWindow window, ApplicationWindow.WindowState pressedState)
-        {
-            if (window == null)
+            if (!_dragging)
                 return;
 
-            if (pressedState == ApplicationWindow.WindowState.Active)
-                window.Minimize();
-            else
-                window.BringToFront();
+            _dragging = false;
+            DetachCapture();
+            Commit(Snapshot());
+            Reset();
         }
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
@@ -187,11 +162,29 @@ namespace ZombieBar.Utilities
             {
                 e.Handled = true;
                 _dragging = false;
-                _itemsControl.ReleaseMouseCapture();
+                DetachCapture();
+                ReleaseCapture();
                 Session cancelled = Snapshot();
                 cancelled.InsertPos = cancelled.DragIndex; // treat as no-op so the order is unchanged
                 Commit(cancelled);
                 Reset();
+            }
+        }
+
+        // Drops the Button's mouse capture before it processes the button-up, so it does not raise a
+        // Click at the end of a drag (which would otherwise activate/minimise the window).
+        private static void ReleaseCapture()
+        {
+            if (Mouse.Captured != null)
+                Mouse.Capture(null);
+        }
+
+        private void DetachCapture()
+        {
+            if (_captureElement != null)
+            {
+                _captureElement.LostMouseCapture -= OnCaptureLost;
+                _captureElement = null;
             }
         }
 
@@ -206,9 +199,13 @@ namespace ZombieBar.Utilities
             _grabOffset = Axis(_startPoint) - _dragSlot.Home;
             _dragging = true;
 
+            // The inner Button still holds mouse capture (taken on button-down); track it so we can
+            // react if it is lost unexpectedly, and so we can drop it cleanly when the drag ends.
+            _captureElement = Mouse.Captured as UIElement;
+            if (_captureElement != null)
+                _captureElement.LostMouseCapture += OnCaptureLost;
+
             Panel.SetZIndex(_dragSlot.Container, 1000);
-            // The strip already holds mouse capture (taken on button-down), so the gesture continues
-            // seamlessly into the drag.
             UpdateDrag(p);
         }
 
@@ -330,7 +327,11 @@ namespace ZombieBar.Utilities
         private void EndDrag()
         {
             _dragging = false;
-            _itemsControl.ReleaseMouseCapture();
+
+            // Stop watching for capture loss, then drop the Button's capture ourselves so it does not
+            // fire a Click for this button-up (which would activate/minimise the window after a drag).
+            DetachCapture();
+            ReleaseCapture();
 
             // Snapshot everything the commit needs so a new drag started during the settle
             // animation (which would Reset the fields) can't cancel this reorder.
@@ -413,6 +414,7 @@ namespace ZombieBar.Utilities
 
         private void Reset()
         {
+            DetachCapture();
             _pending = false;
             _dragging = false;
             _dragData = null;
