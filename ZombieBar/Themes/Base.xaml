@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:c="clr-namespace:Ssz.Utils.Wpf.Converters;assembly=Ssz.Utils.Wpf">
 
+
     <!--
         "Base" is the hidden foundation theme: it is always loaded first and is not shown in
         the theme picker. Every selectable theme (System, System 2, Watercolor, the retro
@@ -627,21 +628,25 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Label}">
-                    <Grid >
-                        <Grid.Resources>
-                            <LinearGradientBrush x:Key="HeaderBackgroundOpacityMask" StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="Black"  Offset="0"/>
-                                <GradientStop Color="Black" Offset="0.5"/>
-                                <GradientStop Color="Transparent" Offset="1"/>
+                    <!-- The fade mask lives on this Grid, not the inner Canvas: a Grid's bounding box
+                         is always the stable visible cell width, so the gradient maps correctly no
+                         matter which way the text overflows. (On a Canvas the mask fails to fade when
+                         the child overflows to the right, i.e. for start-trimmed titles.) Inline brush
+                         so it never depends on resource resolution inside the merged theme dictionary;
+                         a title that fits leaves the faded zone empty, so it stays crisp. -->
+                    <Grid ClipToBounds="True">
+                        <Grid.OpacityMask>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="Black" Offset="0" />
+                                <GradientStop Color="Black" Offset="0.5" />
+                                <GradientStop Color="Transparent" Offset="0.96" />
                             </LinearGradientBrush>
-                        </Grid.Resources>
-
-                        <Canvas x:Name="Canvas" 
-                            ClipToBounds="True" 
-                            DockPanel.Dock="Top"  
+                        </Grid.OpacityMask>
+                        <Canvas x:Name="Canvas"
+                            ClipToBounds="True"
+                            DockPanel.Dock="Top"
                             Height="{Binding ElementName=Content, Path=ActualHeight}">
-
-                            <Border 
+                            <Border
                             BorderBrush="{TemplateBinding BorderBrush}"
                             Canvas.Left="0"
                             Canvas.ZIndex="0"
@@ -699,21 +704,22 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Label}">
-                    <Grid >
-                        <Grid.Resources>
-                            <LinearGradientBrush x:Key="HeaderBackgroundOpacityMask" StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="Black"  Offset="0"/>
-                                <GradientStop Color="Black" Offset="0.5"/>
-                                <GradientStop Color="Transparent" Offset="1"/>
+                    <!-- Fade mask on the Grid (stable cell-width bounding box) rather than the inner
+                         Canvas; see the start-trimmed label above. Fades the truncated leading (left)
+                         edge of an end-trimmed title, e.g. a file path that keeps its deepest folder. -->
+                    <Grid ClipToBounds="True">
+                        <Grid.OpacityMask>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="Transparent" Offset="0.04" />
+                                <GradientStop Color="Black" Offset="0.5" />
+                                <GradientStop Color="Black" Offset="1" />
                             </LinearGradientBrush>
-                        </Grid.Resources>
-
-                        <Canvas x:Name="Canvas" 
-                            ClipToBounds="True" 
-                            DockPanel.Dock="Top"  
+                        </Grid.OpacityMask>
+                        <Canvas x:Name="Canvas"
+                            ClipToBounds="True"
+                            DockPanel.Dock="Top"
                             Height="{Binding ElementName=Content, Path=ActualHeight}">
-
-                            <Border 
+                            <Border
                             BorderBrush="{TemplateBinding BorderBrush}"
                             Canvas.Right="0"
                             Canvas.ZIndex="0"
