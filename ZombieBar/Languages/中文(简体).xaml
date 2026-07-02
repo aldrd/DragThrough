@@ -53,6 +53,7 @@
     <s:String x:Key="tray_dismiss_search">用 Esc 关闭 Windows 搜索</s:String>
     <s:String x:Key="tray_show_taskbar">在所有桌面显示任务栏</s:String>
     <s:String x:Key="tray_show_taskbar_this_desktop">显示可拖动任务的附加任务栏</s:String>
+    <s:String x:Key="tray_center_tasks">在任务栏中居中显示任务</s:String>
     <s:String x:Key="tray_buy_coffee">请我喝杯咖啡</s:String>
     <s:String x:Key="tray_feedback">报告问题或建议...</s:String>
     <s:String x:Key="tray_exit">退出</s:String>

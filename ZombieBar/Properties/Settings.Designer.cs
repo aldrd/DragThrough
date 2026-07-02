@@ -190,5 +190,17 @@ namespace ZombieBar.Properties {
                 this["DismissWindowsSearchWithEscape"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CenterTasksInTaskbar {
+            get {
+                return ((bool)(this["CenterTasksInTaskbar"]));
+            }
+            set {
+                this["CenterTasksInTaskbar"] = value;
+            }
+        }
     }
 }

@@ -3,9 +3,11 @@ using ManagedShell.Interop;
 using ManagedShell.WindowsTasks;
 using ZombieBar.Utilities;
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace ZombieBar.Controls
@@ -27,6 +29,10 @@ namespace ZombieBar.Controls
         // After a desktop switch the DWM cloak/uncloak of each window can lag the registry flag we
         // poll, so we re-run the filter once more a moment later to catch late-settling windows.
         private DispatcherTimer _desktopSettleTimer;
+
+        // The WrapPanel that hosts the task buttons; its alignment is switched to Center when the bar
+        // isn't full and the "center tasks" option is on. Cached lazily (only exists once items realize).
+        private WrapPanel _itemsPanel;
 
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
@@ -108,6 +114,9 @@ namespace ZombieBar.Controls
                     TasksOrderManager orderManager = app?.TasksOrderManager;
                     if (orderManager != null && _dragHandler == null)
                         _dragHandler = new TabStripDragHandler(TasksList, _windowsView, orderManager);
+
+                    // Re-align the task buttons live when the "center tasks" option is toggled.
+                    Settings.Instance.PropertyChanged += Settings_PropertyChanged;
                 }
 
                 isLoaded = true;
@@ -121,7 +130,10 @@ namespace ZombieBar.Controls
             if (isLoaded && Tasks?.Windows != null)
             {
                 Tasks.Windows.CollectionChanged -= GroupedWindows_CollectionChanged;
+                Settings.Instance.PropertyChanged -= Settings_PropertyChanged;
             }
+
+            _itemsPanel = null;
 
             if (_desktopSettleTimer != null)
             {
@@ -191,6 +203,12 @@ namespace ZombieBar.Controls
             SetTaskButtonWidth();
         }
 
+        private void Settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Settings.CenterTasksInTaskbar))
+                SetTaskButtonWidth();
+        }
+
         private void TaskList_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             SetTaskButtonWidth();
@@ -201,6 +219,7 @@ namespace ZombieBar.Controls
             if (Settings.Instance.Edge == (int)AppBarEdge.Left || Settings.Instance.Edge == (int)AppBarEdge.Right)
             {
                 ButtonWidth = ActualWidth;
+                AlignTasks(false);
                 return;
             }
 
@@ -213,6 +232,10 @@ namespace ZombieBar.Controls
             double maxWidth = TasksList.ActualWidth / TasksList.Items.Count;
             double defaultWidth = DefaultButtonWidth + margin;
             double minWidth = MinButtonWidth + margin;
+
+            // "Not full" = the buttons stay at their default width with room to spare; when full they
+            // shrink to fit (or overflow), so centering no longer applies.
+            bool notFull = maxWidth > defaultWidth;
 
             if (maxWidth > defaultWidth)
             {
@@ -229,6 +252,46 @@ namespace ZombieBar.Controls
             {
                 ButtonWidth = Math.Floor(maxWidth);
             }
+
+            AlignTasks(notFull && Settings.Instance.CenterTasksInTaskbar);
+        }
+
+        // Center the task buttons (bar not full + option on) or left-align/stretch them (default).
+        // Aligns the WrapPanel itself, not the ItemsControl, so TasksList.ActualWidth stays the full
+        // viewport width and the width calculation above has no layout feedback loop.
+        private void AlignTasks(bool center)
+        {
+            WrapPanel panel = GetItemsPanel();
+            if (panel == null)
+                return;
+
+            panel.HorizontalAlignment = center ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
+        }
+
+        private WrapPanel GetItemsPanel()
+        {
+            if (_itemsPanel != null)
+                return _itemsPanel;
+
+            _itemsPanel = FindVisualChild<WrapPanel>(TasksList);
+            return _itemsPanel;
+        }
+
+        private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T match)
+                    return match;
+
+                T descendant = FindVisualChild<T>(child);
+                if (descendant != null)
+                    return descendant;
+            }
+
+            return null;
         }
     }
 }

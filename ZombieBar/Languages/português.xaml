@@ -53,6 +53,7 @@
     <s:String x:Key="tray_dismiss_search">Fechar a Pesquisa do Windows com Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Mostrar a barra de tarefas em todas as áreas de trabalho</s:String>
     <s:String x:Key="tray_show_taskbar_this_desktop">Mostrar a barra de tarefas adicional com tarefas arrastáveis</s:String>
+    <s:String x:Key="tray_center_tasks">Centralizar as tarefas na barra de tarefas</s:String>
     <s:String x:Key="tray_buy_coffee">Pague-me um café</s:String>
     <s:String x:Key="tray_feedback">Relatar um problema ou sugestão...</s:String>
     <s:String x:Key="tray_exit">Sair</s:String>

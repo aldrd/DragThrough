@@ -87,6 +87,7 @@ namespace ZombieBar
             WinKeyToggle.IsChecked = Settings.Instance.EnableWindowsKeyModifier;
             MinimizeToggle.IsChecked = Settings.Instance.MinimizeExplorerAfterSuccessfulDrag;
             ShowTaskbarThisDesktopToggle.IsChecked = _isTaskbarVisibleThisDesktop();
+            CenterTasksToggle.IsChecked = Settings.Instance.CenterTasksInTaskbar;
             _syncing = false;
         }
 
@@ -133,6 +134,12 @@ namespace ZombieBar
         {
             if (_syncing) return;
             _setTaskbarVisibleThisDesktop(ShowTaskbarThisDesktopToggle.IsChecked == true);
+        }
+
+        private void CenterTasksToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (_syncing) return;
+            Settings.Instance.CenterTasksInTaskbar = CenterTasksToggle.IsChecked == true;
         }
 
         // === Actions ======================================================================

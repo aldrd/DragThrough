@@ -149,10 +149,16 @@
 
             <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
 
-            <!-- Additional taskbar: shows/hides it on the current virtual desktop only. -->
-            <ToggleButton x:Name="ShowTaskbarThisDesktopToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarThisDesktopToggle_Click">
-                <TextBlock Text="{DynamicResource tray_show_taskbar_this_desktop}" TextWrapping="Wrap" />
-            </ToggleButton>
+            <!-- Additional taskbar: show/hide on the current desktop, and centering of the tasks.
+                 Grouped without a separator; equal-height rows so the switches are spaced evenly. -->
+            <UniformGrid Columns="1">
+                <ToggleButton x:Name="ShowTaskbarThisDesktopToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarThisDesktopToggle_Click">
+                    <TextBlock Text="{DynamicResource tray_show_taskbar_this_desktop}" TextWrapping="Wrap" />
+                </ToggleButton>
+                <ToggleButton x:Name="CenterTasksToggle" Style="{StaticResource SwitchRow}" Click="CenterTasksToggle_Click">
+                    <TextBlock Text="{DynamicResource tray_center_tasks}" TextWrapping="Wrap" />
+                </ToggleButton>
+            </UniformGrid>
 
             <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
 

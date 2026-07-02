@@ -249,6 +249,13 @@ namespace ZombieBar.Utilities
             set { if (settings.DismissWindowsSearchWithEscape != value) settings.DismissWindowsSearchWithEscape = value; }
         }
         #endregion
+
+        // When the additional taskbar isn't full, center the task buttons instead of left-aligning them.
+        public bool CenterTasksInTaskbar
+        {
+            get { return settings.CenterTasksInTaskbar; }
+            set { if (settings.CenterTasksInTaskbar != value) settings.CenterTasksInTaskbar = value; }
+        }
         #endregion
 
         public void Save()
