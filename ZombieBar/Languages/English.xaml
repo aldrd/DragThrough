@@ -53,7 +53,7 @@
     <s:String x:Key="tray_dismiss_search">Dismiss Windows Search with Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Show taskbar on all desktops</s:String>
     <s:String x:Key="tray_show_taskbar_this_desktop">Show taskbar on this desktop</s:String>
-    <s:String x:Key="tray_buy_coffee">Buy me a coffee</s:String>
+    <s:String x:Key="tray_buy_coffee">Buy coffee for the author</s:String>
     <s:String x:Key="tray_feedback">Report a problem or suggestion...</s:String>
     <s:String x:Key="tray_exit">Exit</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>

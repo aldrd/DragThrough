@@ -11,9 +11,11 @@
             <converters:EdgeOrientationConverter x:Key="orientationConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
+    <!-- Vertical scrolling is disabled so the scroll up/down buttons never appear: when there are
+         more task buttons than fit in a single row, the overflow row is clipped (hidden) instead. -->
     <ScrollViewer Style="{DynamicResource TaskListScrollViewer}"
                   Focusable="False"
-                  VerticalScrollBarVisibility="Auto">
+                  VerticalScrollBarVisibility="Disabled">
         <ItemsControl x:Name="TasksList"
                       Focusable="False"
                       Margin="{DynamicResource TaskListMargin}"

@@ -32,6 +32,7 @@ namespace ZombieBar.Controls
         // Null = not yet computed / no desktop info -> show everything (fail open).
         private HashSet<IntPtr> _currentDesktopWindows;
         private bool _desktopRefreshScheduled;
+        private bool _desktopRefreshDirty;
 
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
@@ -150,10 +151,20 @@ namespace ZombieBar.Controls
         // set, so Refresh() itself never pumps.
         private void ScheduleDesktopRefresh()
         {
-            if (_desktopRefreshScheduled || _virtualDesktopService == null)
+            if (_virtualDesktopService == null)
                 return;
 
+            // A query is already in flight: remember that state changed so we re-run once it finishes.
+            // Without this, a burst of window opens/closes during the query would be dropped and those
+            // windows would stay wrongly filtered out.
+            if (_desktopRefreshScheduled)
+            {
+                _desktopRefreshDirty = true;
+                return;
+            }
+
             _desktopRefreshScheduled = true;
+            _desktopRefreshDirty = false;
 
             VirtualDesktopService service = _virtualDesktopService;
             List<IntPtr> handles = Tasks?.Windows?.OfType<ApplicationWindow>()
@@ -171,6 +182,10 @@ namespace ZombieBar.Controls
 
                     _currentDesktopWindows = onCurrent; // null => show all (fail open)
                     _windowsView?.Refresh();
+
+                    // Windows changed while the query was running: run once more to catch up.
+                    if (_desktopRefreshDirty)
+                        ScheduleDesktopRefresh();
                 }));
             });
         }
@@ -214,7 +229,10 @@ namespace ZombieBar.Controls
             }
             else if (maxWidth < minWidth)
             {
-                ButtonWidth = Math.Ceiling(DefaultButtonWidth / 2);
+                // More windows than fit even at the minimum width: keep buttons at the minimum so the
+                // maximum number stay in the single visible row; the genuine overflow wraps to a
+                // second row that the (scroll-disabled) ScrollViewer clips away.
+                ButtonWidth = MinButtonWidth;
             }
             else
             {
