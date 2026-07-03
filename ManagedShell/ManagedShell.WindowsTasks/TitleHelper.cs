@@ -2,30 +2,43 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace ManagedShell.WindowsTasks
+namespace ManagedShell.WindowsTasks;
+
+internal static class TitleHelper
 {
-    internal static class TitleHelper
-    {
-        internal static string GetTitle(string title, out TaskBarDisplayType taskBarDisplayType)
+    // Ловит:
+    //   C:\dir\file.ext,  D:/dir/file.ext
+    //   \\server\share\dir\file.ext         (UNC)
+    //   .\rel\file.ext,   ..\rel\file.ext   (относительные с якорем)
+    private static readonly Regex WindowsFilePath = new(
+        @"(?:" +
+            @"[A-Za-z]:[\\/]" +                                       // диск: C:\ или C:/
+            @"|\\\\[^\\/:*?""<>|\s]+[\\/][^\\/:*?""<>|\s]+[\\/]" +    // UNC: \\server\share\
+            @"|\.{1,2}[\\/]" +                                        // .\ или ..\
+        @")" +
+        @"(?:[^\\/:*?""<>|\s]+[\\/])*" +   // промежуточные папки
+        @"[^\\/:*?""<>|\s]+\.[A-Za-z0-9]+", // имя файла + расширение
+        RegexOptions.Compiled);
+
+    internal static string GetTitle(string title, out TaskBarDisplayType taskBarDisplayType)
+    {        
+        if (string.IsNullOrEmpty(title))
         {
-            const string c1 = " - Notepad++";
-            if (title.EndsWith(c1, StringComparison.InvariantCultureIgnoreCase))
-            {
-                title = title.Substring(0, title.Length - c1.Length);
-            }
+            taskBarDisplayType = TaskBarDisplayType.Left;
+            return string.Empty;
+        }
 
-            if (Uri.TryCreate(title, UriKind.Absolute, out Uri uri))
-            {
-                taskBarDisplayType = TaskBarDisplayType.Right;
-            }
-            else
-            {
-                taskBarDisplayType = TaskBarDisplayType.Left;
-            }
-
+        var m = WindowsFilePath.Match(title);
+        if (!m.Success)
+        {
+            taskBarDisplayType = TaskBarDisplayType.Left;
             return title;
         }
+
+        taskBarDisplayType = TaskBarDisplayType.Right;
+        return m.Value;        
     }
 }
