@@ -54,6 +54,7 @@
     <s:String x:Key="tray_show_taskbar">Show taskbar on all desktops</s:String>
     <s:String x:Key="tray_show_taskbar_this_desktop">Show the additional taskbar with draggable tasks</s:String>
     <s:String x:Key="tray_center_tasks">Center tasks in the taskbar</s:String>
+    <s:String x:Key="tray_compact_tasks">Compact task view in the taskbar</s:String>
     <s:String x:Key="tray_buy_coffee">Buy coffee for the author</s:String>
     <s:String x:Key="tray_feedback">Report a problem or suggestion...</s:String>
     <s:String x:Key="tray_exit">Exit</s:String>

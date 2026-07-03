@@ -24,6 +24,25 @@ namespace ZombieBar.Controls
 
         private bool _isLoaded;
 
+        // Compact mode: show only the icon and close button (no title), used for single-instance windows
+        // when the option is on. Set by TaskList; the width is driven off it via a binding in the item
+        // template, and the title labels are collapsed here.
+        public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(
+            nameof(IsCompact), typeof(bool), typeof(TaskButton),
+            new PropertyMetadata(false, OnIsCompactChanged));
+
+        public bool IsCompact
+        {
+            get => (bool)GetValue(IsCompactProperty);
+            set => SetValue(IsCompactProperty, value);
+        }
+
+        private static void OnIsCompactChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((TaskButton)d).LabelHost.Visibility =
+                (bool)e.NewValue ? Visibility.Collapsed : Visibility.Visible;
+        }
+
         public TaskButton()
         {
             InitializeComponent();

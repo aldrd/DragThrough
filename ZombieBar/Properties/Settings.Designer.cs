@@ -202,5 +202,17 @@ namespace ZombieBar.Properties {
                 this["CenterTasksInTaskbar"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CompactSingleInstanceTasks {
+            get {
+                return ((bool)(this["CompactSingleInstanceTasks"]));
+            }
+            set {
+                this["CompactSingleInstanceTasks"] = value;
+            }
+        }
     }
 }

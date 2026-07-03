@@ -54,6 +54,7 @@
     <s:String x:Key="tray_show_taskbar">Показывать панель задач на всех столах</s:String>
     <s:String x:Key="tray_show_taskbar_this_desktop">Показывать дополнительный таскбар с возможностью перетаскивания задач</s:String>
     <s:String x:Key="tray_center_tasks">Располагать задачи по центру в таскбаре</s:String>
+    <s:String x:Key="tray_compact_tasks">Компактный вид задач в таскбаре</s:String>
     <s:String x:Key="tray_buy_coffee">Купить кофе автору</s:String>
     <s:String x:Key="tray_feedback">Сообщить о проблеме/пожелании...</s:String>
     <s:String x:Key="tray_exit">Выход</s:String>

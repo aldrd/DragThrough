@@ -256,6 +256,14 @@ namespace ZombieBar.Utilities
             get { return settings.CenterTasksInTaskbar; }
             set { if (settings.CenterTasksInTaskbar != value) settings.CenterTasksInTaskbar = value; }
         }
+
+        // Show single-instance windows (one window per app, Explorer excluded) as a compact button that
+        // is just the icon and close button, with no title text.
+        public bool CompactSingleInstanceTasks
+        {
+            get { return settings.CompactSingleInstanceTasks; }
+            set { if (settings.CompactSingleInstanceTasks != value) settings.CompactSingleInstanceTasks = value; }
+        }
         #endregion
 
         public void Save()

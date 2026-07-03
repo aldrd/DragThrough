@@ -62,6 +62,17 @@ namespace ZombieBar.Controls
             set { SetValue(ButtonWidthProperty, value); }
         }
 
+        // Width of a compact button (icon + close, no title). Sized to fit those snugly: icon (16 + 3
+        // margin) + close (13.5 + 3 margin) + the button's border/padding chrome (~8).
+        public static DependencyProperty CompactButtonWidthProperty = DependencyProperty.Register(
+            "CompactButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(44.0));
+
+        public double CompactButtonWidth
+        {
+            get { return (double)GetValue(CompactButtonWidthProperty); }
+            set { SetValue(CompactButtonWidthProperty, value); }
+        }
+
         public static DependencyProperty TasksProperty = DependencyProperty.Register("Tasks", typeof(Tasks), typeof(TaskList));
 
         public Tasks Tasks
@@ -346,7 +357,8 @@ namespace ZombieBar.Controls
 
         private void Settings_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Settings.CenterTasksInTaskbar))
+            if (e.PropertyName == nameof(Settings.CenterTasksInTaskbar) ||
+                e.PropertyName == nameof(Settings.CompactSingleInstanceTasks))
                 SetTaskButtonWidth();
         }
 
@@ -357,10 +369,16 @@ namespace ZombieBar.Controls
 
         private void SetTaskButtonWidth()
         {
+            // Compact single-instance windows to just their icon + close button. Their width comes from
+            // CompactButtonWidth (via the item-template binding); the rest of the bar's width is split
+            // between the remaining (normal) buttons.
+            HashSet<IntPtr> compact = ComputeCompactWindows();
+            ApplyCompactFlags(compact);
+
             if (Settings.Instance.Edge == (int)AppBarEdge.Left || Settings.Instance.Edge == (int)AppBarEdge.Right)
             {
                 ButtonWidth = ActualWidth;
-                AlignTasks(false);
+                AlignTasks(false, 0);
                 return;
             }
 
@@ -370,31 +388,100 @@ namespace ZombieBar.Controls
             }
 
             double margin = TaskButtonLeftMargin + TaskButtonRightMargin;
-            double maxWidth = TasksList.ActualWidth / TasksList.Items.Count;
+            int compactCount = compact.Count;
+            int normalCount = TasksList.Items.Count - compactCount;
+            double compactFootprint = CompactButtonWidth + margin;
+            double availableForNormal = TasksList.ActualWidth - compactCount * compactFootprint;
+
             double defaultWidth = DefaultButtonWidth + margin;
             double minWidth = MinButtonWidth + margin;
 
-            // "Not full" = the buttons stay at their default width with room to spare; when full they
-            // shrink to fit (or overflow), so centering no longer applies.
-            bool notFull = maxWidth > defaultWidth;
+            // "Not full" = the normal buttons stay at their default width with room to spare; when full
+            // they shrink to fit (or overflow), so centering no longer applies.
+            bool notFull;
 
-            if (maxWidth > defaultWidth)
+            if (normalCount > 0)
             {
-                ButtonWidth = DefaultButtonWidth;
-            }
-            else if (maxWidth < minWidth)
-            {
-                // More windows than fit even at the minimum width: keep buttons at the minimum so the
-                // maximum number stay in the single visible row; the genuine overflow wraps to a
-                // second row that the (scroll-disabled) ScrollViewer clips away.
-                ButtonWidth = MinButtonWidth;
+                double maxWidth = availableForNormal / normalCount;
+                notFull = maxWidth > defaultWidth;
+
+                if (maxWidth > defaultWidth)
+                {
+                    ButtonWidth = DefaultButtonWidth;
+                }
+                else if (maxWidth < minWidth)
+                {
+                    // More windows than fit even at the minimum width: keep buttons at the minimum so the
+                    // maximum number stay in the single visible row; the genuine overflow wraps to a
+                    // second row that the (scroll-disabled) ScrollViewer clips away.
+                    ButtonWidth = MinButtonWidth;
+                }
+                else
+                {
+                    ButtonWidth = Math.Floor(maxWidth);
+                }
             }
             else
             {
-                ButtonWidth = Math.Floor(maxWidth);
+                // Every visible window is compact; there are no normal buttons to size.
+                ButtonWidth = DefaultButtonWidth;
+                notFull = true;
             }
 
-            AlignTasks(notFull && Settings.Instance.CenterTasksInTaskbar);
+            double contentWidth = normalCount * (ButtonWidth + margin) + compactCount * compactFootprint;
+            AlignTasks(notFull && Settings.Instance.CenterTasksInTaskbar, contentWidth);
+        }
+
+        // The set of windows (by handle) that should be shown compactly: the option is on, the window is
+        // the only one of its executable currently on the bar, and it isn't File Explorer.
+        private HashSet<IntPtr> ComputeCompactWindows()
+        {
+            var compact = new HashSet<IntPtr>();
+
+            if (!Settings.Instance.CompactSingleInstanceTasks ||
+                Settings.Instance.Edge == (int)AppBarEdge.Left ||
+                Settings.Instance.Edge == (int)AppBarEdge.Right)
+                return compact;
+
+            List<ApplicationWindow> windows = TasksList.Items.OfType<ApplicationWindow>().ToList();
+
+            var countByFile = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (ApplicationWindow w in windows)
+            {
+                string file = w.WinFileName ?? "";
+                if (file.Length == 0)
+                    continue;
+                countByFile[file] = countByFile.TryGetValue(file, out int c) ? c + 1 : 1;
+            }
+
+            foreach (ApplicationWindow w in windows)
+            {
+                string file = w.WinFileName ?? "";
+                if (file.Length == 0 || IsFileExplorer(file))
+                    continue;
+                if (countByFile.TryGetValue(file, out int c) && c == 1)
+                    compact.Add(w.Handle);
+            }
+
+            return compact;
+        }
+
+        private static bool IsFileExplorer(string winFileName) =>
+            winFileName.EndsWith("explorer.exe", StringComparison.OrdinalIgnoreCase);
+
+        // Push the compact flag onto each realized task button so its labels collapse and its width
+        // switches to CompactButtonWidth (both driven off TaskButton.IsCompact).
+        private void ApplyCompactFlags(HashSet<IntPtr> compact)
+        {
+            for (int i = 0; i < TasksList.Items.Count; i++)
+            {
+                if (TasksList.ItemContainerGenerator.ContainerFromIndex(i) is not DependencyObject container)
+                    continue;
+
+                TaskButton button = FindVisualChild<TaskButton>(container);
+                if (button?.DataContext is ApplicationWindow window)
+                    button.IsCompact = compact.Contains(window.Handle);
+            }
         }
 
         // Center the task buttons (bar not full + option on) or left-align them (default). We keep the
@@ -404,19 +491,15 @@ namespace ZombieBar.Controls
         // left margin is deterministic regardless of the ScrollViewer's measure behavior. TasksList
         // (the ItemsControl) stays stretched, so TasksList.ActualWidth remains the full viewport width
         // and the button-width calculation above has no layout feedback loop.
-        private void AlignTasks(bool center)
+        private void AlignTasks(bool center, double contentWidth)
         {
             WrapPanel panel = GetItemsPanel();
             if (panel == null)
                 return;
 
             double leftInset = 0;
-            if (center && TasksList.Items.Count > 0)
-            {
-                double buttonMargin = TaskButtonLeftMargin + TaskButtonRightMargin;
-                double contentWidth = TasksList.Items.Count * (ButtonWidth + buttonMargin);
+            if (center && contentWidth > 0)
                 leftInset = Math.Max(0, (TasksList.ActualWidth - contentWidth) / 2);
-            }
 
             if (panel.Margin.Left != leftInset)
                 panel.Margin = new Thickness(leftInset, 0, 0, 0);

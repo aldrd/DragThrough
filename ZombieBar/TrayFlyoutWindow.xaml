@@ -164,6 +164,9 @@
                 <ToggleButton x:Name="CenterTasksToggle" Style="{StaticResource SwitchRow}" Click="CenterTasksToggle_Click">
                     <TextBlock Text="{DynamicResource tray_center_tasks}" TextWrapping="Wrap" />
                 </ToggleButton>
+                <ToggleButton x:Name="CompactTasksToggle" Style="{StaticResource SwitchRow}" Click="CompactTasksToggle_Click">
+                    <TextBlock Text="{DynamicResource tray_compact_tasks}" TextWrapping="Wrap" />
+                </ToggleButton>
             </UniformGrid>
 
             <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />

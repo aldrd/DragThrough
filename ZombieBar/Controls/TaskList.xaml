@@ -9,6 +9,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:EdgeOrientationConverter x:Key="orientationConverter" />
+            <converters:CompactWidthConverter x:Key="compactWidthConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
     <!-- Vertical scrolling is disabled so the scroll up/down buttons never appear: when there are
@@ -33,7 +34,15 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <ItemContainerTemplate>
-                    <local:TaskButton Width="{Binding Path=ButtonWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=local:TaskList}}"></local:TaskButton>
+                    <local:TaskButton>
+                        <local:TaskButton.Width>
+                            <MultiBinding Converter="{StaticResource compactWidthConverter}">
+                                <Binding Path="IsCompact" RelativeSource="{RelativeSource Self}" />
+                                <Binding Path="ButtonWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType=local:TaskList}" />
+                                <Binding Path="CompactButtonWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType=local:TaskList}" />
+                            </MultiBinding>
+                        </local:TaskButton.Width>
+                    </local:TaskButton>
                 </ItemContainerTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

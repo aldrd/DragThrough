@@ -9,6 +9,7 @@
         <converters:TaskButtonTextConverter x:Key="TaskButtonTextConverter"/>
         <converters:TaskButtonTrimVisibilityConverter x:Key="TaskButtonTrimVisibilityConverter"/>
         <converters:MinWidthVisibilityConverter x:Key="MinWidthVisibilityConverter"/>
+        <converters:CompactCloseVisibilityConverter x:Key="CompactCloseVisibilityConverter"/>
     </UserControl.Resources>
     <Button Name="AppButton"
             ToolTip="{Binding Path=Title}"
@@ -27,47 +28,55 @@
             <Image Source="{Binding Path=Icon, Mode=OneWay}"
                    Grid.Column="0"
                    Style="{DynamicResource TaskIcon}" />
-            <!-- Start-trimming label: keeps the beginning of the text. -->
-            <Label Grid.Column="1"
-                       x:Name="LeftLabel"
-                       Style="{DynamicResource LeftTaskButtonLabelStyle}">
-                <Label.Visibility>
-                    <MultiBinding Converter="{StaticResource TaskButtonTrimVisibilityConverter}" ConverterParameter="Start">
-                        <Binding Path="Title" />
-                        <Binding />
-                    </MultiBinding>
-                </Label.Visibility>
-                <Label.Content>
-                    <MultiBinding Converter="{StaticResource TaskButtonTextConverter}">
-                        <Binding Path="Title" />
-                        <Binding />
-                    </MultiBinding>
-                </Label.Content>
-            </Label>
-            <!-- End-trimming label: keeps the end of the text (e.g. the deepest folder of a path). -->
-            <Label Grid.Column="1"
-                       x:Name="RightLabel"
-                       Style="{DynamicResource RightTaskButtonLabelStyle}">
-                <Label.Visibility>
-                    <MultiBinding Converter="{StaticResource TaskButtonTrimVisibilityConverter}" ConverterParameter="End">
-                        <Binding Path="Title" />
-                        <Binding />
-                    </MultiBinding>
-                </Label.Visibility>
-                <Label.Content>
-                    <MultiBinding Converter="{StaticResource TaskButtonTextConverter}">
-                        <Binding Path="Title" />
-                        <Binding />
-                    </MultiBinding>
-                </Label.Content>
-            </Label>
-            <!-- Close (X) button, shown only when the task button is wide enough to fit it. Styled
-                 like the main taskbar's window-close button (red on hover). -->
+            <!-- Title labels. Collapsed in compact mode (x:Name so the code-behind can toggle it),
+                 which leaves just the icon and the close button. -->
+            <Grid Grid.Column="1" x:Name="LabelHost">
+                <!-- Start-trimming label: keeps the beginning of the text. -->
+                <Label x:Name="LeftLabel"
+                           Style="{DynamicResource LeftTaskButtonLabelStyle}">
+                    <Label.Visibility>
+                        <MultiBinding Converter="{StaticResource TaskButtonTrimVisibilityConverter}" ConverterParameter="Start">
+                            <Binding Path="Title" />
+                            <Binding />
+                        </MultiBinding>
+                    </Label.Visibility>
+                    <Label.Content>
+                        <MultiBinding Converter="{StaticResource TaskButtonTextConverter}">
+                            <Binding Path="Title" />
+                            <Binding />
+                        </MultiBinding>
+                    </Label.Content>
+                </Label>
+                <!-- End-trimming label: keeps the end of the text (e.g. the deepest folder of a path). -->
+                <Label x:Name="RightLabel"
+                           Style="{DynamicResource RightTaskButtonLabelStyle}">
+                    <Label.Visibility>
+                        <MultiBinding Converter="{StaticResource TaskButtonTrimVisibilityConverter}" ConverterParameter="End">
+                            <Binding Path="Title" />
+                            <Binding />
+                        </MultiBinding>
+                    </Label.Visibility>
+                    <Label.Content>
+                        <MultiBinding Converter="{StaticResource TaskButtonTextConverter}">
+                            <Binding Path="Title" />
+                            <Binding />
+                        </MultiBinding>
+                    </Label.Content>
+                </Label>
+            </Grid>
+            <!-- Close (X) button, styled like the main taskbar's window-close button (red on hover).
+                 Shown when the button is compact (icon + close) or wide enough to fit it. -->
             <Button x:Name="CloseButton"
                     Grid.Column="2"
                     Style="{DynamicResource TaskButtonCloseButton}"
-                    Click="CloseButton_OnClick"
-                    Visibility="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type local:TaskButton}}, Converter={StaticResource MinWidthVisibilityConverter}, ConverterParameter=90}" />
+                    Click="CloseButton_OnClick">
+                <Button.Visibility>
+                    <MultiBinding Converter="{StaticResource CompactCloseVisibilityConverter}" ConverterParameter="90">
+                        <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType={x:Type local:TaskButton}}" />
+                        <Binding Path="IsCompact" RelativeSource="{RelativeSource AncestorType={x:Type local:TaskButton}}" />
+                    </MultiBinding>
+                </Button.Visibility>
+            </Button>
         </Grid>
         <Button.ContextMenu>
             <ContextMenu>
