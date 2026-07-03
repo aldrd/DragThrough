@@ -3,7 +3,10 @@ using ManagedShell.Interop;
 using ManagedShell.WindowsTasks;
 using ZombieBar.Utilities;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -26,13 +29,26 @@ namespace ZombieBar.Controls
         private TabStripDragHandler _dragHandler;
         private VirtualDesktopService _virtualDesktopService;
 
-        // After a desktop switch the DWM cloak/uncloak of each window can lag the registry flag we
-        // poll, so we re-run the filter once more a moment later to catch late-settling windows.
+        // Handles of windows on the current virtual desktop, resolved via the virtual-desktop COM API
+        // off the UI thread (COM STA calls pump messages and would re-enter ListCollectionView's live
+        // shaping if done inside the filter). The filter only does a set lookup here.
+        // Null = not yet computed / API unavailable -> show everything (fail open).
+        private HashSet<IntPtr> _currentDesktopWindows;
+        private bool _desktopRefreshScheduled;
+        private bool _desktopRefreshDirty;
+
+        // The COM "is on current desktop" result can be momentarily unsettled right after a switch, so
+        // we recompute once more a short while later.
         private DispatcherTimer _desktopSettleTimer;
 
-        // The WrapPanel that hosts the task buttons; its alignment is switched to Center when the bar
-        // isn't full and the "center tasks" option is on. Cached lazily (only exists once items realize).
+        // The WrapPanel that hosts the task buttons; it is inset from the left to center the buttons when
+        // the bar isn't full and the "center tasks" option is on. Cached lazily (exists once items realize).
         private WrapPanel _itemsPanel;
+
+        // Guard for the LayoutUpdated handler so it only rebalances when the visible count or the
+        // available width actually changed (LayoutUpdated otherwise fires on every layout pass).
+        private int _lastLayoutCount = -1;
+        private double _lastLayoutWidth = -1;
 
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
@@ -89,8 +105,9 @@ namespace ZombieBar.Controls
                     _windowsView = new ListCollectionView(Tasks.Windows)
                     {
                         Filter = w => w is ApplicationWindow window
-                                      && window.ShowInTaskbar
-                                      && IsOnCurrentDesktop(window.Handle),
+                                      && IsTaskbarEligible(window)
+                                      && (_currentDesktopWindows == null
+                                          || _currentDesktopWindows.Contains(window.Handle)),
                         CustomSort = TasksOrderManager.Comparer,
                         IsLiveFiltering = true,
                         IsLiveSorting = true
@@ -100,6 +117,13 @@ namespace ZombieBar.Controls
 
                     TasksList.ItemsSource = _windowsView;
                     Tasks.Windows.CollectionChanged += GroupedWindows_CollectionChanged;
+
+                    // Rebalance button width / centering when the *visible* set changes without the
+                    // source collection changing — e.g. windows entering/leaving via the live filter on a
+                    // virtual-desktop switch (which can arrive staggered as each window uncloaks).
+                    // Subscribing to the ListCollectionView's CollectionChanged doesn't deliver those, so
+                    // use LayoutUpdated (fires on every layout pass) guarded by a count/width change check.
+                    LayoutUpdated += TaskList_OnLayoutUpdated;
 
                     // Re-filter when the user switches virtual desktops.
                     if (_virtualDesktopService != null)
@@ -117,6 +141,9 @@ namespace ZombieBar.Controls
 
                     // Re-align the task buttons live when the "center tasks" option is toggled.
                     Settings.Instance.PropertyChanged += Settings_PropertyChanged;
+
+                    // Compute the initial current-desktop set.
+                    ScheduleDesktopRefresh();
                 }
 
                 isLoaded = true;
@@ -132,6 +159,8 @@ namespace ZombieBar.Controls
                 Tasks.Windows.CollectionChanged -= GroupedWindows_CollectionChanged;
                 Settings.Instance.PropertyChanged -= Settings_PropertyChanged;
             }
+
+            LayoutUpdated -= TaskList_OnLayoutUpdated;
 
             _itemsPanel = null;
 
@@ -153,40 +182,50 @@ namespace ZombieBar.Controls
             isLoaded = false;
         }
 
-        // A window on another virtual desktop is DWM-cloaked (DWMWA_CLOAKED != 0); one on the current
-        // desktop is not — including minimized windows. This is the same signal ManagedShell uses for
-        // ShowInTaskbar, but read live here: a window that uncloaks/settles after a desktop switch is
-        // then re-evaluated immediately. (ManagedShell only re-checks on uncloak, and the previous
-        // COM-based approach cached a stale membership set that missed such windows — the cause of
-        // "sometimes not all windows show; restoring one makes it appear".) DwmGetWindowAttribute is a
-        // plain P/Invoke with no message pump, so unlike the COM API it is safe to call from the filter.
-        private static bool IsOnCurrentDesktop(IntPtr hwnd)
+        // Whether a window should appear in the taskbar, independent of which virtual desktop it is on
+        // (desktop membership is handled separately by the COM-resolved set). ManagedShell's ShowInTaskbar
+        // is the authority, but it returns false for any DWM-cloaked window — which conflates two very
+        // different cases: (a) a real app minimized on this desktop, whose cloak lingers after a desktop
+        // switch until it is restored (a stale false we must override), and (b) a suspended/background UWP
+        // window that should stay hidden. They are told apart by IsIconic: only a genuinely minimized
+        // window is rescued, and only if it is a real taskbar window (CanAddToTaskbar) and not a UWP
+        // "phantom" frame. The desktop-membership gate in the filter ensures this only ever applies to
+        // windows already known to be on the current desktop.
+        private static bool IsTaskbarEligible(ApplicationWindow window)
         {
-            if (hwnd == IntPtr.Zero)
+            if (window.ShowInTaskbar)
                 return true;
 
-            try
-            {
-                int hr = NativeMethods.DwmGetWindowAttribute(
-                    hwnd, NativeMethods.DWMWINDOWATTRIBUTE.DWMWA_CLOAKED, out uint cloaked, sizeof(uint));
-                if (hr != 0)
-                    return true; // couldn't determine -> don't hide it (fail open)
-                return cloaked == 0;
-            }
-            catch
-            {
-                return true;
-            }
+            return NativeMethods.IsIconic(window.Handle)
+                   && window.CanAddToTaskbar
+                   && !IsUwpPhantom(window);
         }
 
-        // Current virtual desktop changed: re-run the filter so windows that were cloaked/uncloaked by
-        // the switch are re-evaluated.
+        // A cloaked/parked UWP shell frame (an ApplicationFrameWindow / CoreWindow without WS_EX_WINDOWEDGE)
+        // that ManagedShell's getShowInTaskbar hides; mirror that check so the eligibility fallback above
+        // doesn't resurrect these. Plain P/Invokes only (no COM), so safe to call from the filter.
+        private static bool IsUwpPhantom(ApplicationWindow window)
+        {
+            try
+            {
+                var cn = new System.Text.StringBuilder(256);
+                NativeMethods.GetClassName(window.Handle, cn, cn.Capacity);
+                string className = cn.ToString();
+                if (className == "ApplicationFrameWindow" || className == "Windows.UI.Core.CoreWindow")
+                    return (window.ExtendedWindowStyles & (int)NativeMethods.ExtendedWindowStyles.WS_EX_WINDOWEDGE) == 0;
+            }
+            catch { }
+
+            return false;
+        }
+
+        // Current virtual desktop changed: recompute which windows belong to it and re-filter.
         private void VirtualDesktopService_DesktopChanged(object sender, EventArgs e)
         {
-            _windowsView?.Refresh();
+            ScheduleDesktopRefresh();
 
-            // The cloak/uncloak that accompanies the switch can lag the registry flag we poll, so
-            // re-run once more shortly after to catch windows whose cloak state settled late.
+            // The COM "is on current desktop" result can be momentarily unsettled right at the switch,
+            // so recompute once more shortly after.
             _desktopSettleTimer?.Stop();
             _desktopSettleTimer?.Start();
         }
@@ -195,11 +234,72 @@ namespace ZombieBar.Controls
         {
             _desktopSettleTimer?.Stop();
             if (isLoaded)
-                _windowsView?.Refresh();
+                ScheduleDesktopRefresh();
+        }
+
+        // Determining desktop membership calls into COM, which pumps the message loop; doing that on the
+        // UI thread mid-refresh re-enters ListCollectionView live shaping and crashes. So snapshot the
+        // handles on the UI thread, query on a background thread, then apply the result and refresh
+        // (coalesced, so a burst of window events collapses to one pass). The filter only reads the
+        // resulting set, so Refresh() itself never pumps.
+        private void ScheduleDesktopRefresh()
+        {
+            if (_virtualDesktopService == null)
+                return;
+
+            // A query is already in flight: remember that state changed so we re-run once it finishes.
+            if (_desktopRefreshScheduled)
+            {
+                _desktopRefreshDirty = true;
+                return;
+            }
+
+            _desktopRefreshScheduled = true;
+            _desktopRefreshDirty = false;
+
+            VirtualDesktopService service = _virtualDesktopService;
+            List<IntPtr> handles = Tasks?.Windows?.OfType<ApplicationWindow>()
+                                        .Select(w => w.Handle).ToList() ?? new List<IntPtr>();
+
+            Task.Run(() =>
+            {
+                HashSet<IntPtr> onCurrent = service.GetWindowsOnCurrentDesktop(handles);
+
+                Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                {
+                    _desktopRefreshScheduled = false;
+                    if (!isLoaded)
+                        return;
+
+                    _currentDesktopWindows = onCurrent; // null => show all (fail open)
+                    _windowsView?.Refresh();
+                    SetTaskButtonWidth();
+
+                    // State changed while the query was running: run once more to catch up.
+                    if (_desktopRefreshDirty)
+                        ScheduleDesktopRefresh();
+                }));
+            });
         }
 
         private void GroupedWindows_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
+            SetTaskButtonWidth();
+
+            // A window opened/closed: refresh which of them are on the current desktop so a newly opened
+            // window on this desktop shows up (scheduled off this handler to stay off the COM re-entrancy path).
+            ScheduleDesktopRefresh();
+        }
+
+        private void TaskList_OnLayoutUpdated(object sender, EventArgs e)
+        {
+            int count = TasksList.Items.Count;
+            double width = TasksList.ActualWidth;
+            if (count == _lastLayoutCount && Math.Abs(width - _lastLayoutWidth) < 0.5)
+                return;
+
+            _lastLayoutCount = count;
+            _lastLayoutWidth = width;
             SetTaskButtonWidth();
         }
 
@@ -256,16 +356,29 @@ namespace ZombieBar.Controls
             AlignTasks(notFull && Settings.Instance.CenterTasksInTaskbar);
         }
 
-        // Center the task buttons (bar not full + option on) or left-align/stretch them (default).
-        // Aligns the WrapPanel itself, not the ItemsControl, so TasksList.ActualWidth stays the full
-        // viewport width and the width calculation above has no layout feedback loop.
+        // Center the task buttons (bar not full + option on) or left-align them (default). We keep the
+        // WrapPanel stretched and instead inset it from the left by half the free space: setting the
+        // panel's HorizontalAlignment=Center misbehaves inside this (horizontally sizing) ScrollViewer —
+        // the panel arranges at a stale/narrow width and extra buttons overflow to its right. A computed
+        // left margin is deterministic regardless of the ScrollViewer's measure behavior. TasksList
+        // (the ItemsControl) stays stretched, so TasksList.ActualWidth remains the full viewport width
+        // and the button-width calculation above has no layout feedback loop.
         private void AlignTasks(bool center)
         {
             WrapPanel panel = GetItemsPanel();
             if (panel == null)
                 return;
 
-            panel.HorizontalAlignment = center ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
+            double leftInset = 0;
+            if (center && TasksList.Items.Count > 0)
+            {
+                double buttonMargin = TaskButtonLeftMargin + TaskButtonRightMargin;
+                double contentWidth = TasksList.Items.Count * (ButtonWidth + buttonMargin);
+                leftInset = Math.Max(0, (TasksList.ActualWidth - contentWidth) / 2);
+            }
+
+            if (panel.Margin.Left != leftInset)
+                panel.Margin = new Thickness(leftInset, 0, 0, 0);
         }
 
         private WrapPanel GetItemsPanel()

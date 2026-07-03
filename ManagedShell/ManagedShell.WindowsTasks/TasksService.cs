@@ -120,7 +120,13 @@ namespace ManagedShell.WindowsTasks
             {
                 ApplicationWindow win = new ApplicationWindow(this, hwnd);
 
-                if (win.CanAddToTaskbar && win.ShowInTaskbar && !Windows.Contains(win))
+                // Add every window that could ever show in the taskbar, not just the ones visible right
+                // now. A window minimized on, or living on, another virtual desktop is DWM-cloaked, so its
+                // ShowInTaskbar is false at startup — but it must still be in the collection so a
+                // per-desktop taskbar can reveal it once that desktop becomes active (otherwise it only
+                // appears after being restored, which re-adds it via a shell hook). This mirrors the
+                // dynamic addWindow() path, which likewise gates only on CanAddToTaskbar.
+                if (win.CanAddToTaskbar && !Windows.Contains(win))
                 {
                     Windows.Add(win);
 
