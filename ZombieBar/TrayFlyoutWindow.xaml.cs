@@ -1,11 +1,15 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Resources;
 using ZombieBar.Utilities;
 using Application = System.Windows.Application;
 
@@ -29,6 +33,11 @@ namespace ZombieBar
 
         private bool _syncing;
 
+        // Embedded help videos extracted to temp files (MediaElement can't play a pack:// resource),
+        // keyed by file name so each is unpacked only once per run.
+        private static readonly Dictionary<string, string?> _extractedVideos = new();
+        private string? _currentVideo;
+
         public TrayFlyoutWindow(Action<bool> setTaskbarVisible, Action<bool> setTaskbarVisibleThisDesktop,
                                 Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback, Action openAbout,
                                 Action exit, Action<string, string> showBalloon)
@@ -44,13 +53,25 @@ namespace ZombieBar
             InitializeComponent();
             ApplyTheme();
 
-            AppIcon.Source = AppUi.LoadAppIcon();
+            ImageSource appIcon = AppUi.LoadAppIcon();
+            AppIcon.Source = appIcon;
+            HelpBrandIcon.Source = appIcon;
 
             Version? version = Assembly.GetExecutingAssembly().GetName().Version;
             VersionText.Text = version != null ? $"v{version}" : "";
 
-            // Closing the Share popup whenever the flyout loses focus keeps the two in sync.
-            Deactivated += (_, _) => SharePopup.IsOpen = false;
+            // Any menu item whose Tag names a video shows it in the help pane on hover; every other
+            // item resets the pane to the brand card. Wired here so future items need no extra code.
+            foreach (ButtonBase item in FindLogicalDescendants<ButtonBase>(MenuPanel))
+                item.MouseEnter += MenuItem_MouseEnter;
+
+            Deactivated += (_, _) =>
+            {
+                // Closing the Share popup whenever the flyout loses focus keeps the two in sync,
+                // and the help video is stopped so it isn't left playing on a hidden window.
+                SharePopup.IsOpen = false;
+                ShowHelpPlaceholder();
+            };
         }
 
         /// <summary>Positions the flyout just above the cursor (the tray icon) and shows it.</summary>
@@ -59,6 +80,7 @@ namespace ZombieBar
             ApplyTheme();
             SyncFromSettings();
             SharePopup.IsOpen = false;
+            ShowHelpPlaceholder();
 
             Opacity = 0;
             if (!IsVisible)
@@ -77,6 +99,111 @@ namespace ZombieBar
         public void SetUpdateAvailable(bool available)
         {
             AboutUpdateBadge.Visibility = available ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // === Help-video pane =============================================================
+        private void MenuItem_MouseEnter(object sender, MouseEventArgs e)
+        {
+            string? video = (sender as FrameworkElement)?.Tag as string;
+            if (string.IsNullOrEmpty(video))
+                ShowHelpPlaceholder();
+            else
+                ShowHelpVideo(video);
+        }
+
+        private void ShowHelpVideo(string fileName)
+        {
+            if (fileName == _currentVideo)
+                return;
+
+            string? path = ResolveVideoPath(fileName);
+            if (path == null)
+            {
+                ShowHelpPlaceholder();
+                return;
+            }
+
+            _currentVideo = fileName;
+            HelpVideo.Source = new Uri(path);
+            HelpVideo.Position = TimeSpan.Zero;
+            HelpVideo.Play();
+            HelpPlaceholder.Visibility = Visibility.Collapsed;
+            HelpVideo.Visibility = Visibility.Visible;
+        }
+
+        private void ShowHelpPlaceholder()
+        {
+            if (_currentVideo == null)
+                return;
+
+            _currentVideo = null;
+            HelpVideo.Stop();
+            HelpVideo.Source = null;
+            HelpVideo.Visibility = Visibility.Collapsed;
+            HelpPlaceholder.Visibility = Visibility.Visible;
+        }
+
+        private void HelpVideo_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            // Loop the clip for as long as the item stays hovered.
+            HelpVideo.Position = TimeSpan.Zero;
+            HelpVideo.Play();
+        }
+
+        // Extracts an embedded help video (Assets\<fileName>) to a temp file once and returns its path
+        // (null if it doesn't exist), because MediaElement can't play from a pack:// application resource.
+        private static string? ResolveVideoPath(string fileName)
+        {
+            if (_extractedVideos.TryGetValue(fileName, out string? cached))
+                return cached != null && File.Exists(cached) ? cached : null;
+
+            string? result = null;
+            try
+            {
+                StreamResourceInfo? sri = Application.GetResourceStream(
+                    new Uri($"pack://application:,,,/Assets/{fileName}", UriKind.Absolute));
+                if (sri != null)
+                {
+                    string dir = Path.Combine(Path.GetTempPath(), "DragThrough", "media");
+                    Directory.CreateDirectory(dir);
+                    string path = Path.Combine(dir, fileName);
+
+                    try
+                    {
+                        using Stream src = sri.Stream;
+                        using FileStream dst = new(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+                        src.CopyTo(dst);
+                    }
+                    catch (IOException) when (File.Exists(path))
+                    {
+                        // A previous run already extracted it and the file is in use; reuse it.
+                    }
+
+                    result = path;
+                }
+            }
+            catch
+            {
+                result = null;
+            }
+
+            _extractedVideos[fileName] = result;
+            return result;
+        }
+
+        private static IEnumerable<T> FindLogicalDescendants<T>(DependencyObject root) where T : DependencyObject
+        {
+            foreach (object child in LogicalTreeHelper.GetChildren(root))
+            {
+                if (child is not DependencyObject dep)
+                    continue;
+
+                if (dep is T match)
+                    yield return match;
+
+                foreach (T descendant in FindLogicalDescendants<T>(dep))
+                    yield return descendant;
+            }
         }
 
         /// <summary>Reflects the current settings in the toggles (also call after an external change).</summary>
@@ -253,6 +380,7 @@ namespace ZombieBar
             SetBrush("SwitchBorderBrush",dark ? "#FF9A9A9A" : "#FF8A8A8A");
             SetBrush("ThumbBrush",       dark ? "#FFC8C8C8" : "#FF5B5B5B");
             SetBrush("DangerBrush",      dark ? "#FFE57373" : "#FFD13438");
+            SetBrush("HelpBgBrush",      dark ? "#FF17181A" : "#FFF4F5F7");
         }
 
         private void SetBrush(string key, string hex)

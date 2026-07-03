@@ -96,8 +96,7 @@
 
     <Grid>
     <!-- Outer margin leaves room for the drop shadow. -->
-    <Border Width="312"
-            Margin="16"
+    <Border Margin="16"
             CornerRadius="10"
             Background="{DynamicResource BgBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
@@ -106,7 +105,14 @@
             <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.30" Color="Black" />
         </Border.Effect>
 
-        <StackPanel Margin="6">
+        <!-- Left: the menu. Right: an explanatory-video pane that some menu items drive on hover. -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="312" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel x:Name="MenuPanel" Grid.Column="0" Margin="6">
             <!-- Header -->
             <Grid Margin="10,10,10,6">
                 <Grid.ColumnDefinitions>
@@ -184,14 +190,18 @@
                 </Grid>
             </Button>
 
-            <Button Style="{StaticResource MenuButton}" Click="Coffee_Click">
+            <!-- Tag names an embedded help video (Assets\<Tag>) shown in the right pane on hover. -->
+            <Button Style="{StaticResource MenuButton}" Click="Coffee_Click" Tag="kitty.mp4">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="24" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x2615;" />
                     <TextBlock Grid.Column="1" Text="{DynamicResource tray_buy_coffee}" VerticalAlignment="Center" />
+                    <!-- Little play badge hinting this row has a video preview. -->
+                    <TextBlock Grid.Column="2" Style="{StaticResource RowIcon}" Text="&#x25B6;" FontSize="9" Margin="6,0,0,0" />
                 </Grid>
             </Button>
 
@@ -244,7 +254,50 @@
                     <TextBlock Grid.Column="1" Text="{DynamicResource tray_exit}" VerticalAlignment="Center" />
                 </Grid>
             </Button>
-        </StackPanel>
+            </StackPanel>
+
+            <!-- Explanatory-video pane. Shows a neutral brand card until a menu item that has a Tag
+                 video is hovered, then plays that video (looping, muted). -->
+            <Border x:Name="HelpPane"
+                    Grid.Column="1"
+                    Width="308"
+                    Margin="0,6,6,6"
+                    CornerRadius="8"
+                    Background="{DynamicResource HelpBgBrush}">
+                <Grid>
+                    <StackPanel x:Name="HelpPlaceholder"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Margin="16">
+                        <Image x:Name="HelpBrandIcon"
+                               Width="56" Height="56"
+                               HorizontalAlignment="Center"
+                               RenderOptions.BitmapScalingMode="HighQuality" />
+                        <TextBlock Text="{DynamicResource tray_tooltip}"
+                                   FontSize="16" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,0"
+                                   Foreground="{DynamicResource FgBrush}" />
+                        <TextBlock Text="{DynamicResource about_tagline}"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,2,0,0"
+                                   Foreground="{DynamicResource SubFgBrush}" />
+                    </StackPanel>
+
+                    <MediaElement x:Name="HelpVideo"
+                                  Visibility="Collapsed"
+                                  Width="284"
+                                  VerticalAlignment="Center"
+                                  Margin="12"
+                                  LoadedBehavior="Manual"
+                                  UnloadedBehavior="Manual"
+                                  Stretch="Uniform"
+                                  IsMuted="True"
+                                  MediaEnded="HelpVideo_MediaEnded" />
+                </Grid>
+            </Border>
+        </Grid>
     </Border>
 
     <!-- Share submenu, anchored to the Share row. Items are added in code from AppShare.Targets. -->

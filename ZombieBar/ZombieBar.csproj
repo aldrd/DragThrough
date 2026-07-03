@@ -82,6 +82,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Explanatory videos shown beside the tray flyout menu items. Embedded as WPF resources so
+         the app stays a single self-contained exe; the flyout extracts them to a temp file at
+         runtime because MediaElement can't play straight from a pack:// resource. -->
+    <None Remove="Assets\*.mp4" />
+    <Resource Include="Assets\*.mp4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
