@@ -432,18 +432,24 @@ namespace ZombieBar.Controls
             AlignTasks(notFull && Settings.Instance.CenterTasksInTaskbar, contentWidth);
         }
 
-        // The set of windows (by handle) that should be shown compactly: the option is on, the window is
-        // the only one of its executable currently on the bar, and it isn't File Explorer.
+        // The set of windows (by handle) that should be shown compactly: a window that is the only one of
+        // its executable currently on the bar and isn't File Explorer. Compacting is applied when the
+        // option is on, or — even with it off — when the bar is crowded (so many tasks that not all fit
+        // at their default width), where collapsing single-instance windows reclaims space.
         private HashSet<IntPtr> ComputeCompactWindows()
         {
             var compact = new HashSet<IntPtr>();
 
-            if (!Settings.Instance.CompactSingleInstanceTasks ||
-                Settings.Instance.Edge == (int)AppBarEdge.Left ||
+            if (Settings.Instance.Edge == (int)AppBarEdge.Left ||
                 Settings.Instance.Edge == (int)AppBarEdge.Right)
                 return compact;
 
             List<ApplicationWindow> windows = TasksList.Items.OfType<ApplicationWindow>().ToList();
+            if (windows.Count == 0)
+                return compact;
+
+            if (!Settings.Instance.CompactSingleInstanceTasks && !IsBarCrowded(windows.Count))
+                return compact;
 
             var countByFile = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach (ApplicationWindow w in windows)
@@ -468,6 +474,13 @@ namespace ZombieBar.Controls
 
         private static bool IsFileExplorer(string winFileName) =>
             winFileName.EndsWith("explorer.exe", StringComparison.OrdinalIgnoreCase);
+
+        // The bar is crowded when its windows wouldn't all fit at the default button width.
+        private bool IsBarCrowded(int totalCount)
+        {
+            double footprint = DefaultButtonWidth + TaskButtonLeftMargin + TaskButtonRightMargin;
+            return TasksList.ActualWidth > 0 && footprint > 0 && totalCount * footprint > TasksList.ActualWidth;
+        }
 
         // Push the compact flag onto each realized task button so its labels collapse and its width
         // switches to CompactButtonWidth (both driven off TaskButton.IsCompact).
