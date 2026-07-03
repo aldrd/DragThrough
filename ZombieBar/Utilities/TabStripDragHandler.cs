@@ -117,7 +117,7 @@ namespace ZombieBar.Utilities
             // click that never crosses the threshold still activates/minimises the window as before.
         }
 
-        // Walks up the visual tree from the pressed element looking for the task button's close button.
+        // Walks up from the pressed element looking for the task button's close button.
         private static bool IsOnCloseButton(object originalSource)
         {
             DependencyObject node = originalSource as DependencyObject;
@@ -125,9 +125,21 @@ namespace ZombieBar.Utilities
             {
                 if (node is FrameworkElement fe && fe.Name == "CloseButton")
                     return true;
-                node = VisualTreeHelper.GetParent(node);
+                node = GetAncestor(node);
             }
             return false;
+        }
+
+        // VisualTreeHelper.GetParent throws for content elements (e.g. a Run in the label TextBlock,
+        // which is what OriginalSource is when the press lands on the task's text), so hop such nodes up
+        // to their hosting element first and keep walking the visual tree from there.
+        private static DependencyObject GetAncestor(DependencyObject node)
+        {
+            if (node is FrameworkContentElement fce)
+                return fce.Parent;
+            if (node is Visual || node is System.Windows.Media.Media3D.Visual3D)
+                return VisualTreeHelper.GetParent(node);
+            return null;
         }
 
         private void OnPreviewMouseMove(object sender, MouseEventArgs e)
