@@ -33,7 +33,7 @@ Run the installer and you're done — the app lives in the system tray and updat
 
 ### Everything else
 - Lives quietly in the **system tray**; nothing to keep open.
-- **Automatic updates** — new versions install themselves.
+- **Easy installation of updates** — new versions are installed with one click.
 - **Localized** into English, Русский, Español, Français, Português and 中文 (简体).
 
 ## Requirements

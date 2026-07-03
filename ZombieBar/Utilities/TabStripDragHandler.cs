@@ -53,6 +53,7 @@ namespace ZombieBar.Utilities
         // plain click can still happen. "Dragging" = threshold crossed, the button is being dragged.
         private bool _pending;
         private bool _dragging;
+        private bool _gestureActive;
         private Point _startPoint;
         private UIElement _captureElement; // the inner Button that owns mouse capture during the gesture
 
@@ -76,6 +77,16 @@ namespace ZombieBar.Utilities
             _itemsControl.PreviewMouseLeftButtonUp += OnPreviewMouseLeftButtonUp;
             _itemsControl.PreviewKeyDown += OnPreviewKeyDown;
         }
+
+        /// <summary>
+        /// True while a reorder gesture is live (from the moment the drag begins until its final
+        /// commit). The task list watches this to suspend its own relayout/refresh work — regenerating
+        /// the item containers mid-drag would destroy the dragged button's mouse capture and abort it.
+        /// </summary>
+        public bool IsDragging => _gestureActive;
+
+        /// <summary>Raised on the UI thread once a drag gesture has fully finished and committed.</summary>
+        public event Action DragCompleted;
 
         private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -216,6 +227,7 @@ namespace ZombieBar.Utilities
             _pending = false;
             _grabOffset = Axis(_startPoint) - _dragSlot.Home;
             _dragging = true;
+            _gestureActive = true;
 
             // The inner Button still holds mouse capture (taken on button-down); track it so we can
             // react if it is lost unexpectedly, and so we can drop it cleanly when the drag ends.
@@ -392,10 +404,16 @@ namespace ZombieBar.Utilities
                 ClearTransforms(session.Slots);
                 _orderManager.Reorder(session.DragData, after?.Order ?? "", before?.Order ?? "");
                 _view?.Refresh();
-                return;
+            }
+            else
+            {
+                ClearTransforms(session.Slots);
             }
 
-            ClearTransforms(session.Slots);
+            // The gesture is fully finished: let the task list run any relayout/refresh it deferred
+            // while the drag was in progress.
+            _gestureActive = false;
+            DragCompleted?.Invoke();
         }
 
         private void ClearTransforms(List<Slot> slots)

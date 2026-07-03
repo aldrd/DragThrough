@@ -37,6 +37,10 @@ namespace ZombieBar.Controls
         private bool _desktopRefreshScheduled;
         private bool _desktopRefreshDirty;
 
+        // A task refresh/relayout was requested while a drag was in progress; running it then would
+        // regenerate the item containers and abort the drag, so it is deferred until the drag completes.
+        private bool _refreshPendingAfterDrag;
+
         // The COM "is on current desktop" result can be momentarily unsettled right after a switch, so
         // we recompute once more a short while later.
         private DispatcherTimer _desktopSettleTimer;
@@ -137,7 +141,10 @@ namespace ZombieBar.Controls
 
                     TasksOrderManager orderManager = app?.TasksOrderManager;
                     if (orderManager != null && _dragHandler == null)
+                    {
                         _dragHandler = new TabStripDragHandler(TasksList, _windowsView, orderManager);
+                        _dragHandler.DragCompleted += DragHandler_DragCompleted;
+                    }
 
                     // Re-align the task buttons live when the "center tasks" option is toggled.
                     Settings.Instance.PropertyChanged += Settings_PropertyChanged;
@@ -272,8 +279,18 @@ namespace ZombieBar.Controls
                         return;
 
                     _currentDesktopWindows = onCurrent; // null => show all (fail open)
-                    _windowsView?.Refresh();
-                    SetTaskButtonWidth();
+
+                    // Refreshing regenerates the item containers; doing that during a drag destroys the
+                    // dragged button's mouse capture and aborts the reorder. Defer until the drag ends.
+                    if (_dragHandler?.IsDragging == true)
+                    {
+                        _refreshPendingAfterDrag = true;
+                    }
+                    else
+                    {
+                        _windowsView?.Refresh();
+                        SetTaskButtonWidth();
+                    }
 
                     // State changed while the query was running: run once more to catch up.
                     if (_desktopRefreshDirty)
@@ -284,6 +301,14 @@ namespace ZombieBar.Controls
 
         private void GroupedWindows_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
+            // A window opened/closed while dragging: don't relayout/refresh now (it would abort the
+            // drag by regenerating the containers); catch up once the drag completes.
+            if (_dragHandler?.IsDragging == true)
+            {
+                _refreshPendingAfterDrag = true;
+                return;
+            }
+
             SetTaskButtonWidth();
 
             // A window opened/closed: refresh which of them are on the current desktop so a newly opened
@@ -291,8 +316,24 @@ namespace ZombieBar.Controls
             ScheduleDesktopRefresh();
         }
 
+        // Flush any refresh/relayout that was deferred because a drag was in progress.
+        private void DragHandler_DragCompleted()
+        {
+            if (!_refreshPendingAfterDrag)
+                return;
+
+            _refreshPendingAfterDrag = false;
+            SetTaskButtonWidth();
+            ScheduleDesktopRefresh();
+        }
+
         private void TaskList_OnLayoutUpdated(object sender, EventArgs e)
         {
+            // A window added/removed during a drag changes the item count; recomputing button widths
+            // then would disrupt the in-flight gesture. Leave the layout as captured until it ends.
+            if (_dragHandler?.IsDragging == true)
+                return;
+
             int count = TasksList.Items.Count;
             double width = TasksList.ActualWidth;
             if (count == _lastLayoutCount && Math.Abs(width - _lastLayoutWidth) < 0.5)
