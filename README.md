@@ -22,8 +22,6 @@ Run the installer and you're done — the app lives in the system tray and updat
 ### Drag through Explorer
 - **Hold Shift (or the Windows key) while dragging** files in File Explorer, and Explorer slides out of the way so you can drop onto the window that was behind it.
 - **Auto-minimize Explorer** after a successful drop, so your workspace stays tidy.
-- Press **Escape** to dismiss Windows Search instantly.
-- Each option can be toggled from the tray menu; the modifier keys are configurable.
 
 ### Secondary taskbar
 - A slim, optional extra taskbar with **draggable task buttons** — reorder them by dragging, Chrome‑tab style.
