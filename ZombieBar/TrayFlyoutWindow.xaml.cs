@@ -136,6 +136,22 @@ namespace ZombieBar
             UpdateItemText.Text = available
                 ? Loc("tray_update_available", "Update available, install")
                 : Loc("about_check_updates", "Check for updates");
+
+            // When an update is waiting, make the row stand out: accent colour + semibold on both the
+            // label and the sync icon. Otherwise it's a plain menu row. SetResourceReference keeps the
+            // brushes theme-aware. Called on every open, so it always matches the current theme.
+            if (available)
+            {
+                UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush");
+                UpdateItemIcon.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush");
+                UpdateItemText.FontWeight = FontWeights.SemiBold;
+            }
+            else
+            {
+                UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "FgBrush");
+                UpdateItemIcon.SetResourceReference(TextBlock.ForegroundProperty, "SubFgBrush");
+                UpdateItemText.FontWeight = FontWeights.Normal;
+            }
         }
 
         // === Help-video pane =============================================================

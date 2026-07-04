@@ -19,6 +19,8 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Foreground" Value="{DynamicResource FgBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <!-- No dashed keyboard-focus rectangle around the row. -->
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
@@ -70,6 +72,8 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Foreground" Value="{DynamicResource FgBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <!-- No dashed keyboard-focus rectangle around the row. -->
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -142,6 +146,8 @@
                            Foreground="{DynamicResource SubFgBrush}" />
             </Grid>
 
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
             <!-- Both switch groups share one row height via a single SharedSizeScope, so the vertical
                  gap between switches is identical within each group AND across the two groups, no matter
                  how many lines a label wraps to. All rows take the height of the tallest label; the
@@ -212,12 +218,9 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="24" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x2615;" />
                     <TextBlock Grid.Column="1" Text="{DynamicResource tray_buy_coffee}" VerticalAlignment="Center" />
-                    <!-- Little play badge hinting this row has a video preview. -->
-                    <TextBlock Grid.Column="2" Style="{StaticResource RowIcon}" Text="&#x25B6;" FontSize="9" Margin="6,0,0,0" />
                 </Grid>
             </Button>
 
@@ -243,7 +246,7 @@
                     </Grid.ColumnDefinitions>
                     <!-- Circular two-arrow "sync" glyph from Segoe MDL2 Assets (overrides RowIcon's font).
                          Sized so its circle matches the Exit power-symbol's circle. -->
-                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" FontFamily="Segoe MDL2 Assets" FontSize="11" Text="&#xE895;" />
+                    <TextBlock Grid.Column="0" x:Name="UpdateItemIcon" Style="{StaticResource RowIcon}" FontFamily="Segoe MDL2 Assets" FontSize="11" Text="&#xE895;" />
                     <TextBlock Grid.Column="1" x:Name="UpdateItemText" TextWrapping="Wrap" VerticalAlignment="Center" />
                 </Grid>
             </Button>
