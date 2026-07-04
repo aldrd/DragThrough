@@ -128,14 +128,26 @@ namespace ZombieBar
         }
 
         /// <summary>
-        /// The update row always reads "Check for updates" (label re-read from resources so it follows the
-        /// language); when a background check has found an update, an accent "Update available" badge is
-        /// shown after it. The icon and text stay unchanged.
+        /// Two states (label re-read from resources so it follows the language): "Check for updates" when
+        /// the update state is unknown, or "Update available, install" once a check has found one - in which
+        /// case the whole label is drawn as an accent pill (white text on blue). The icon never changes.
         /// </summary>
         public void SetUpdateAvailable(bool available)
         {
-            UpdateItemText.Text = Loc("about_check_updates", "Check for updates");
-            UpdateBadge.Visibility = available ? Visibility.Visible : Visibility.Collapsed;
+            if (available)
+            {
+                UpdateItemText.Text = Loc("tray_update_available", "Update available, install");
+                UpdateTextPill.SetResourceReference(Border.BackgroundProperty, "AccentBrush");
+                UpdateTextPill.Padding = new Thickness(6, 1, 6, 1);
+                UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "AccentFgBrush");
+            }
+            else
+            {
+                UpdateItemText.Text = Loc("about_check_updates", "Check for updates");
+                UpdateTextPill.ClearValue(Border.BackgroundProperty);
+                UpdateTextPill.Padding = new Thickness(0);
+                UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "FgBrush");
+            }
         }
 
         // === Help-video pane =============================================================
