@@ -84,11 +84,6 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="bg" Property="Background" Value="{DynamicResource HoverBrush}" />
                             </Trigger>
-                            <!-- Highlighted row (e.g. "Update available"): filled accent background. Declared
-                                 after the hover trigger so it wins - the row stays accent-filled on hover. -->
-                            <Trigger Property="Tag" Value="highlight">
-                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource AccentBrush}" />
-                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -240,19 +235,34 @@
                 </Grid>
             </Button>
 
-            <!-- Update item. Two states, driven from code: "Check for updates" when the update state is
-                 unknown, or "Update available, install" once a background check has found one. Either way
-                 a click runs the check/install flow. Hidden when the auto-updater is compiled out. -->
+            <!-- Update item: "Check for updates". A click runs the check/install flow. When a background
+                 check has found an update, a small accent "Update available" badge appears after the label
+                 (the icon and text stay unchanged). Hidden when the auto-updater is compiled out. -->
             <Button x:Name="UpdateItem" Style="{StaticResource MenuButton}" Click="CheckUpdate_Click">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <!-- Circular two-arrow "sync" glyph from Segoe MDL2 Assets (overrides RowIcon's font).
                          Sized so its circle matches the Exit power-symbol's circle. -->
                     <TextBlock Grid.Column="0" x:Name="UpdateItemIcon" Style="{StaticResource RowIcon}" FontFamily="Segoe MDL2 Assets" FontSize="11" Text="&#xE895;" />
-                    <TextBlock Grid.Column="1" x:Name="UpdateItemText" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" x:Name="UpdateItemText" VerticalAlignment="Center" />
+                    <!-- "Update available" badge, shown only when a background check has found an update. -->
+                    <Border Grid.Column="2"
+                            x:Name="UpdateBadge"
+                            Visibility="Collapsed"
+                            Background="{DynamicResource AccentBrush}"
+                            CornerRadius="4"
+                            Padding="6,1"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left">
+                        <TextBlock Text="{DynamicResource about_update_badge}"
+                                   Foreground="{DynamicResource AccentFgBrush}"
+                                   FontSize="10" />
+                    </Border>
                 </Grid>
             </Button>
 

@@ -128,33 +128,14 @@ namespace ZombieBar
         }
 
         /// <summary>
-        /// Sets the update item's label: "Update available, install" once a check has found an update,
-        /// otherwise "Check for updates". Re-read from resources each call so it follows the language.
+        /// The update row always reads "Check for updates" (label re-read from resources so it follows the
+        /// language); when a background check has found an update, an accent "Update available" badge is
+        /// shown after it. The icon and text stay unchanged.
         /// </summary>
         public void SetUpdateAvailable(bool available)
         {
-            UpdateItemText.Text = available
-                ? Loc("tray_update_available", "Update available, install")
-                : Loc("about_check_updates", "Check for updates");
-
-            // When an update is waiting, make the row stand out: a filled accent background (driven by the
-            // Tag="highlight" template trigger) with white accent-foreground text + icon, semibold.
-            // Otherwise it's a plain menu row. SetResourceReference keeps the brushes theme-aware; called
-            // on every open, so it always matches the current theme.
-            if (available)
-            {
-                UpdateItem.Tag = "highlight";
-                UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "AccentFgBrush");
-                UpdateItemIcon.SetResourceReference(TextBlock.ForegroundProperty, "AccentFgBrush");
-                UpdateItemText.FontWeight = FontWeights.SemiBold;
-            }
-            else
-            {
-                UpdateItem.Tag = null;
-                UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "FgBrush");
-                UpdateItemIcon.SetResourceReference(TextBlock.ForegroundProperty, "SubFgBrush");
-                UpdateItemText.FontWeight = FontWeights.Normal;
-            }
+            UpdateItemText.Text = Loc("about_check_updates", "Check for updates");
+            UpdateBadge.Visibility = available ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // === Help-video pane =============================================================
