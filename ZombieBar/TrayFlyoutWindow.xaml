@@ -84,6 +84,11 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="bg" Property="Background" Value="{DynamicResource HoverBrush}" />
                             </Trigger>
+                            <!-- Highlighted row (e.g. "Update available"): filled accent background. Declared
+                                 after the hover trigger so it wins - the row stays accent-filled on hover. -->
+                            <Trigger Property="Tag" Value="highlight">
+                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource AccentBrush}" />
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>

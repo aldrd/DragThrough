@@ -137,17 +137,20 @@ namespace ZombieBar
                 ? Loc("tray_update_available", "Update available, install")
                 : Loc("about_check_updates", "Check for updates");
 
-            // When an update is waiting, make the row stand out: accent colour + semibold on both the
-            // label and the sync icon. Otherwise it's a plain menu row. SetResourceReference keeps the
-            // brushes theme-aware. Called on every open, so it always matches the current theme.
+            // When an update is waiting, make the row stand out: a filled accent background (driven by the
+            // Tag="highlight" template trigger) with white accent-foreground text + icon, semibold.
+            // Otherwise it's a plain menu row. SetResourceReference keeps the brushes theme-aware; called
+            // on every open, so it always matches the current theme.
             if (available)
             {
-                UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush");
-                UpdateItemIcon.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush");
+                UpdateItem.Tag = "highlight";
+                UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "AccentFgBrush");
+                UpdateItemIcon.SetResourceReference(TextBlock.ForegroundProperty, "AccentFgBrush");
                 UpdateItemText.FontWeight = FontWeights.SemiBold;
             }
             else
             {
+                UpdateItem.Tag = null;
                 UpdateItemText.SetResourceReference(TextBlock.ForegroundProperty, "FgBrush");
                 UpdateItemIcon.SetResourceReference(TextBlock.ForegroundProperty, "SubFgBrush");
                 UpdateItemText.FontWeight = FontWeights.Normal;
@@ -157,8 +160,10 @@ namespace ZombieBar
         // === Help-video pane =============================================================
         private void MenuItem_MouseEnter(object sender, MouseEventArgs e)
         {
+            // Only a Tag naming a video file drives the help pane; other Tags (e.g. "highlight" on the
+            // update row) are not videos and just reset the pane to the brand card.
             string? video = (sender as FrameworkElement)?.Tag as string;
-            if (string.IsNullOrEmpty(video))
+            if (string.IsNullOrEmpty(video) || !video.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
                 ShowHelpPlaceholder();
             else
                 ShowHelpVideo(video);
