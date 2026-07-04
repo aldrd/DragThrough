@@ -101,6 +101,7 @@
 
     <!-- About window -->
     <s:String x:Key="tray_about">О программе</s:String>
+    <s:String x:Key="tray_update_available">Доступно обновление, установить</s:String>
     <s:String x:Key="about_title">О программе DragThrough</s:String>
     <s:String x:Key="about_version">Версия</s:String>
     <s:String x:Key="about_tagline">Windows helpers app</s:String>

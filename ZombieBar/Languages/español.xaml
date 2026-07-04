@@ -101,6 +101,7 @@
 
     <!-- About window -->
     <s:String x:Key="tray_about">Acerca de</s:String>
+    <s:String x:Key="tray_update_available">Actualización disponible, instalar</s:String>
     <s:String x:Key="about_title">Acerca de DragThrough</s:String>
     <s:String x:Key="about_version">Versión</s:String>
     <s:String x:Key="about_tagline">Windows helpers app</s:String>

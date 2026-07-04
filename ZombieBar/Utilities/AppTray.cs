@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ZombieBar.Utilities
@@ -20,7 +21,8 @@ namespace ZombieBar.Utilities
         private readonly Action<bool> _setTaskbarVisibleThisDesktop;
         private readonly Func<bool> _isTaskbarVisibleThisDesktop;
         private readonly Action _openFeedback;
-        private readonly Action _openAbout;
+        // Runs the "check for updates / install" flow. Null when the auto-updater is compiled out.
+        private readonly Func<Task>? _checkOrInstallUpdate;
         private readonly Action _exit;
 
         private TrayFlyoutWindow? _flyout;
@@ -35,16 +37,17 @@ namespace ZombieBar.Utilities
         /// <param name="setTaskbarVisibleThisDesktop">Shows/hides it only on the current virtual desktop.</param>
         /// <param name="isTaskbarVisibleThisDesktop">Whether it is currently shown on the current desktop.</param>
         /// <param name="openFeedback">Opens the feedback form ("Report a problem or suggestion").</param>
-        /// <param name="openAbout">Opens the "About" window.</param>
+        /// <param name="checkOrInstallUpdate">Runs the update check/install flow; null if unsupported.</param>
         /// <param name="exit">Quits the whole application.</param>
         public AppTray(Action<bool> setTaskbarVisible, Action<bool> setTaskbarVisibleThisDesktop,
-                       Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback, Action openAbout, Action exit)
+                       Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback,
+                       Func<Task>? checkOrInstallUpdate, Action exit)
         {
             _setTaskbarVisible = setTaskbarVisible;
             _setTaskbarVisibleThisDesktop = setTaskbarVisibleThisDesktop;
             _isTaskbarVisibleThisDesktop = isTaskbarVisibleThisDesktop;
             _openFeedback = openFeedback;
-            _openAbout = openAbout;
+            _checkOrInstallUpdate = checkOrInstallUpdate;
             _exit = exit;
 
             _tray = new NotifyIcon
@@ -95,7 +98,7 @@ namespace ZombieBar.Utilities
                 return;
 
             _flyout = new TrayFlyoutWindow(_setTaskbarVisible, _setTaskbarVisibleThisDesktop,
-                _isTaskbarVisibleThisDesktop, _openFeedback, _openAbout, _exit, ShowBalloon);
+                _isTaskbarVisibleThisDesktop, _openFeedback, _checkOrInstallUpdate, _exit, ShowBalloon);
             _flyout.Deactivated += (_, _) =>
             {
                 _flyoutHiddenAt = Environment.TickCount64;

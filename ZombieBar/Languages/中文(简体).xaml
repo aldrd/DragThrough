@@ -101,6 +101,7 @@
 
     <!-- About window -->
     <s:String x:Key="tray_about">关于</s:String>
+    <s:String x:Key="tray_update_available">有可用更新，点击安装</s:String>
     <s:String x:Key="about_title">关于 DragThrough</s:String>
     <s:String x:Key="about_version">版本</s:String>
     <s:String x:Key="about_tagline">Windows helpers app</s:String>

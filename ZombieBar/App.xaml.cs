@@ -1,12 +1,14 @@
 ﻿using System;
 using ManagedShell;
 using ZombieBar.Utilities;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using ManagedShell.AppBar;
 using ManagedShell.Common.Helpers;
 using ManagedShell.Interop;
 using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
 
 namespace ZombieBar
 {
@@ -86,22 +88,48 @@ namespace ZombieBar
             _feedbackWindow.Activate();
         }
 
-        // Single-instance "About" window, opened from the tray menu.
-        private AboutWindow _aboutWindow;
-
-        private void OpenAboutWindow()
+        // Tray "update" item action: if a background check already found an update, offer to install it;
+        // otherwise check now and, if one is found, offer to install it. Both paths end in the same
+        // install-or-not prompt. No-op when the auto-updater is compiled out (_updater == null).
+        private async Task CheckOrInstallUpdateAsync()
         {
-            if (_aboutWindow != null)
-            {
-                _aboutWindow.Activate();
+            if (_updater == null)
                 return;
-            }
 
-            _aboutWindow = new AboutWindow(_updater);
-            _aboutWindow.Closed += (_, _) => _aboutWindow = null;
-            _aboutWindow.Show();
-            _aboutWindow.Activate();
+            Updater.UpdateCheckResult result = _updater.IsUpdateAvailable
+                ? Updater.UpdateCheckResult.UpdateAvailable
+                : await _updater.CheckForUpdatesNowAsync();
+
+            string title = Loc("about_title", "About");
+            switch (result)
+            {
+                case Updater.UpdateCheckResult.UpToDate:
+                    MessageBox.Show(Loc("about_up_to_date", "You have the latest version."),
+                        title, MessageBoxButton.OK, MessageBoxImage.Information);
+                    break;
+
+                case Updater.UpdateCheckResult.Failed:
+                    MessageBox.Show(Loc("about_check_failed", "Couldn't check for updates. Please try again later."),
+                        title, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    break;
+
+                case Updater.UpdateCheckResult.UpdateAvailable:
+                    // Reflect the newly-known state in the tray item ("Update available, install").
+                    _appTray?.SetUpdateAvailable();
+
+                    string prompt = string.Format(Loc("about_update_prompt", "Version {0} is available. Install it now?"),
+                        _updater.AvailableVersion);
+                    if (MessageBox.Show(prompt, title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    {
+                        if (await _updater.InstallUpdateAsync() == Updater.InstallResult.Installing)
+                            ExitGracefully();
+                    }
+                    break;
+            }
         }
+
+        private static string Loc(string key, string fallback) =>
+            Current?.TryFindResource(key) as string ?? fallback;
 
         public void ReopenTaskbar()
         {
@@ -195,7 +223,8 @@ namespace ZombieBar
             // Tray icon and the "drag through" monitor run for the whole app lifetime.
             _dragMonitor.Start();
             _appTray = new AppTray(SetAdditionalTaskbarVisible, SetCurrentDesktopTaskbarVisible,
-                () => IsTaskbarVisibleOnCurrentDesktop, OpenFeedbackWindow, OpenAboutWindow, ExitGracefully);
+                () => IsTaskbarVisibleOnCurrentDesktop, OpenFeedbackWindow,
+                _updater != null ? CheckOrInstallUpdateAsync : (Func<Task>)null, ExitGracefully);
             // Open the flyout's help video in the background now, so the first hover shows it instantly.
             _appTray.PrewarmFlyout();
 

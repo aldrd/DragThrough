@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -28,7 +29,8 @@ namespace ZombieBar
         private readonly Action<bool> _setTaskbarVisibleThisDesktop;
         private readonly Func<bool> _isTaskbarVisibleThisDesktop;
         private readonly Action _openFeedback;
-        private readonly Action _openAbout;
+        // Runs the "check for updates / install" flow. Null when the auto-updater is compiled out.
+        private readonly Func<Task>? _checkOrInstallUpdate;
         private readonly Action _exit;
         private readonly Action<string, string> _showBalloon;
 
@@ -48,14 +50,14 @@ namespace ZombieBar
         private bool _warmed;
 
         public TrayFlyoutWindow(Action<bool> setTaskbarVisible, Action<bool> setTaskbarVisibleThisDesktop,
-                                Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback, Action openAbout,
-                                Action exit, Action<string, string> showBalloon)
+                                Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback,
+                                Func<Task>? checkOrInstallUpdate, Action exit, Action<string, string> showBalloon)
         {
             _setTaskbarVisible = setTaskbarVisible;
             _setTaskbarVisibleThisDesktop = setTaskbarVisibleThisDesktop;
             _isTaskbarVisibleThisDesktop = isTaskbarVisibleThisDesktop;
             _openFeedback = openFeedback;
-            _openAbout = openAbout;
+            _checkOrInstallUpdate = checkOrInstallUpdate;
             _exit = exit;
             _showBalloon = showBalloon;
 
@@ -68,6 +70,14 @@ namespace ZombieBar
 
             Version? version = Assembly.GetExecutingAssembly().GetName().Version;
             VersionText.Text = version != null ? $"v{version}" : "";
+
+            // The update item only makes sense with the auto-updater compiled in; hide it otherwise
+            // (e.g. the Microsoft Store build, where the store handles updates). Its label is set to the
+            // "unknown" state up front and refreshed by SetUpdateAvailable when a check finds an update.
+            if (_checkOrInstallUpdate == null)
+                UpdateItem.Visibility = Visibility.Collapsed;
+            else
+                SetUpdateAvailable(false);
 
             // Any menu item whose Tag names a video shows it in the help pane on hover; every other
             // item resets the pane to the brand card. Wired here so future items need no extra code.
@@ -117,10 +127,15 @@ namespace ZombieBar
             ManagedShell.Interop.NativeMethods.SetForegroundWindow(new WindowInteropHelper(this).Handle);
         }
 
-        /// <summary>Shows or hides the "Update available" badge next to the About item.</summary>
+        /// <summary>
+        /// Sets the update item's label: "Update available, install" once a check has found an update,
+        /// otherwise "Check for updates". Re-read from resources each call so it follows the language.
+        /// </summary>
         public void SetUpdateAvailable(bool available)
         {
-            AboutUpdateBadge.Visibility = available ? Visibility.Visible : Visibility.Collapsed;
+            UpdateItemText.Text = available
+                ? Loc("tray_update_available", "Update available, install")
+                : Loc("about_check_updates", "Check for updates");
         }
 
         // === Help-video pane =============================================================
@@ -408,10 +423,11 @@ namespace ZombieBar
             _openFeedback();
         }
 
-        private void About_Click(object sender, RoutedEventArgs e)
+        private async void CheckUpdate_Click(object sender, RoutedEventArgs e)
         {
             Hide();
-            _openAbout();
+            if (_checkOrInstallUpdate != null)
+                await _checkOrInstallUpdate();
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)

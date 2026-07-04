@@ -90,6 +90,9 @@
             <Setter Property="FontFamily" Value="Segoe UI Symbol" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="VerticalAlignment" Value="Center" />
+            <!-- Left-aligned in the icon column so every icon's left edge lines up with the toggle labels'
+                 left edge above (both start at the row's left padding). -->
+            <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Foreground" Value="{DynamicResource SubFgBrush}" />
         </Style>
     </Window.Resources>
@@ -190,8 +193,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <!-- iOS-style "Share" icon (box with an up arrow), drawn as a vector to match the
-                         design. Sized/left-aligned to line up with the Segoe glyph icons in the other
-                         rows; the arrow's shaft keeps a gap from the box top so they don't merge. -->
+                         design. Left-aligned in the icon column so it lines up with the glyph icons in the
+                         other rows; the arrow's shaft keeps a gap from the box top so they don't merge. -->
                     <Viewbox Grid.Column="0" Height="14" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Path Data="M12,3 L12,13 M8.5,6.5 L12,3 L15.5,6.5 M9,10 L7,10 Q5,10 5,12 L5,20 Q5,22 7,22 L17,22 Q19,22 19,20 L19,12 Q19,10 17,10 L15,10"
                               Stroke="{DynamicResource SubFgBrush}"
@@ -229,29 +232,19 @@
                 </Grid>
             </Button>
 
-            <Button Style="{StaticResource MenuButton}" Click="About_Click">
+            <!-- Update item. Two states, driven from code: "Check for updates" when the update state is
+                 unknown, or "Update available, install" once a background check has found one. Either way
+                 a click runs the check/install flow. Hidden when the auto-updater is compiled out. -->
+            <Button x:Name="UpdateItem" Style="{StaticResource MenuButton}" Click="CheckUpdate_Click">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="24" />
-                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x24D8;" />
-                    <TextBlock Grid.Column="1" Text="{DynamicResource tray_about}" VerticalAlignment="Center" />
-                    <!-- Shown only when an update is available. -->
-                    <Border Grid.Column="2"
-                            x:Name="AboutUpdateBadge"
-                            Visibility="Collapsed"
-                            Background="{DynamicResource AccentBrush}"
-                            CornerRadius="4"
-                            Padding="6,1"
-                            Margin="8,0,0,0"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Left">
-                        <TextBlock Text="{DynamicResource about_update_badge}"
-                                   Foreground="{DynamicResource AccentFgBrush}"
-                                   FontSize="10" />
-                    </Border>
+                    <!-- Circular two-arrow "sync" glyph from Segoe MDL2 Assets (overrides RowIcon's font).
+                         Sized so its circle matches the Exit power-symbol's circle. -->
+                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" FontFamily="Segoe MDL2 Assets" FontSize="11" Text="&#xE895;" />
+                    <TextBlock Grid.Column="1" x:Name="UpdateItemText" TextWrapping="Wrap" VerticalAlignment="Center" />
                 </Grid>
             </Button>
 
