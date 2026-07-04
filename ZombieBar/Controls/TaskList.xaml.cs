@@ -465,6 +465,10 @@ namespace ZombieBar.Controls
                 string file = w.WinFileName ?? "";
                 if (file.Length == 0 || IsFileExplorer(file))
                     continue;
+                // A window whose title is a file path (shown right-trimmed to keep the file name) carries
+                // meaningful text, so it is never collapsed to just an icon.
+                if (w.TaskBarDisplayType == TaskBarDisplayType.Right)
+                    continue;
                 if (countByFile.TryGetValue(file, out int c) && c == 1)
                     compact.Add(w.Handle);
             }
