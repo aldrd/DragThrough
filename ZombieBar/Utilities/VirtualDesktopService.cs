@@ -63,6 +63,12 @@ namespace ZombieBar.Utilities
             if (!_available || handles == null)
                 return null;
 
+            // The current desktop's GUID (from the registry). If we don't know it (single desktop or
+            // unreadable), don't filter — show everything.
+            Guid current = _current;
+            if (current == Guid.Empty)
+                return null;
+
             IVirtualDesktopManager manager;
             try
             {
@@ -83,11 +89,15 @@ namespace ZombieBar.Utilities
 
                     try
                     {
-                        // IsWindowOnCurrentVirtualDesktop is based on the window's desktop assignment,
-                        // not its cloak/minimize state, so it is correct for minimized windows.
-                        if (manager.IsWindowOnCurrentVirtualDesktop(hwnd, out int on) == 0)
+                        // Use the window's assigned desktop id (correct for minimized windows too). A
+                        // just-opened window hasn't been assigned to a desktop yet and reports an EMPTY
+                        // id — IsWindowOnCurrentVirtualDesktop would say "not current" and wrongly drop it,
+                        // so treat an empty id as the current desktop (a fresh window is almost always on
+                        // the desktop you opened it on). A window genuinely on another desktop has that
+                        // desktop's non-empty id and is excluded.
+                        if (manager.GetWindowDesktopId(hwnd, out Guid id) == 0)
                         {
-                            if (on != 0)
+                            if (id == Guid.Empty || id == current)
                                 onCurrent.Add(hwnd);
                         }
                         else

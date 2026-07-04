@@ -325,6 +325,12 @@ namespace ZombieBar.Controls
             // A window opened/closed: refresh which of them are on the current desktop so a newly opened
             // window on this desktop shows up (scheduled off this handler to stay off the COM re-entrancy path).
             ScheduleDesktopRefresh();
+
+            // A freshly opened window's title and virtual-desktop assignment settle a moment after it
+            // appears (e.g. Notepad++ shows "new 1" before the file path, which flips its display type),
+            // so recompute once more shortly after to pick up the settled state.
+            _desktopSettleTimer?.Stop();
+            _desktopSettleTimer?.Start();
         }
 
         // Flush any refresh/relayout that was deferred because a drag was in progress.
