@@ -253,7 +253,14 @@
                         <ColumnDefinition Width="24" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x23FB;" Foreground="{DynamicResource DangerBrush}" Margin="-1,0,0,0" />
+                    <!-- Power symbol drawn as a vector (open ring + top stem) so it renders identically
+                         everywhere; the U+23FB glyph is missing from Segoe UI Symbol on some systems. -->
+                    <Viewbox Grid.Column="0" Height="15" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-1,0,0,0">
+                        <Path Data="M12,4 L12,12 M17.7,9 A7,7 0 1 1 6.3,9"
+                              Stroke="{DynamicResource DangerBrush}"
+                              StrokeThickness="2"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                    </Viewbox>
                     <TextBlock Grid.Column="1" Text="{DynamicResource tray_exit}" VerticalAlignment="Center" />
                 </Grid>
             </Button>
