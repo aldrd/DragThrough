@@ -143,6 +143,23 @@ namespace ManagedShell.WindowsTasks
             set { SetValue(ref _title, value); }
         }
 
+        private string _fullTitle;
+
+        // The unmodified window text (e.g. "D:\dir\file.txt - Notepad++"), before Title strips it down
+        // to just the file path for path-titled windows. Used for the taskbar tooltip.
+        public string FullTitle
+        {
+            get
+            {
+                if (_fullTitle == null)
+                {
+                    SetTitleAndTaskBarDisplayType();
+                }
+                return _fullTitle;
+            }
+            set { SetValue(ref _fullTitle, value); }
+        }
+
         private void SetTitleAndTaskBarDisplayType()
         {
             string title = "";
@@ -152,6 +169,8 @@ namespace ManagedShell.WindowsTasks
                 NativeMethods.GetWindowText(Handle, titleBuilder, TITLE_LENGTH + 1);
 
                 title = titleBuilder.ToString();
+
+                FullTitle = title;
 
                 title = TitleHelper.GetTitle(title, out TaskBarDisplayType taskBarDisplayType);
 

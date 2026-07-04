@@ -12,7 +12,7 @@
         <converters:CompactCloseVisibilityConverter x:Key="CompactCloseVisibilityConverter"/>
     </UserControl.Resources>
     <Button Name="AppButton"
-            ToolTip="{Binding Path=Title}"
+            ToolTip="{Binding Path=FullTitle}"
             Click="AppButton_OnClick"
             MouseUp="AppButton_OnMouseUp"
             PreviewMouseDown="AppButton_OnPreviewMouseDown"
