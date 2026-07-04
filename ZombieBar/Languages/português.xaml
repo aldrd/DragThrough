@@ -47,8 +47,8 @@
 
     <!-- Tray menu (DragThrough) -->
     <s:String x:Key="tray_drag_title">Ocultar temporariamente o Explorador ao arrastar ficheiros</s:String>
-    <s:String x:Key="tray_use_windows_key">Usar também a tecla Windows</s:String>
-    <s:String x:Key="tray_enable_shift">Ocultar temporariamente o Explorador ao arrastar arquivos com a tecla Shift (pode não funcionar em alguns aplicativos, por exemplo, o Davinci Resolve)</s:String>
+    <s:String x:Key="tray_use_windows_key">Usar também a tecla Windows (Shift pode não funcionar em alguns aplicativos, por exemplo, o Davinci Resolve)</s:String>
+    <s:String x:Key="tray_enable_shift">Ocultar temporariamente o Explorador ao arrastar arquivos com a tecla Shift</s:String>
     <s:String x:Key="tray_minimize_explorer">Minimizar o Explorador após arrastar</s:String>
     <s:String x:Key="tray_dismiss_search">Fechar a Pesquisa do Windows com Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Mostrar a barra de tarefas em todas as áreas de trabalho</s:String>
