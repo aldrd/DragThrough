@@ -311,25 +311,35 @@ namespace ZombieBar.Utilities
             desiredStart = Math.Max(stripStart, Math.Min(desiredStart, stripEnd - _dragSlot.Size));
             SetAxis(_dragSlot.Transform, desiredStart - _dragSlot.Home);
 
-            double draggedCenter = desiredStart + _dragSlot.Size / 2;
-            UpdateShifts(draggedCenter, stripStart);
+            UpdateShifts(desiredStart, stripStart);
         }
 
         // Decides where the dragged button would insert and slides the others to open that gap.
-        private void UpdateShifts(double draggedCenter, double stripStart)
+        private void UpdateShifts(double draggedStart, double stripStart)
         {
             List<Slot> others = new(_slots.Count - 1);
             foreach (Slot s in _slots)
                 if (!ReferenceEquals(s, _dragSlot))
                     others.Add(s);
 
+            // Pick the insert index whose slot position in the re-laid-out strip is closest to where the
+            // button is currently dragged. Choosing by nearest candidate position (rather than crossing
+            // each neighbour's midpoint) lets a full-size button reach the very first/last slot even when
+            // the edge buttons are narrower than it — e.g. compact single-instance buttons at the ends,
+            // whose midpoints a wide button's clamped centre could never cross.
             int insertPos = 0;
-            foreach (Slot s in others)
+            double bestDistance = double.PositiveInfinity;
+            double candidate = stripStart;
+            for (int i = 0; i <= others.Count; i++)
             {
-                if (s.Home + s.Size / 2 < draggedCenter)
-                    insertPos++;
-                else
-                    break;
+                double distance = Math.Abs(draggedStart - candidate);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    insertPos = i;
+                }
+                if (i < others.Count)
+                    candidate += others[i].Size;
             }
             _insertPos = insertPos;
 
