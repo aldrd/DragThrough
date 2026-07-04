@@ -128,6 +128,11 @@ namespace ZombieBar.Controls
                         IsLiveSorting = true
                     };
                     _windowsView.LiveFilteringProperties.Add("ShowInTaskbar");
+                    // Re-run the filter when a window's title changes: a real app that opens its main
+                    // window with an empty title (filtered out by the empty-title guard in IsTaskbarEligible)
+                    // must reappear the moment it sets a title, rather than staying hidden until the next
+                    // unrelated refresh.
+                    _windowsView.LiveFilteringProperties.Add("Title");
                     _windowsView.LiveSortingProperties.Add("Order");
 
                     TasksList.ItemsSource = _windowsView;
@@ -211,6 +216,14 @@ namespace ZombieBar.Controls
         // windows already known to be on the current desktop.
         private static bool IsTaskbarEligible(ApplicationWindow window)
         {
+            // A titleless, contentless window (e.g. the transient Explorer thumbnail/peek host that pops up
+            // when hovering an Explorer button on the main taskbar — an explorer.exe window with the Explorer
+            // icon and an empty title) would render as an empty-text button, so hide it. Real File Explorer
+            // windows are exempt: they display the folder path even when their raw title is momentarily empty.
+            if (string.IsNullOrWhiteSpace(window.Title)
+                && !ExplorerPathHelper.IsFileExplorerWindow(window.Handle))
+                return false;
+
             if (window.ShowInTaskbar)
                 return true;
 
