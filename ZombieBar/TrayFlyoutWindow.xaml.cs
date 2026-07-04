@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -37,6 +38,14 @@ namespace ZombieBar
         // keyed by file name so each is unpacked only once per run.
         private static readonly Dictionary<string, string?> _extractedVideos = new();
         private string? _currentVideo;
+        // The video file currently assigned to HelpVideo.Source. Kept loaded (the player is never torn
+        // down) so hovering the same item again just calls Play() and appears instantly, instead of
+        // re-opening and buffering the clip on every hover.
+        private string? _loadedVideo;
+        // True while the window is shown off-screen purely to let the MediaElement open the clip; the
+        // window is hidden again as soon as the media opens.
+        private bool _warming;
+        private bool _warmed;
 
         public TrayFlyoutWindow(Action<bool> setTaskbarVisible, Action<bool> setTaskbarVisibleThisDesktop,
                                 Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback, Action openAbout,
@@ -65,6 +74,10 @@ namespace ZombieBar
             foreach (ButtonBase item in FindLogicalDescendants<ButtonBase>(MenuPanel))
                 item.MouseEnter += MenuItem_MouseEnter;
 
+            // Open (extract + buffer) the help video up front so the first hover is instant. The flyout
+            // is created once and reused, so this cost is paid a single time, well before any hover.
+            PreloadHelpVideo();
+
             Deactivated += (_, _) =>
             {
                 // Closing the Share popup whenever the flyout loses focus keeps the two in sync,
@@ -77,6 +90,15 @@ namespace ZombieBar
         /// <summary>Positions the flyout just above the cursor (the tray icon) and shows it.</summary>
         public void ShowAtCursor()
         {
+            // If the startup warm-up (the 1x1 pixel window) is still running, cancel it so the flyout
+            // shows at its full content size rather than the warm-up's single pixel.
+            if (_warming)
+            {
+                _warming = false;
+                SizeToContent = SizeToContent.WidthAndHeight;
+                ShowActivated = true;
+            }
+
             ApplyTheme();
             SyncFromSettings();
             SharePopup.IsOpen = false;
@@ -124,7 +146,13 @@ namespace ZombieBar
             }
 
             _currentVideo = fileName;
-            HelpVideo.Source = new Uri(path);
+            // Only (re)assign the source when it's a different clip; for the already-loaded one the player
+            // is still open, so Play() resumes from the first frame with no open/buffer delay.
+            if (fileName != _loadedVideo)
+            {
+                _loadedVideo = fileName;
+                HelpVideo.Source = new Uri(path);
+            }
             HelpVideo.Position = TimeSpan.Zero;
             HelpVideo.Play();
             HelpPlaceholder.Visibility = Visibility.Collapsed;
@@ -137,10 +165,89 @@ namespace ZombieBar
                 return;
 
             _currentVideo = null;
-            HelpVideo.Stop();
-            HelpVideo.Source = null;
+            // Pause rather than Stop/clear the source: keeping the player open means the next hover starts
+            // instantly instead of paying the open+buffer cost again.
+            HelpVideo.Pause();
             HelpVideo.Visibility = Visibility.Collapsed;
             HelpPlaceholder.Visibility = Visibility.Visible;
+        }
+
+        // Warm the player at startup: extract the first referenced help video and open it so its first
+        // hover doesn't have to unpack + buffer 2 MB of clip on the UI thread.
+        private void PreloadHelpVideo()
+        {
+            string? first = FindLogicalDescendants<ButtonBase>(MenuPanel)
+                .Select(b => b.Tag as string)
+                .FirstOrDefault(s => !string.IsNullOrEmpty(s));
+            if (first == null)
+                return;
+
+            string? path = ResolveVideoPath(first);
+            if (path == null)
+                return;
+
+            _loadedVideo = first;
+            HelpVideo.Source = new Uri(path);
+            // Kick off the open; MediaOpened parks it paused at the first frame while it stays hidden.
+            HelpVideo.Play();
+        }
+
+        /// <summary>
+        /// Opens the help video ahead of time by briefly showing the flyout as a single imperceptible
+        /// pixel. A MediaElement only starts loading its source once it's shown in a rendered window, and
+        /// the first open in a process also pays a one-time media-pipeline init cost (~2-4s). Doing this
+        /// at startup moves both off the first hover, so the video appears instantly when the user hovers.
+        /// </summary>
+        public void WarmUp()
+        {
+            if (_warmed || _loadedVideo == null)
+                return;
+            _warmed = true;
+            _warming = true;
+
+            // The MediaElement only opens its source once the window is genuinely rendered on-screen:
+            // a fully-transparent (Opacity 0) or entirely off-screen window is culled and never realizes
+            // the media. So show a 1x1, opaque, non-activating window tucked into the top-left corner -
+            // a single pixel is imperceptible but enough to make WPF render (and thus open) the clip.
+            SizeToContent = SizeToContent.Manual;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Width = 1;
+            Height = 1;
+            Left = 0;
+            Top = 0;
+            Opacity = 1;
+            ShowActivated = false;
+            Show();
+        }
+
+        private void EndWarmUp()
+        {
+            if (!_warming)
+                return;
+            _warming = false;
+            Hide();
+            // Restore normal show behaviour for the real, on-screen presentations.
+            SizeToContent = SizeToContent.WidthAndHeight;
+            Opacity = 1;
+            ShowActivated = true;
+        }
+
+        private void HelpVideo_MediaFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            // Don't leave the warm-up window stuck open if the clip can't be decoded.
+            EndWarmUp();
+        }
+
+        private void HelpVideo_MediaOpened(object sender, RoutedEventArgs e)
+        {
+            // If the clip finished opening while nothing is being shown (the preload/warm-up, or a hover
+            // that ended before it opened), hold it paused at the first frame so it's ready to resume.
+            if (_currentVideo == null)
+            {
+                HelpVideo.Pause();
+                HelpVideo.Position = TimeSpan.Zero;
+            }
+            EndWarmUp();
         }
 
         private void HelpVideo_MediaEnded(object sender, RoutedEventArgs e)

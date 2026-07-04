@@ -196,6 +196,8 @@ namespace ZombieBar
             _dragMonitor.Start();
             _appTray = new AppTray(SetAdditionalTaskbarVisible, SetCurrentDesktopTaskbarVisible,
                 () => IsTaskbarVisibleOnCurrentDesktop, OpenFeedbackWindow, OpenAboutWindow, ExitGracefully);
+            // Open the flyout's help video in the background now, so the first hover shows it instantly.
+            _appTray.PrewarmFlyout();
 
             // The auto-updater runs for the whole app lifetime (not tied to the taskbar, which can
             // be hidden). When an update is found, mark it on the tray's "About" item; the user

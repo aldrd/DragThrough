@@ -297,6 +297,9 @@
                                   UnloadedBehavior="Manual"
                                   Stretch="Uniform"
                                   IsMuted="True"
+                                  ScrubbingEnabled="True"
+                                  MediaOpened="HelpVideo_MediaOpened"
+                                  MediaFailed="HelpVideo_MediaFailed"
                                   MediaEnded="HelpVideo_MediaEnded" />
                 </Grid>
             </Border>

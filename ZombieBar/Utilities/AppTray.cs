@@ -89,21 +89,36 @@ namespace ZombieBar.Utilities
             ShowFlyout();
         }
 
+        private void EnsureFlyout()
+        {
+            if (_flyout != null)
+                return;
+
+            _flyout = new TrayFlyoutWindow(_setTaskbarVisible, _setTaskbarVisibleThisDesktop,
+                _isTaskbarVisibleThisDesktop, _openFeedback, _openAbout, _exit, ShowBalloon);
+            _flyout.Deactivated += (_, _) =>
+            {
+                _flyoutHiddenAt = Environment.TickCount64;
+                _flyout?.Hide();
+            };
+        }
+
         private void ShowFlyout()
         {
-            if (_flyout == null)
-            {
-                _flyout = new TrayFlyoutWindow(_setTaskbarVisible, _setTaskbarVisibleThisDesktop,
-                    _isTaskbarVisibleThisDesktop, _openFeedback, _openAbout, _exit, ShowBalloon);
-                _flyout.Deactivated += (_, _) =>
-                {
-                    _flyoutHiddenAt = Environment.TickCount64;
-                    _flyout?.Hide();
-                };
-            }
-
-            _flyout.SetUpdateAvailable(_updateAvailable);
+            EnsureFlyout();
+            _flyout!.SetUpdateAvailable(_updateAvailable);
             _flyout.ShowAtCursor();
+        }
+
+        /// <summary>
+        /// Creates the flyout and opens its help video ahead of any user interaction, so the first hover
+        /// over a video menu item shows the clip instantly instead of waiting for the media pipeline to
+        /// spin up. Scheduled off the startup path so it never delays launch.
+        /// </summary>
+        public void PrewarmFlyout()
+        {
+            EnsureFlyout();
+            _flyout!.WarmUp();
         }
 
         private void ShowBalloon(string title, string text)
