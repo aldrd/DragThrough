@@ -47,8 +47,8 @@
 
     <!-- Tray menu (DragThrough) -->
     <s:String x:Key="tray_drag_title">拖动文件时临时隐藏资源管理器</s:String>
-    <s:String x:Key="tray_use_windows_key">使用 Windows 键</s:String>
-    <s:String x:Key="tray_enable_shift">拖动文件时用 Shift 键临时隐藏资源管理器</s:String>
+    <s:String x:Key="tray_use_windows_key">同时使用 Windows 键</s:String>
+    <s:String x:Key="tray_enable_shift">拖动文件时用 Shift 键临时隐藏资源管理器（在某些应用中可能无法使用，例如 Davinci Resolve）</s:String>
     <s:String x:Key="tray_minimize_explorer">拖动后最小化资源管理器</s:String>
     <s:String x:Key="tray_dismiss_search">用 Esc 关闭 Windows 搜索</s:String>
     <s:String x:Key="tray_show_taskbar">在所有桌面显示任务栏</s:String>

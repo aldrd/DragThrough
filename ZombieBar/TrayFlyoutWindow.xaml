@@ -22,7 +22,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="bg" Background="Transparent" CornerRadius="6" Padding="10,8">
+                        <Border x:Name="bg" Background="Transparent" CornerRadius="6" Padding="10,4">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -139,35 +139,45 @@
                            Foreground="{DynamicResource SubFgBrush}" />
             </Grid>
 
-            <!-- Drag modifiers + minimize. Equal-height rows (UniformGrid) so the switches are spaced
-                 evenly regardless of how many lines each label wraps to. -->
-            <UniformGrid Columns="1">
-                <ToggleButton x:Name="ShiftToggle" Style="{StaticResource SwitchRow}" Click="ShiftToggle_Click">
+            <!-- Both switch groups share one row height via a single SharedSizeScope, so the vertical
+                 gap between switches is identical within each group AND across the two groups, no matter
+                 how many lines a label wraps to. All rows take the height of the tallest label; the
+                 separator between the groups sits in its own auto-sized row. -->
+            <Grid Grid.IsSharedSizeScope="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" SharedSizeGroup="SwitchRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="SwitchRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="SwitchRow" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="SwitchRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="SwitchRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="SwitchRow" />
+                </Grid.RowDefinitions>
+
+                <!-- Drag modifiers + minimize. -->
+                <ToggleButton Grid.Row="0" x:Name="ShiftToggle" Style="{StaticResource SwitchRow}" Click="ShiftToggle_Click">
                     <TextBlock Text="{DynamicResource tray_enable_shift}" TextWrapping="Wrap" />
                 </ToggleButton>
-                <ToggleButton x:Name="WinKeyToggle" Style="{StaticResource SwitchRow}" Click="WinKeyToggle_Click">
+                <ToggleButton Grid.Row="1" x:Name="WinKeyToggle" Style="{StaticResource SwitchRow}" Click="WinKeyToggle_Click">
                     <TextBlock Text="{DynamicResource tray_use_windows_key}" TextWrapping="Wrap" />
                 </ToggleButton>
-                <ToggleButton x:Name="MinimizeToggle" Style="{StaticResource SwitchRow}" Click="MinimizeToggle_Click">
+                <ToggleButton Grid.Row="2" x:Name="MinimizeToggle" Style="{StaticResource SwitchRow}" Click="MinimizeToggle_Click">
                     <TextBlock Text="{DynamicResource tray_minimize_explorer}" TextWrapping="Wrap" />
                 </ToggleButton>
-            </UniformGrid>
 
-            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+                <Border Grid.Row="3" Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
 
-            <!-- Additional taskbar: show/hide on the current desktop, and centering of the tasks.
-                 Grouped without a separator; equal-height rows so the switches are spaced evenly. -->
-            <UniformGrid Columns="1">
-                <ToggleButton x:Name="ShowTaskbarThisDesktopToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarThisDesktopToggle_Click">
+                <!-- Additional taskbar: show/hide on the current desktop, and centering of the tasks. -->
+                <ToggleButton Grid.Row="4" x:Name="ShowTaskbarThisDesktopToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarThisDesktopToggle_Click">
                     <TextBlock Text="{DynamicResource tray_show_taskbar_this_desktop}" TextWrapping="Wrap" />
                 </ToggleButton>
-                <ToggleButton x:Name="CenterTasksToggle" Style="{StaticResource SwitchRow}" Click="CenterTasksToggle_Click">
+                <ToggleButton Grid.Row="5" x:Name="CenterTasksToggle" Style="{StaticResource SwitchRow}" Click="CenterTasksToggle_Click">
                     <TextBlock Text="{DynamicResource tray_center_tasks}" TextWrapping="Wrap" />
                 </ToggleButton>
-                <ToggleButton x:Name="CompactTasksToggle" Style="{StaticResource SwitchRow}" Click="CompactTasksToggle_Click">
+                <ToggleButton Grid.Row="6" x:Name="CompactTasksToggle" Style="{StaticResource SwitchRow}" Click="CompactTasksToggle_Click">
                     <TextBlock Text="{DynamicResource tray_compact_tasks}" TextWrapping="Wrap" />
                 </ToggleButton>
-            </UniformGrid>
+            </Grid>
 
             <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
 

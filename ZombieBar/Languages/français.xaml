@@ -47,8 +47,8 @@
 
     <!-- Tray menu (DragThrough) -->
     <s:String x:Key="tray_drag_title">Masquer temporairement l'Explorateur pendant le glissement de fichiers</s:String>
-    <s:String x:Key="tray_use_windows_key">Avec la touche Windows</s:String>
-    <s:String x:Key="tray_enable_shift">Masquer temporairement l'Explorateur lors du glisser de fichiers avec la touche Maj</s:String>
+    <s:String x:Key="tray_use_windows_key">Utiliser aussi la touche Windows</s:String>
+    <s:String x:Key="tray_enable_shift">Masquer temporairement l'Explorateur lors du glisser de fichiers avec la touche Maj (peut ne pas fonctionner dans certaines applications, p. ex. Davinci Resolve)</s:String>
     <s:String x:Key="tray_minimize_explorer">Réduire l'Explorateur après le glisser</s:String>
     <s:String x:Key="tray_dismiss_search">Fermer la Recherche Windows avec Échap</s:String>
     <s:String x:Key="tray_show_taskbar">Afficher la barre des tâches sur tous les bureaux</s:String>

@@ -47,8 +47,8 @@
 
     <!-- Tray menu (DragThrough) -->
     <s:String x:Key="tray_drag_title">Временно скрывать Проводник при перетаскивании файлов</s:String>
-    <s:String x:Key="tray_use_windows_key">С клавишей Windows</s:String>
-    <s:String x:Key="tray_enable_shift">Временно скрывать Проводник при перетаскивании файлов с клавишей Shift</s:String>
+    <s:String x:Key="tray_use_windows_key">Так же использовать клавишу Windows</s:String>
+    <s:String x:Key="tray_enable_shift">Временно скрывать Проводник при перетаскивании файлов с клавишей Shift (может не работать в некоторых приложениях, например в Davinci Resolve)</s:String>
     <s:String x:Key="tray_minimize_explorer">Сворачивать Проводник после перетаскивания</s:String>
     <s:String x:Key="tray_dismiss_search">Закрывать Поиск Windows клавишей Escape</s:String>
     <s:String x:Key="tray_show_taskbar">Показывать панель задач на всех столах</s:String>
