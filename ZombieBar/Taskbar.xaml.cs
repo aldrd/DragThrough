@@ -25,6 +25,10 @@ namespace ZombieBar
         private bool _isReopening;
         private ShellManager _shellManager;
 
+        // Registered "TaskbarCreated" broadcast id; Explorer sends it to every top-level window when
+        // it (re)starts. -1 until the window handle exists.
+        private int _taskbarCreatedMsg = -1;
+
         public Taskbar(ShellManager shellManager, StartMenuMonitor startMenuMonitor, ScreenInfo screen, AppBarEdge edge)
             : base(shellManager.AppBarManager, shellManager.ExplorerHelper, shellManager.FullScreenHelper, screen, edge, 0)
         {
@@ -62,6 +66,8 @@ namespace ZombieBar
         {
             base.OnSourceInitialized(sender, e);
 
+            _taskbarCreatedMsg = NativeMethods.RegisterWindowMessage("TaskbarCreated");
+
             SetBlur(AllowsTransparency);
         }
 
@@ -84,16 +90,33 @@ namespace ZombieBar
             else
             {
                 UnregisterAppBar();
-                if (IsVisible)
-                {
-                    Hide();
-                }
+                Hide();
+
+                // A virtual-desktop switch re-shows this app-bar window at the OS level (it is a
+                // top-most tool window the shell carries across desktops), but WPF keeps its
+                // Visibility=Hidden, so nothing is painted and a bare, see-through strip is left where
+                // the taskbar was. WPF's Hide() is a no-op once it already believes the window is
+                // hidden, so force the native SW_HIDE to re-assert it on every desktop change.
+                if (Handle != IntPtr.Zero)
+                    NativeMethods.ShowWindow(Handle, NativeMethods.WindowShowStyle.Hide);
             }
         }
         
         protected override IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             base.WndProc(hwnd, msg, wParam, lParam, ref handled);
+
+            // Explorer restart re-broadcasts "TaskbarCreated" and re-composites windows, which (like a
+            // virtual-desktop switch) can leave this app bar as a bare see-through strip and also drops
+            // its app-bar space reservation. Rebuild it from scratch so it recovers exactly as on
+            // startup: a hidden taskbar closes cleanly (no strip), a shown one re-registers the app bar.
+            // Dispatched async so we don't close this window from inside its own message handler.
+            if (msg == _taskbarCreatedMsg && _taskbarCreatedMsg != -1)
+            {
+                Dispatcher.BeginInvoke(new Action(() => ((App)Application.Current).ReopenTaskbar()),
+                    System.Windows.Threading.DispatcherPriority.Background);
+                return IntPtr.Zero;
+            }
 
             bool colorMessage = msg == (int)NativeMethods.WM.SYSCOLORCHANGE ||
                                 msg == (int)NativeMethods.WM.SETTINGCHANGE ||

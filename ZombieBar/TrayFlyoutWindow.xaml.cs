@@ -397,7 +397,11 @@ namespace ZombieBar
         private void ShowTaskbarThisDesktopToggle_Click(object sender, RoutedEventArgs e)
         {
             if (_syncing) return;
-            _setTaskbarVisibleThisDesktop(ShowTaskbarThisDesktopToggle.IsChecked == true);
+            // Toggles the additional taskbar on ALL virtual desktops.
+            _setTaskbarVisible(ShowTaskbarThisDesktopToggle.IsChecked == true);
+            // --- Old behavior: toggle only the current virtual desktop. To restore, comment out the
+            //     line above and uncomment the line below. ---
+            //_setTaskbarVisibleThisDesktop(ShowTaskbarThisDesktopToggle.IsChecked == true);
         }
 
         private void CenterTasksToggle_Click(object sender, RoutedEventArgs e)
