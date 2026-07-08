@@ -51,7 +51,7 @@ namespace ZombieBar.Utilities
         private readonly Version _currentVersion;
         private readonly HttpClient _httpClient;
 
-        private readonly int _initialInterval = 10000;
+        private readonly int _initialInterval = 2000;
         private readonly int _recheckInterval = 86400000;
         private System.Timers.Timer _updateCheck;
 

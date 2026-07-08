@@ -240,13 +240,13 @@ namespace ZombieBar
                 }
             }
 
-            // Create the taskbar window once up front, then show/hide it for the current desktop.
-            // Keeping a single window alive (rather than creating it on a later desktop switch) avoids
-            // fragile app-bar re-registration mid-switch, and Show/Hide is far cheaper than re-creating.
-            openTaskbar();
-            // Apply the initial per-desktop visibility once the app-bar has finished registering, so
-            // hiding it on a hidden-by-default desktop isn't undone by a late app-bar arrange message.
-            Dispatcher.BeginInvoke(new Action(ApplyCurrentDesktopVisibility), DispatcherPriority.ApplicationIdle);
+            // Create and show the taskbar only when it should be visible on the current desktop; it is
+            // then kept alive and just shown/hidden on later desktop switches (cheaper than re-creating).
+            // Creating it lazily — instead of showing it up front and hiding it a moment later — is what
+            // keeps a disabled taskbar from briefly flashing a strip at the bottom of the screen on
+            // startup. Sticky-hide (see Taskbar) stops any late app-bar arrange message from re-showing a
+            // taskbar that should stay hidden, so the old show-then-hide dance is no longer needed.
+            ApplyCurrentDesktopVisibility();
         }
 
         private void App_OnExit(object sender, ExitEventArgs e)
