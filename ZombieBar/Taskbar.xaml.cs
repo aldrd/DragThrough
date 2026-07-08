@@ -29,6 +29,10 @@ namespace ZombieBar
         // it (re)starts. -1 until the window handle exists.
         private int _taskbarCreatedMsg = -1;
 
+        // Whether the additional taskbar is currently meant to be shown. When false, we actively refuse
+        // any shell attempt to re-show the window (see WndProc), so it can't flash a blank strip.
+        private bool _shownState = true;
+
         public Taskbar(ShellManager shellManager, StartMenuMonitor startMenuMonitor, ScreenInfo screen, AppBarEdge edge)
             : base(shellManager.AppBarManager, shellManager.ExplorerHelper, shellManager.FullScreenHelper, screen, edge, 0)
         {
@@ -78,6 +82,8 @@ namespace ZombieBar
         /// </summary>
         public void SetShown(bool shown)
         {
+            _shownState = shown;
+
             if (shown)
             {
                 if (!IsVisible)
@@ -105,6 +111,23 @@ namespace ZombieBar
         protected override IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             base.WndProc(hwnd, msg, wParam, lParam, ref handled);
+
+            // While the additional taskbar is intentionally hidden, shell events (a full-screen app
+            // closing, z-order re-asserts on desktop switches, etc.) try to re-show this window via
+            // SetWindowPos(SWP_SHOWWINDOW) — most reliably from the app bar's own full-screen handler
+            // (ShowWindowTopMost). WPF still has Visibility=Hidden, so the re-shown window paints as a
+            // blank white strip until something hides it again. Strip the show flag (and force hide) so a
+            // hidden taskbar stays hidden no matter which shell event tries to reveal it — no flicker.
+            if (!_shownState && msg == (int)NativeMethods.WM.WINDOWPOSCHANGING)
+            {
+                NativeMethods.WINDOWPOS wp = NativeMethods.WINDOWPOS.FromMessage(lParam);
+                if ((wp.flags & NativeMethods.SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
+                {
+                    wp.flags &= ~NativeMethods.SetWindowPosFlags.SWP_SHOWWINDOW;
+                    wp.flags |= NativeMethods.SetWindowPosFlags.SWP_HIDEWINDOW;
+                    wp.UpdateMessage(lParam);
+                }
+            }
 
             // Explorer restart re-broadcasts "TaskbarCreated" and re-composites windows, which (like a
             // virtual-desktop switch) can leave this app bar as a bare see-through strip and also drops
