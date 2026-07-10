@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:s="clr-namespace:System;assembly=mscorlib">
 
-    <s:String x:Key="zombiebar_properties">Propriétés de ZombieBar</s:String>
+    <s:String x:Key="zombiebar_properties">Propriétés de DragThrough</s:String>
     <s:String x:Key="taskbar_options">Barre des tâches</s:String>
     <BitmapImage x:Key="properties_95" UriSource="../Resources/fr/properties.png" />
     <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/fr/properties_noclock.png" />
@@ -33,7 +33,7 @@
     <s:String x:Key="start_button_tip">Cliquez ici pour commencer</s:String>
     <s:String x:Key="start_button_tip_vista">Démarrer</s:String>
 
-    <s:String x:Key="zombiebar_title">Barre des tâches ZombieBar</s:String>
+    <s:String x:Key="zombiebar_title">Barre des tâches DragThrough</s:String>
     <s:String x:Key="toolbars">Barres d'ou_tils</s:String>
     <s:String x:Key="quick_launch">Lancement _rapide</s:String>
     <s:String x:Key="new_toolbar">_Nouvelle barre d'outils...</s:String>
@@ -41,7 +41,7 @@
     <s:String x:Key="show_taskman">_Gestionnaire des tâches</s:String>
     <s:String x:Key="tray_properties">P_ropriétés</s:String>
     <s:String x:Key="update_available">_Mise à jour disponible...</s:String>
-    <s:String x:Key="exit_zombiebar">_Quitter ZombieBar</s:String>
+    <s:String x:Key="exit_zombiebar">_Quitter DragThrough</s:String>
     <s:String x:Key="taskbar_menu_title">Barre des tâches avec glissement des tâches</s:String>
     <s:String x:Key="remove">Retirer</s:String>
 

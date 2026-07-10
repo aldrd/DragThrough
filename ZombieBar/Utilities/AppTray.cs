@@ -27,6 +27,9 @@ namespace ZombieBar.Utilities
 
         private TrayFlyoutWindow? _flyout;
         private bool _updateAvailable;
+        // True while the most recently shown balloon is the "update available" toast, so that a click on
+        // it opens the flyout to install (other, informational balloons are not actionable).
+        private bool _updateToastActive;
 
         // When the icon is clicked while the flyout is open, that same click first deactivates (and
         // hides) the flyout. Within this window we treat the click as "dismiss", not "reopen".
@@ -58,6 +61,7 @@ namespace ZombieBar.Utilities
             };
 
             _tray.MouseUp += TrayMouseUp;
+            _tray.BalloonTipClicked += TrayBalloonClicked;
         }
 
         /// <summary>Re-syncs the flyout's toggles after an external settings change (e.g. taskbar).</summary>
@@ -69,11 +73,43 @@ namespace ZombieBar.Utilities
             }
         }
 
-        /// <summary>Marks that an update is available; the flyout's "About" item then says so.</summary>
-        public void SetUpdateAvailable()
+        /// <summary>
+        /// Marks that an update is available; the flyout's "About" item then says so. The first time it
+        /// becomes available, also pops a Windows toast ("Update available") so the user notices without
+        /// opening the tray. <paramref name="version"/> is shown in the toast when known.
+        /// </summary>
+        public void SetUpdateAvailable(Version? version = null)
         {
+            bool firstTime = !_updateAvailable;
             _updateAvailable = true;
             _flyout?.SetUpdateAvailable(true);
+
+            // Only on the transition to "available" — not on every 24h recheck — so we don't nag.
+            if (firstTime)
+            {
+                ShowUpdateToast(version);
+            }
+        }
+
+        // Windows toast announcing an available update. Clicking it opens the flyout to install.
+        private void ShowUpdateToast(Version? version)
+        {
+            string title = Loc("about_update_badge", "Update available");
+            string text = version != null
+                ? string.Format(Loc("about_update_available", "Version {0} is available."), version)
+                : title;
+
+            _updateToastActive = true;
+            try { _tray.ShowBalloonTip(5000, title, text, ToolTipIcon.Info); } catch { }
+        }
+
+        private void TrayBalloonClicked(object? sender, EventArgs e)
+        {
+            // Only the "update available" toast is actionable: clicking it opens the flyout to install.
+            if (_updateToastActive)
+            {
+                ShowFlyout();
+            }
         }
 
         private void TrayMouseUp(object? sender, MouseEventArgs e)
@@ -126,6 +162,8 @@ namespace ZombieBar.Utilities
 
         private void ShowBalloon(string title, string text)
         {
+            // A generic informational balloon isn't the update toast, so a click on it does nothing.
+            _updateToastActive = false;
             try { _tray.ShowBalloonTip(2000, title, text, ToolTipIcon.Info); } catch { }
         }
 

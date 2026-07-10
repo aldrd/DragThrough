@@ -233,10 +233,10 @@ namespace ZombieBar
             // installs it from the About window.
             if (_updater != null)
             {
-                _updater.UpdateAvailable += (_, _) => _appTray?.SetUpdateAvailable();
+                _updater.UpdateAvailable += (_, _) => _appTray?.SetUpdateAvailable(_updater.AvailableVersion);
                 if (_updater.IsUpdateAvailable)
                 {
-                    _appTray.SetUpdateAvailable();
+                    _appTray.SetUpdateAvailable(_updater.AvailableVersion);
                 }
             }
 

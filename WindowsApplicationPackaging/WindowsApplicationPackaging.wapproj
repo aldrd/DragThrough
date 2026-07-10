@@ -77,6 +77,12 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ZombieBar\ZombieBar.csproj" />
+    <!-- This packaging project IS the Microsoft Store / MSIX build. The Store handles updates, so the
+         referenced app must be built with the self-updater compiled out (EnableAutoUpdate=false turns
+         off the AUTOUPDATE constant). AdditionalProperties flows this into the app build without
+         disturbing the Configuration/Platform the packaging project passes down. -->
+    <ProjectReference Include="..\ZombieBar\ZombieBar.csproj">
+      <AdditionalProperties>EnableAutoUpdate=false</AdditionalProperties>
+    </ProjectReference>
   </ItemGroup>
 </Project>

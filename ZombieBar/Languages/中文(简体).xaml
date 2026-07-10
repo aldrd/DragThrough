@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:s="clr-namespace:System;assembly=mscorlib">
 
-    <s:String x:Key="zombiebar_properties">ZombieBar 属性</s:String>
+    <s:String x:Key="zombiebar_properties">DragThrough 属性</s:String>
     <s:String x:Key="taskbar_options">任务栏选项</s:String>
     <BitmapImage x:Key="properties_95" UriSource="../Resources/zh/properties.png" />
     <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/zh/properties_noclock.png" />
@@ -33,7 +33,7 @@
     <s:String x:Key="start_button_tip">单击这里开始</s:String>
     <s:String x:Key="start_button_tip_vista">开始</s:String>
 
-    <s:String x:Key="zombiebar_title">ZombieBar 任务栏</s:String>
+    <s:String x:Key="zombiebar_title">DragThrough 任务栏</s:String>
     <s:String x:Key="toolbars">工具栏(_T)</s:String>
     <s:String x:Key="quick_launch">快速启动(_Q)</s:String>
     <s:String x:Key="new_toolbar">新建工具栏(_N)...</s:String>
@@ -41,7 +41,7 @@
     <s:String x:Key="show_taskman">任务管理器(_K)</s:String>
     <s:String x:Key="tray_properties">属性(_R)</s:String>
     <s:String x:Key="update_available">更新可用(_U)...</s:String>
-    <s:String x:Key="exit_zombiebar">退出 ZombieBar(_E)</s:String>
+    <s:String x:Key="exit_zombiebar">退出 DragThrough(_E)</s:String>
     <s:String x:Key="taskbar_menu_title">可拖动任务的任务栏</s:String>
     <s:String x:Key="remove">移除</s:String>
 

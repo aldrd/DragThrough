@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:s="clr-namespace:System;assembly=mscorlib">
 
-    <s:String x:Key="zombiebar_properties">ZombieBar Properties</s:String>
+    <s:String x:Key="zombiebar_properties">DragThrough Properties</s:String>
     <s:String x:Key="taskbar_options">Taskbar Options</s:String>
     <BitmapImage x:Key="properties_95" UriSource="../Resources/properties.png" />
     <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/properties_noclock.png" />
@@ -33,7 +33,7 @@
     <s:String x:Key="start_button_tip">Click here to begin</s:String>
     <s:String x:Key="start_button_tip_vista">Start</s:String>
 
-    <s:String x:Key="zombiebar_title">ZombieBar Taskbar</s:String>
+    <s:String x:Key="zombiebar_title">DragThrough Taskbar</s:String>
     <s:String x:Key="toolbars">_Toolbars</s:String>
     <s:String x:Key="quick_launch">_Quick Launch</s:String>
     <s:String x:Key="new_toolbar">_New Toolbar...</s:String>
@@ -41,7 +41,7 @@
     <s:String x:Key="show_taskman">Tas_k Manager</s:String>
     <s:String x:Key="tray_properties">P_roperties</s:String>
     <s:String x:Key="update_available">_Update available...</s:String>
-    <s:String x:Key="exit_zombiebar">_Exit ZombieBar</s:String>
+    <s:String x:Key="exit_zombiebar">_Exit DragThrough</s:String>
     <s:String x:Key="taskbar_menu_title">Taskbar with tasks dragging</s:String>
     <s:String x:Key="remove">Remove</s:String>
 
