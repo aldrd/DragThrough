@@ -1,0 +1,13 @@
+<Project>
+  <!--
+    Single source of truth for the product version. Bump it here and every build picks it up:
+      - ZombieBar.csproj  -> AssemblyVersion / FileVersion (imports this file)
+      - WindowsApplicationPackaging -> stamps the MSIX manifest's Identity/@Version at build
+      - installer\build.ps1 -> installer file name and auto-update manifest version
+    Use a four-part version whose last part is 0 (required by the Microsoft Store), and increase it
+    for every Store submission.
+  -->
+  <PropertyGroup>
+    <DragThroughVersion>1.0.20.0</DragThroughVersion>
+  </PropertyGroup>
+</Project>

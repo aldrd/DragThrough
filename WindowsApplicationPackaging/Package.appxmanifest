@@ -6,10 +6,18 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
+  <!--
+    Identity MUST match the reservation in Partner Center or the Store upload is rejected. The easiest,
+    least error-prone way is Visual Studio: right-click this project > Publish > "Associate App with the
+    Store...", sign in and pick the reserved app - VS fills Name, Publisher and PublisherDisplayName
+    below automatically. To set them by hand, copy them from Partner Center > your app > Product
+    management > Product identity (Package/Identity/Name, Publisher and Publisher display name).
+    Version's 4th part must be 0 and the version must increase for every new submission.
+  -->
   <Identity
     Name="2727b510-8256-42df-9478-e9e919c666d1"
     Publisher="CN=valpo"
-    Version="1.0.0.0" />
+    Version="1.0.20.0" />
 
   <Properties>
     <DisplayName>DragThrough</DisplayName>
@@ -17,9 +25,10 @@
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
+  <!-- Full-trust Win32 (Desktop Bridge) app, so it targets the Desktop family only. MinVersion matches
+       the packaging project's TargetPlatformMinVersion; MaxVersionTested matches TargetPlatformVersion. -->
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.14393.0" MaxVersionTested="10.0.14393.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
   </Dependencies>
 
   <Resources>

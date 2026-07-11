@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    Auto-imported by every project in the repo. The Store/MSIX build is self-contained per CPU
+    architecture, which propagates a RuntimeIdentifier (win-x64, win-x86, win-arm64) down to the
+    referenced libraries (ManagedShell.*, Ssz.Utils.Wpf). Those libraries must have restored the
+    same RIDs or the self-contained app build fails with NETSDK1047
+    ("...project.assets.json does not contain a target for net10.0-windows/win-x64").
+
+    Declaring the RIDs repo-wide fixes that. "RuntimeIdentifiers" (plural) only tells restore which
+    RIDs to prepare - it does NOT force a RID-specific build, so a normal RID-less `dotnet build`
+    stays framework-dependent and unchanged. Scoped to .csproj so the .wapproj packaging project
+    (which is not a .NET SDK project) is left alone.
+  -->
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+</Project>

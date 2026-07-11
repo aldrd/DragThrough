@@ -49,6 +49,8 @@
     <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
+  <!-- Shared product version (single source of truth); used to stamp the manifest below. -->
+  <Import Project="..\Version.props" />
   <PropertyGroup>
     <ProjectGuid>3fd1ec6f-d7d0-43a7-a74a-66f06318caf4</ProjectGuid>
     <TargetPlatformVersion>10.0.26100.0</TargetPlatformVersion>
@@ -58,21 +60,59 @@
     <NoWarn>$(NoWarn);NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\ZombieBar\ZombieBar.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
+
+  <!--
+    Microsoft Store submission. Builds a single "App Package Upload File" (.msixupload) that bundles
+    the x86, x64 and arm64 packages (StoreUpload mode also includes the symbol .appxsym). There is no
+    32-bit ARM package: .NET desktop doesn't target ARM32, and Windows-on-ARM runs arm64 natively and
+    x86/x64 under emulation. The .msixupload is uploaded unsigned - the Store re-signs it - so signing
+    and a temporary test certificate stay off. Package revision is not auto-incremented; the submission
+    version is the manifest's Identity/@Version (bump it for each new submission).
+  -->
+  <PropertyGroup>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+    <UapAppxPackageBuildMode>StoreUpload</UapAppxPackageBuildMode>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <GenerateTemporaryStoreCertificate>false</GenerateTemporaryStoreCertificate>
+  </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\SplashScreen.scale-200.png" />
-    <Content Include="Images\LockScreenLogo.scale-200.png" />
-    <Content Include="Images\Square150x150Logo.scale-200.png" />
-    <Content Include="Images\Square44x44Logo.scale-200.png" />
-    <Content Include="Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Images\StoreLogo.png" />
-    <Content Include="Images\Wide310x150Logo.scale-200.png" />
+    <!-- Package every logo asset (all scales and target sizes) generated under Images. -->
+    <Content Include="Images\**\*.png" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+
+  <!--
+    Keep the MSIX manifest's package version in sync with Version.props ($(DragThroughVersion)) so the
+    version lives in exactly one place. Runs before the manifest is consumed for packaging, and only
+    rewrites Package.appxmanifest when the value actually differs - so ordinary builds leave the file
+    (and the working tree) untouched.
+  -->
+  <Target Name="StampManifestVersion"
+          BeforeTargets="GenerateAppxManifest;Build"
+          Condition="'$(DragThroughVersion)' != ''">
+    <PropertyGroup>
+      <_AppxManifestNs>&lt;Namespace Prefix='m' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;</_AppxManifestNs>
+    </PropertyGroup>
+    <XmlPeek Namespaces="$(_AppxManifestNs)"
+             XmlInputPath="Package.appxmanifest"
+             Query="/m:Package/m:Identity/@Version">
+      <Output TaskParameter="Result" ItemName="_ManifestVersion" />
+    </XmlPeek>
+    <XmlPoke Condition="'@(_ManifestVersion)' != '$(DragThroughVersion)'"
+             Namespaces="$(_AppxManifestNs)"
+             XmlInputPath="Package.appxmanifest"
+             Query="/m:Package/m:Identity/@Version"
+             Value="$(DragThroughVersion)" />
+    <Message Condition="'@(_ManifestVersion)' != '$(DragThroughVersion)'"
+             Importance="high"
+             Text="StampManifestVersion: Package.appxmanifest version -&gt; $(DragThroughVersion)" />
+  </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" PrivateAssets="all" />
   </ItemGroup>
