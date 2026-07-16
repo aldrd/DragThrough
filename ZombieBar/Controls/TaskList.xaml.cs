@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 namespace ZombieBar.Controls
@@ -53,6 +54,14 @@ namespace ZombieBar.Controls
         // available width actually changed (LayoutUpdated otherwise fires on every layout pass).
         private int _lastLayoutCount = -1;
         private double _lastLayoutWidth = -1;
+
+        // Removal reflow: each task button's layout position at the previous layout pass, so that when a
+        // button is removed we can glide the survivors from where they were into the closed-up gap
+        // instead of letting them jump. Animated via RenderTransform (never layout) so it can't fight the
+        // drag handler. Duration/easing match AnimatedWidth for a consistent feel.
+        private static readonly Duration ReflowDuration = new Duration(TimeSpan.FromMilliseconds(120));
+        private readonly Dictionary<FrameworkElement, double> _slotOffsets = new();
+        private int _prevItemCount = -1;
 
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
@@ -185,6 +194,8 @@ namespace ZombieBar.Controls
 
             LayoutUpdated -= TaskList_OnLayoutUpdated;
 
+            _slotOffsets.Clear();
+            _prevItemCount = -1;
             _itemsPanel = null;
 
             if (_desktopSettleTimer != null)
@@ -302,15 +313,21 @@ namespace ZombieBar.Controls
                     if (!isLoaded)
                         return;
 
+                    // Only regenerate when the visible set actually changed. Refresh() resets every item
+                    // container (the settle timer and per-change scheduling otherwise fire it even when
+                    // nothing changed), and each regeneration is a visible relayout — so skipping the
+                    // no-op refreshes keeps the bar from flickering on unrelated events.
+                    bool changed = !SameDesktopSet(_currentDesktopWindows, onCurrent);
                     _currentDesktopWindows = onCurrent; // null => show all (fail open)
 
                     // Refreshing regenerates the item containers; doing that during a drag destroys the
                     // dragged button's mouse capture and aborts the reorder. Defer until the drag ends.
                     if (_dragHandler?.IsDragging == true)
                     {
-                        _refreshPendingAfterDrag = true;
+                        if (changed)
+                            _refreshPendingAfterDrag = true;
                     }
-                    else
+                    else if (changed)
                     {
                         _windowsView?.Refresh();
                         SetTaskButtonWidth();
@@ -321,6 +338,17 @@ namespace ZombieBar.Controls
                         ScheduleDesktopRefresh();
                 }));
             });
+        }
+
+        // Whether two desktop-membership sets are equivalent (both null "show all" included). onCurrent is
+        // a fresh set each query, so compare by contents, not reference.
+        private static bool SameDesktopSet(HashSet<IntPtr> a, HashSet<IntPtr> b)
+        {
+            if (ReferenceEquals(a, b))
+                return true;
+            if (a == null || b == null)
+                return false;
+            return a.Count == b.Count && a.SetEquals(b);
         }
 
         private void GroupedWindows_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -359,6 +387,10 @@ namespace ZombieBar.Controls
 
         private void TaskList_OnLayoutUpdated(object sender, EventArgs e)
         {
+            // Glide surviving buttons into a closed-up gap when a button is removed (runs every pass to
+            // keep the position snapshot fresh; only animates on an actual count drop).
+            AnimateRemovalReflow();
+
             // A window added/removed during a drag changes the item count; recomputing button widths
             // then would disrupt the in-flight gesture. Leave the layout as captured until it ends.
             if (_dragHandler?.IsDragging == true)
@@ -372,6 +404,67 @@ namespace ZombieBar.Controls
             _lastLayoutCount = count;
             _lastLayoutWidth = width;
             SetTaskButtonWidth();
+        }
+
+        // Compares each realized task button's current layout position with the previous pass. When the
+        // item count has dropped (a genuine removal — so this never fires on width tweens, adds, or
+        // reorders), each survivor that moved is slid from its old spot to the new one via a short
+        // RenderTransform animation, so the closed gap looks like the buttons glided in rather than
+        // jumped. Skipped during a drag (the handler owns the RenderTransforms then).
+        private void AnimateRemovalReflow()
+        {
+            if (!isLoaded)
+                return;
+
+            bool horizontal = !(Settings.Instance.Edge == (int)AppBarEdge.Left ||
+                                Settings.Instance.Edge == (int)AppBarEdge.Right);
+            int count = TasksList.Items.Count;
+            bool removal = _prevItemCount >= 0 && count < _prevItemCount;
+            bool dragging = _dragHandler?.IsDragging == true;
+
+            var seen = new HashSet<FrameworkElement>();
+            for (int i = 0; i < count; i++)
+            {
+                if (TasksList.ItemContainerGenerator.ContainerFromIndex(i) is not FrameworkElement container)
+                    continue;
+                seen.Add(container);
+
+                Rect slot = System.Windows.Controls.Primitives.LayoutInformation.GetLayoutSlot(container);
+                double now = horizontal ? slot.X : slot.Y;
+
+                if (removal && !dragging && _slotOffsets.TryGetValue(container, out double old))
+                {
+                    double delta = old - now; // where it was, relative to where it now is
+                    if (Math.Abs(delta) >= 1)
+                    {
+                        if (container.RenderTransform is not TranslateTransform tt)
+                        {
+                            tt = new TranslateTransform();
+                            container.RenderTransform = tt;
+                        }
+
+                        DependencyProperty axis = horizontal ? TranslateTransform.XProperty : TranslateTransform.YProperty;
+                        tt.BeginAnimation(axis, new DoubleAnimation
+                        {
+                            From = delta,
+                            To = 0,
+                            Duration = ReflowDuration,
+                            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                        });
+                    }
+                }
+
+                _slotOffsets[container] = now;
+            }
+
+            // Forget containers that are gone so the map doesn't grow unbounded.
+            if (_slotOffsets.Count > seen.Count)
+            {
+                foreach (FrameworkElement gone in _slotOffsets.Keys.Where(k => !seen.Contains(k)).ToList())
+                    _slotOffsets.Remove(gone);
+            }
+
+            _prevItemCount = count;
         }
 
         private void Settings_PropertyChanged(object sender, PropertyChangedEventArgs e)

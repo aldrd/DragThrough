@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
              xmlns:local="clr-namespace:ZombieBar.Controls"
              xmlns:converters="clr-namespace:ZombieBar.Converters"
+             xmlns:util="clr-namespace:ZombieBar.Utilities"
              Loaded="TaskList_OnLoaded"
              Unloaded="TaskList_OnUnloaded"
              SizeChanged="TaskList_OnSizeChanged">
@@ -34,14 +35,18 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <ItemContainerTemplate>
+                    <!-- The button's Width isn't set directly; instead its animated target width is set,
+                         and AnimatedWidth eases the real Width toward it (grow-in on add, smooth resize
+                         on rebalance/compact). The WrapPanel reflows as widths change, so neighbours
+                         slide instead of jumping. -->
                     <local:TaskButton>
-                        <local:TaskButton.Width>
+                        <util:AnimatedWidth.TargetWidth>
                             <MultiBinding Converter="{StaticResource compactWidthConverter}">
                                 <Binding Path="IsCompact" RelativeSource="{RelativeSource Self}" />
                                 <Binding Path="ButtonWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType=local:TaskList}" />
                                 <Binding Path="CompactButtonWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType=local:TaskList}" />
                             </MultiBinding>
-                        </local:TaskButton.Width>
+                        </util:AnimatedWidth.TargetWidth>
                     </local:TaskButton>
                 </ItemContainerTemplate>
             </ItemsControl.ItemTemplate>
