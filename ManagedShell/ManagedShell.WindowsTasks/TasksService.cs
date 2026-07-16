@@ -29,6 +29,8 @@ namespace ManagedShell.WindowsTasks
         private static int TASKBARBUTTONCREATEDMESSAGE = -1;
         private static IntPtr uncloakEventHook = IntPtr.Zero;
         private WinEventProc uncloakEventProc;
+        private static IntPtr cloakEventHook = IntPtr.Zero;
+        private WinEventProc cloakEventProc;
 
         internal ITaskCategoryProvider TaskCategoryProvider;
         private TaskCategoryChangeDelegate CategoryChangeDelegate;
@@ -79,6 +81,24 @@ namespace ManagedShell.WindowsTasks
                             EVENT_OBJECT_UNCLOAKED,
                             IntPtr.Zero,
                             uncloakEventProc,
+                            0,
+                            0,
+                            WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+                    }
+
+                    // ...and for cloak events. A window becomes DWM-cloaked when it moves to another
+                    // virtual desktop (or a UWP app suspends), and must then be removed from the taskbar.
+                    // Without this, such a window lingers as a ghost button (e.g. a generic-globe icon
+                    // for a UWP frame) that can't be closed until the task list is re-enumerated.
+                    cloakEventProc = CloakEventCallback;
+
+                    if (cloakEventHook == IntPtr.Zero)
+                    {
+                        cloakEventHook = SetWinEventHook(
+                            EVENT_OBJECT_CLOAKED,
+                            EVENT_OBJECT_CLOAKED,
+                            IntPtr.Zero,
+                            cloakEventProc,
                             0,
                             0,
                             WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
@@ -152,6 +172,7 @@ namespace ManagedShell.WindowsTasks
                 ShellLogger.Debug("TasksService: Deregistering hooks");
                 DeregisterShellHookWindow(_HookWin.Handle);
                 if (uncloakEventHook != IntPtr.Zero) UnhookWinEvent(uncloakEventHook);
+                if (cloakEventHook != IntPtr.Zero) UnhookWinEvent(cloakEventHook);
                 _HookWin.DestroyHandle();
                 setTaskbarListHwnd(IntPtr.Zero);
             }
@@ -553,6 +574,18 @@ namespace ManagedShell.WindowsTasks
                 {
                     ApplicationWindow win = Windows.First(wnd => wnd.Handle == hWnd);
                     win.Uncloak();
+                }
+            }
+        }
+
+        private void CloakEventCallback(IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+        {
+            if (hWnd != IntPtr.Zero && idObject == 0 && idChild == 0)
+            {
+                if (Windows.Any(i => i.Handle == hWnd))
+                {
+                    ApplicationWindow win = Windows.First(wnd => wnd.Handle == hWnd);
+                    win.Cloak();
                 }
             }
         }

@@ -404,6 +404,15 @@ namespace ManagedShell.WindowsTasks
             SetShowInTaskbar();
         }
 
+        internal void Cloak()
+        {
+            ShellLogger.Debug($"ApplicationWindow: Cloak event received for {Title}");
+
+            // Re-evaluate: getShowInTaskbar() sees the window is now cloaked and drops it from the
+            // taskbar, so a window sent to another virtual desktop no longer lingers as a ghost button.
+            SetShowInTaskbar();
+        }
+
         private void setIcon()
         {
             if (!_iconLoading && ShowInTaskbar)
