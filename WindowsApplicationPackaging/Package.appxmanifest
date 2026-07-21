@@ -51,8 +51,12 @@
     </Application>
   </Applications>
 
+  <!-- Only the capability the app actually needs. runFullTrust is required for a Win32 (Desktop Bridge)
+       app. internetClient is deliberately NOT declared: the Store build has the self-updater compiled
+       out (see EnableAutoUpdate in the app project), so the app makes no network connections of its own,
+       and opening a link in the user's default browser does not require it. Keeping the capability list
+       minimal matches the privacy policy and avoids questions during Store certification. -->
   <Capabilities>
-    <Capability Name="internetClient" />
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>
