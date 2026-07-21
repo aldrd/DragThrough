@@ -15,13 +15,13 @@
     Version's 4th part must be 0 and the version must increase for every new submission.
   -->
   <Identity
-    Name="2727b510-8256-42df-9478-e9e919c666d1"
-    Publisher="CN=valpo"
+    Name="7223ruVal.DragThrough"
+    Publisher="CN=878B0890-1057-42D0-9D04-4E6E87D697DE"
     Version="1.0.20.0" />
 
   <Properties>
     <DisplayName>DragThrough</DisplayName>
-    <PublisherDisplayName>valpo</PublisherDisplayName>
+    <PublisherDisplayName>ru_Val</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
@@ -42,7 +42,7 @@
       <uap:VisualElements
         DisplayName="DragThrough"
         Description="DragThrough"
-        BackgroundColor="transparent"
+        BackgroundColor="#132335"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />

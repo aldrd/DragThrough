@@ -60,7 +60,6 @@
     <NoWarn>$(NoWarn);NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\ZombieBar\ZombieBar.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
-
   <!--
     Microsoft Store submission. Builds a single "App Package Upload File" (.msixupload) that bundles
     the x86, x64 and arm64 packages (StoreUpload mode also includes the symbol .appxsym). There is no
@@ -71,10 +70,14 @@
   -->
   <PropertyGroup>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
     <UapAppxPackageBuildMode>StoreUpload</UapAppxPackageBuildMode>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-    <GenerateTemporaryStoreCertificate>false</GenerateTemporaryStoreCertificate>
+    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -84,34 +87,24 @@
   <ItemGroup>
     <!-- Package every logo asset (all scales and target sizes) generated under Images. -->
     <Content Include="Images\**\*.png" />
+    <None Include="Package.StoreAssociation.xml" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
-
   <!--
     Keep the MSIX manifest's package version in sync with Version.props ($(DragThroughVersion)) so the
     version lives in exactly one place. Runs before the manifest is consumed for packaging, and only
     rewrites Package.appxmanifest when the value actually differs - so ordinary builds leave the file
     (and the working tree) untouched.
   -->
-  <Target Name="StampManifestVersion"
-          BeforeTargets="GenerateAppxManifest;Build"
-          Condition="'$(DragThroughVersion)' != ''">
+  <Target Name="StampManifestVersion" BeforeTargets="GenerateAppxManifest;Build" Condition="'$(DragThroughVersion)' != ''">
     <PropertyGroup>
       <_AppxManifestNs>&lt;Namespace Prefix='m' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;</_AppxManifestNs>
     </PropertyGroup>
-    <XmlPeek Namespaces="$(_AppxManifestNs)"
-             XmlInputPath="Package.appxmanifest"
-             Query="/m:Package/m:Identity/@Version">
+    <XmlPeek Namespaces="$(_AppxManifestNs)" XmlInputPath="Package.appxmanifest" Query="/m:Package/m:Identity/@Version">
       <Output TaskParameter="Result" ItemName="_ManifestVersion" />
     </XmlPeek>
-    <XmlPoke Condition="'@(_ManifestVersion)' != '$(DragThroughVersion)'"
-             Namespaces="$(_AppxManifestNs)"
-             XmlInputPath="Package.appxmanifest"
-             Query="/m:Package/m:Identity/@Version"
-             Value="$(DragThroughVersion)" />
-    <Message Condition="'@(_ManifestVersion)' != '$(DragThroughVersion)'"
-             Importance="high"
-             Text="StampManifestVersion: Package.appxmanifest version -&gt; $(DragThroughVersion)" />
+    <XmlPoke Condition="'@(_ManifestVersion)' != '$(DragThroughVersion)'" Namespaces="$(_AppxManifestNs)" XmlInputPath="Package.appxmanifest" Query="/m:Package/m:Identity/@Version" Value="$(DragThroughVersion)" />
+    <Message Condition="'@(_ManifestVersion)' != '$(DragThroughVersion)'" Importance="high" Text="StampManifestVersion: Package.appxmanifest version -&gt; $(DragThroughVersion)" />
   </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" PrivateAssets="all" />
