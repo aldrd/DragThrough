@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap rescap">
+  <!--
+    Identity MUST match the reservation in Partner Center or the Store upload is rejected. The easiest,
+    least error-prone way is Visual Studio: right-click this project > Publish > "Associate App with the
+    Store...", sign in and pick the reserved app - VS fills Name, Publisher and PublisherDisplayName
+    below automatically. To set them by hand, copy them from Partner Center > your app > Product
+    management > Product identity (Package/Identity/Name, Publisher and Publisher display name).
+    Version's 4th part must be 0 and the version must increase for every new submission.
+  -->
+  <Identity Name="7223ruVal.DragThrough" Publisher="CN=878B0890-1057-42D0-9D04-4E6E87D697DE" Version="1.0.21.0" />
+  <Properties>
+    <DisplayName>DragThrough</DisplayName>
+    <PublisherDisplayName>ru_Val</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+  </Properties>
+  <!-- Full-trust Win32 (Desktop Bridge) app, so it targets the Desktop family only. MinVersion matches
+       the packaging project's TargetPlatformMinVersion; MaxVersionTested matches TargetPlatformVersion. -->
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
+      <uap:VisualElements DisplayName="DragThrough" Description="DragThrough" BackgroundColor="#132335" Square150x150Logo="Images\Square150x150Logo.png" Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Images\SplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  <!-- Only the capability the app actually needs. runFullTrust is required for a Win32 (Desktop Bridge)
+       app. internetClient is deliberately NOT declared: the Store build has the self-updater compiled
+       out (see EnableAutoUpdate in the app project), so the app makes no network connections of its own,
+       and opening a link in the user's default browser does not require it. Keeping the capability list
+       minimal matches the privacy policy and avoids questions during Store certification. -->
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

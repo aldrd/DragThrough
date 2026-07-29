@@ -1,0 +1,348 @@
+<Window x:Class="ZombieBar.TrayFlyoutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:ZombieBar.Converters"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="Manual"
+        FontFamily="Segoe UI"
+        TextOptions.TextFormattingMode="Display"
+        PreviewKeyDown="Window_PreviewKeyDown">
+
+    <Window.Resources>
+        <converters:SubtractConverter x:Key="Subtract" />
+
+        <!-- Toggle-switch row: the whole row is clickable; the switch animates to the accent color. -->
+        <Style x:Key="SwitchRow" TargetType="ToggleButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource FgBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <!-- No dashed keyboard-focus rectangle around the row. -->
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="bg" Background="Transparent" CornerRadius="6" Padding="10,4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,12,0"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                                <Border Grid.Column="1"
+                                        x:Name="track"
+                                        Width="36" Height="20"
+                                        CornerRadius="10"
+                                        VerticalAlignment="Center"
+                                        Background="{DynamicResource TrackOffBrush}"
+                                        BorderBrush="{DynamicResource SwitchBorderBrush}"
+                                        BorderThickness="1">
+                                    <Ellipse x:Name="thumb"
+                                             Width="12" Height="12"
+                                             HorizontalAlignment="Left"
+                                             Margin="4,0,0,0"
+                                             Fill="{DynamicResource ThumbBrush}" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource HoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="track" Property="Background" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="track" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="thumb" Property="Margin" Value="0,0,4,0" />
+                                <Setter TargetName="thumb" Property="Fill" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Flat action row with a hover highlight. -->
+        <Style x:Key="MenuButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource FgBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <!-- No dashed keyboard-focus rectangle around the row. -->
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bg" Background="Transparent" CornerRadius="6" Padding="10,8">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource HoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RowIcon" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Symbol" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <!-- Left-aligned in the icon column so every icon's left edge lines up with the toggle labels'
+                 left edge above (both start at the row's left padding). -->
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="{DynamicResource SubFgBrush}" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+    <!-- Outer margin leaves room for the drop shadow. -->
+    <Border Margin="16"
+            CornerRadius="10"
+            Background="{DynamicResource BgBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.30" Color="Black" />
+        </Border.Effect>
+
+        <!-- Left: the menu. Right: an explanatory-video pane that some menu items drive on hover. -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="312" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel x:Name="MenuPanel" Grid.Column="0" Margin="6">
+            <!-- Header -->
+            <Grid Margin="10,10,10,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0"
+                       x:Name="AppIcon"
+                       Width="24" Height="24"
+                       Margin="0,0,10,0"
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <TextBlock Grid.Column="1"
+                           Text="{DynamicResource tray_tooltip}"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource FgBrush}" />
+                <TextBlock Grid.Column="2"
+                           x:Name="VersionText"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Foreground="{DynamicResource SubFgBrush}" />
+            </Grid>
+
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
+            <!-- Switches stack at their natural height. The switch-row style has symmetric vertical
+                 padding, so the gap between adjacent switches is the same throughout; a label that wraps
+                 to two lines only grows its own row and does not inflate the others. -->
+
+            <!-- Drag modifiers + minimize. Tag names an embedded help video (Assets\<Tag>) shown in the
+                 right pane on hover. -->
+            <ToggleButton x:Name="ShiftToggle" Style="{StaticResource SwitchRow}" Click="ShiftToggle_Click" Tag="2.mp4">
+                <TextBlock Text="{DynamicResource tray_enable_shift}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="WinKeyToggle" Style="{StaticResource SwitchRow}" Click="WinKeyToggle_Click">
+                <TextBlock Text="{DynamicResource tray_use_windows_key}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="MinimizeToggle" Style="{StaticResource SwitchRow}" Click="MinimizeToggle_Click">
+                <TextBlock Text="{DynamicResource tray_minimize_explorer}" TextWrapping="Wrap" />
+            </ToggleButton>
+
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
+            <!-- Additional taskbar: show/hide on the current desktop, and centering of the tasks. -->
+            <ToggleButton x:Name="ShowTaskbarThisDesktopToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarThisDesktopToggle_Click" Tag="1.mp4">
+                <TextBlock Text="{DynamicResource tray_show_taskbar_this_desktop}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="CenterTasksToggle" Style="{StaticResource SwitchRow}" Click="CenterTasksToggle_Click">
+                <TextBlock Text="{DynamicResource tray_center_tasks}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="CompactTasksToggle" Style="{StaticResource SwitchRow}" Click="CompactTasksToggle_Click">
+                <TextBlock Text="{DynamicResource tray_compact_tasks}" TextWrapping="Wrap" />
+            </ToggleButton>
+
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
+            <!-- Actions -->
+            <Button x:Name="ShareButton" Style="{StaticResource MenuButton}" Click="Share_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <!-- iOS-style "Share" icon (box with an up arrow), drawn as a vector to match the
+                         design. Left-aligned in the icon column so it lines up with the glyph icons in the
+                         other rows; the arrow's shaft keeps a gap from the box top so they don't merge. -->
+                    <Viewbox Grid.Column="0" Height="14" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-1,0,0,0">
+                        <Path Data="M12,3 L12,13 M8.5,6.5 L12,3 L15.5,6.5 M9,10 L7,10 Q5,10 5,12 L5,20 Q5,22 7,22 L17,22 Q19,22 19,20 L19,12 Q19,10 17,10 L15,10"
+                              Stroke="{DynamicResource SubFgBrush}"
+                              StrokeThickness="2"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                    </Viewbox>
+                    <TextBlock Grid.Column="1" Text="{DynamicResource share_app}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource RowIcon}" Text="&#x203A;" Margin="6,0,0,0" />
+                </Grid>
+            </Button>
+
+            <Button Style="{StaticResource MenuButton}" Click="Coffee_Click" Tag="kitty.mp4">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x2615;" />
+                    <TextBlock Grid.Column="1" Text="{DynamicResource tray_buy_coffee}" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+
+            <Button Style="{StaticResource MenuButton}" Click="Feedback_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource RowIcon}" Text="&#x270E;" Margin="-1,0,0,0" />
+                    <TextBlock Grid.Column="1" Text="{DynamicResource tray_feedback}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+
+            <!-- Update item. Two states, driven from code: "Check for updates" when the update state is
+                 unknown, or "Update available, install" once a background check has found one. In the
+                 latter case the whole label becomes an accent pill (white text on blue). The icon never
+                 changes. A click runs the check/install flow. Hidden when the auto-updater is compiled out. -->
+            <Button x:Name="UpdateItem" Style="{StaticResource MenuButton}" Click="CheckUpdate_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!-- Circular two-arrow "sync" glyph from Segoe MDL2 Assets (overrides RowIcon's font).
+                         Sized so its circle matches the Exit power-symbol's circle. -->
+                    <TextBlock Grid.Column="0" x:Name="UpdateItemIcon" Style="{StaticResource RowIcon}" FontFamily="Segoe MDL2 Assets" FontSize="11" Text="&#xE895;" Margin="1,0,0,0" />
+                    <!-- Label; wrapped in a Border that becomes an accent pill (background + padding set in
+                         code) with white text when an update is available. -->
+                    <Border Grid.Column="1" x:Name="UpdateTextPill" CornerRadius="4" VerticalAlignment="Center">
+                        <TextBlock x:Name="UpdateItemText" VerticalAlignment="Center" />
+                    </Border>
+                </Grid>
+            </Button>
+
+            <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
+
+            <Button Style="{StaticResource MenuButton}" Click="Exit_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!-- Power symbol drawn as a vector (open ring + top stem) so it renders identically
+                         everywhere; the U+23FB glyph is missing from Segoe UI Symbol on some systems. -->
+                    <Viewbox Grid.Column="0" Height="15" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-1,0,0,0">
+                        <Path Data="M12,4 L12,12 M17.7,9 A7,7 0 1 1 6.3,9"
+                              Stroke="{DynamicResource DangerBrush}"
+                              StrokeThickness="2"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                    </Viewbox>
+                    <TextBlock Grid.Column="1" Text="{DynamicResource tray_exit}" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+            </StackPanel>
+
+            <!-- Explanatory-video pane. Shows a neutral brand card until a menu item that has a Tag
+                 video is hovered, then plays that video (looping, muted). -->
+            <Border x:Name="HelpPane"
+                    Grid.Column="1"
+                    Width="680"
+                    Margin="0,6,6,6"
+                    CornerRadius="8"
+                    Background="{DynamicResource HelpBgBrush}">
+                <Grid>
+                    <StackPanel x:Name="HelpPlaceholder"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Margin="16">
+                        <Image x:Name="HelpBrandIcon"
+                               Width="56" Height="56"
+                               HorizontalAlignment="Center"
+                               RenderOptions.BitmapScalingMode="HighQuality" />
+                        <TextBlock Text="{DynamicResource tray_tooltip}"
+                                   FontSize="16" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,0"
+                                   Foreground="{DynamicResource FgBrush}" />
+                        <TextBlock Text="{DynamicResource about_tagline}"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,2,0,0"
+                                   Foreground="{DynamicResource SubFgBrush}" />
+                    </StackPanel>
+
+                    <!-- Bounded rather than fixed-size: Uniform scaling fits the clip inside the pane's
+                         width and the menu column's height, whatever its aspect ratio. Capping the height
+                         against MenuPanel (not the pane itself, which would be circular) keeps a tall clip
+                         from stretching this size-to-content window on hover; the 24 is this element's
+                         own margin, which the cap has to leave room for. -->
+                    <MediaElement x:Name="HelpVideo"
+                                  Visibility="Collapsed"
+                                  MaxWidth="656"
+                                  MaxHeight="{Binding ActualHeight, ElementName=MenuPanel,
+                                                      Converter={StaticResource Subtract}, ConverterParameter=24}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Margin="12"
+                                  LoadedBehavior="Manual"
+                                  UnloadedBehavior="Manual"
+                                  Stretch="Uniform"
+                                  IsMuted="True"
+                                  ScrubbingEnabled="True"
+                                  MediaOpened="HelpVideo_MediaOpened"
+                                  MediaFailed="HelpVideo_MediaFailed"
+                                  MediaEnded="HelpVideo_MediaEnded" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+
+    <!-- Share submenu, anchored to the Share row. Items are added in code from AppShare.Targets. -->
+    <Popup x:Name="SharePopup"
+           PlacementTarget="{Binding ElementName=ShareButton}"
+           Placement="Right"
+           HorizontalOffset="-6"
+           AllowsTransparency="True"
+           StaysOpen="False"
+           PopupAnimation="Fade">
+        <Border Margin="10"
+                Width="220"
+                CornerRadius="10"
+                Background="{DynamicResource BgBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.30" Color="Black" />
+            </Border.Effect>
+            <StackPanel x:Name="SharePanel" Margin="6" />
+        </Border>
+    </Popup>
+    </Grid>
+</Window>

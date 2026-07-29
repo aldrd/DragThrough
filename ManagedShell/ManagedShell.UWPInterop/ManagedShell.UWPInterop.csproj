@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>True</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Ssz.Utils.Wpf\Ssz.Utils.Wpf.csproj" />
+    <ProjectReference Include="..\ManagedShell.Common\ManagedShell.Common.csproj" />
+    <ProjectReference Include="..\ManagedShell.ShellFolders\ManagedShell.ShellFolders.csproj" />
+  </ItemGroup>
+
+</Project>

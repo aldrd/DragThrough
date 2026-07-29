@@ -1,0 +1,85 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        "System 2" is the classic look: it is merged on top of the System base theme and
+        only restores the traditional 3D taskbar background (System uses the live Windows
+        taskbar color instead). Everything else is inherited from the System theme.
+    -->
+
+    <Style TargetType="Window"
+           x:Key="TaskbarWindow">
+        <Setter Property="TextOptions.TextFormattingMode"
+                Value="Display" />
+        <Setter Property="Background"
+                Value="{DynamicResource ButtonFace}" />
+    </Style>
+
+    <Style TargetType="ContentControl"
+           x:Key="Taskbar">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Border BorderThickness="0,1,0,0"
+                            BorderBrush="{DynamicResource ButtonLight}"
+                            Name="OuterBorder">
+                        <Border BorderThickness="0,1,0,0"
+                                BorderBrush="{DynamicResource ButtonHighlight}"
+                                Background="{DynamicResource ButtonFace}"
+                                Name="InnerBorder">
+                            <ContentPresenter />
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Path=AppBarEdge, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+                                     Value="Left">
+                            <DataTrigger.Setters>
+                                <Setter TargetName="OuterBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource ButtonDarkShadow}" />
+                                <Setter TargetName="InnerBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource ButtonShadow}" />
+                                <Setter TargetName="OuterBorder"
+                                        Property="BorderThickness"
+                                        Value="0,0,1,0" />
+                                <Setter TargetName="InnerBorder"
+                                        Property="BorderThickness"
+                                        Value="0,0,1,0" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=AppBarEdge, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+                                     Value="Right">
+                            <DataTrigger.Setters>
+                                <Setter TargetName="OuterBorder"
+                                        Property="BorderThickness"
+                                        Value="1,0,0,0" />
+                                <Setter TargetName="InnerBorder"
+                                        Property="BorderThickness"
+                                        Value="1,0,0,0" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=AppBarEdge, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+                                     Value="Top">
+                            <DataTrigger.Setters>
+                                <Setter TargetName="OuterBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource ButtonDarkShadow}" />
+                                <Setter TargetName="InnerBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource ButtonShadow}" />
+                                <Setter TargetName="OuterBorder"
+                                        Property="BorderThickness"
+                                        Value="0,0,0,1" />
+                                <Setter TargetName="InnerBorder"
+                                        Property="BorderThickness"
+                                        Value="0,0,0,1" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

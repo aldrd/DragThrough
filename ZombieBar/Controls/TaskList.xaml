@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="ZombieBar.Controls.TaskList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+             xmlns:local="clr-namespace:ZombieBar.Controls"
+             xmlns:converters="clr-namespace:ZombieBar.Converters"
+             xmlns:util="clr-namespace:ZombieBar.Utilities"
+             Loaded="TaskList_OnLoaded"
+             Unloaded="TaskList_OnUnloaded"
+             SizeChanged="TaskList_OnSizeChanged">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:EdgeOrientationConverter x:Key="orientationConverter" />
+            <converters:CompactWidthConverter x:Key="compactWidthConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!-- Vertical scrolling is disabled so the scroll up/down buttons never appear: when there are
+         more task buttons than fit in a single row, the overflow row is clipped (hidden) instead. -->
+    <ScrollViewer Style="{DynamicResource TaskListScrollViewer}"
+                  Focusable="False"
+                  VerticalScrollBarVisibility="Disabled">
+        <ItemsControl x:Name="TasksList"
+                      Focusable="False"
+                      Margin="{DynamicResource TaskListMargin}"
+                      HorizontalAlignment="Stretch">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel>
+                        <WrapPanel.Orientation>
+                            <Binding Converter="{StaticResource orientationConverter}"
+                                     Path="Orientation"
+                                     RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}" />
+                        </WrapPanel.Orientation>
+                    </WrapPanel>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <ItemContainerTemplate>
+                    <!-- The button's Width isn't set directly; instead its animated target width is set,
+                         and AnimatedWidth eases the real Width toward it (grow-in on add, smooth resize
+                         on rebalance/compact). The WrapPanel reflows as widths change, so neighbours
+                         slide instead of jumping. -->
+                    <local:TaskButton>
+                        <util:AnimatedWidth.TargetWidth>
+                            <MultiBinding Converter="{StaticResource compactWidthConverter}">
+                                <Binding Path="IsCompact" RelativeSource="{RelativeSource Self}" />
+                                <Binding Path="ButtonWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType=local:TaskList}" />
+                                <Binding Path="CompactButtonWidth" RelativeSource="{RelativeSource FindAncestor, AncestorType=local:TaskList}" />
+                            </MultiBinding>
+                        </util:AnimatedWidth.TargetWidth>
+                    </local:TaskButton>
+                </ItemContainerTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,215 @@
+#nullable enable
+using System;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ZombieBar.Utilities
+{
+    /// <summary>
+    /// System tray icon for the app. It owns the NotifyIcon and tooltip; clicking the icon (either
+    /// button) opens <see cref="TrayFlyoutWindow"/> - a modern WPF flyout that hosts the options,
+    /// the "Show taskbar" toggle and Exit (the only place that quits the whole application).
+    /// </summary>
+    public class AppTray : IDisposable
+    {
+        private readonly NotifyIcon _tray;
+        private readonly Action<bool> _setTaskbarVisible;
+        private readonly Action<bool> _setTaskbarVisibleThisDesktop;
+        private readonly Func<bool> _isTaskbarVisibleThisDesktop;
+        private readonly Action _openFeedback;
+        // Runs the "check for updates / install" flow. Null when the auto-updater is compiled out.
+        private readonly Func<Task>? _checkOrInstallUpdate;
+        private readonly Action _exit;
+
+        private TrayFlyoutWindow? _flyout;
+        private bool _updateAvailable;
+        // True while the most recently shown balloon is the "update available" toast, so that a click on
+        // it opens the flyout to install (other, informational balloons are not actionable).
+        private bool _updateToastActive;
+
+        // When the icon is clicked while the flyout is open, that same click first deactivates (and
+        // hides) the flyout. Within this window we treat the click as "dismiss", not "reopen".
+        private long _flyoutHiddenAt;
+        private const long ReopenGuardMs = 250;
+
+        /// <param name="setTaskbarVisible">Shows/hides the additional taskbar on all virtual desktops.</param>
+        /// <param name="setTaskbarVisibleThisDesktop">Shows/hides it only on the current virtual desktop.</param>
+        /// <param name="isTaskbarVisibleThisDesktop">Whether it is currently shown on the current desktop.</param>
+        /// <param name="openFeedback">Opens the feedback form ("Report a problem or suggestion").</param>
+        /// <param name="checkOrInstallUpdate">Runs the update check/install flow; null if unsupported.</param>
+        /// <param name="exit">Quits the whole application.</param>
+        public AppTray(Action<bool> setTaskbarVisible, Action<bool> setTaskbarVisibleThisDesktop,
+                       Func<bool> isTaskbarVisibleThisDesktop, Action openFeedback,
+                       Func<Task>? checkOrInstallUpdate, Action exit)
+        {
+            _setTaskbarVisible = setTaskbarVisible;
+            _setTaskbarVisibleThisDesktop = setTaskbarVisibleThisDesktop;
+            _isTaskbarVisibleThisDesktop = isTaskbarVisibleThisDesktop;
+            _openFeedback = openFeedback;
+            _checkOrInstallUpdate = checkOrInstallUpdate;
+            _exit = exit;
+
+            _tray = new NotifyIcon
+            {
+                Icon = LoadTrayIcon(),
+                Visible = true,
+                Text = BuildTooltip()
+            };
+
+            _tray.MouseUp += TrayMouseUp;
+            _tray.BalloonTipClicked += TrayBalloonClicked;
+        }
+
+        /// <summary>Re-syncs the flyout's toggles after an external settings change (e.g. taskbar).</summary>
+        public void UpdateShowTaskbarCheck()
+        {
+            if (_flyout != null && _flyout.IsVisible)
+            {
+                _flyout.SyncFromSettings();
+            }
+        }
+
+        /// <summary>
+        /// Marks that an update is available; the flyout's "About" item then says so. The first time it
+        /// becomes available, also pops a Windows toast ("Update available") so the user notices without
+        /// opening the tray. <paramref name="version"/> is shown in the toast when known.
+        /// </summary>
+        public void SetUpdateAvailable(Version? version = null)
+        {
+            bool firstTime = !_updateAvailable;
+            _updateAvailable = true;
+            _flyout?.SetUpdateAvailable(true);
+
+            // Only on the transition to "available" — not on every 24h recheck — so we don't nag.
+            if (firstTime)
+            {
+                ShowUpdateToast(version);
+            }
+        }
+
+        // Windows toast announcing an available update. Clicking it opens the flyout to install.
+        private void ShowUpdateToast(Version? version)
+        {
+            string title = Loc("about_update_badge", "Update available");
+            string text = version != null
+                ? string.Format(Loc("about_update_available", "Version {0} is available."), version)
+                : title;
+
+            _updateToastActive = true;
+            try { _tray.ShowBalloonTip(5000, title, text, ToolTipIcon.Info); } catch { }
+        }
+
+        private void TrayBalloonClicked(object? sender, EventArgs e)
+        {
+            // Only the "update available" toast is actionable: clicking it opens the flyout to install.
+            if (_updateToastActive)
+            {
+                ShowFlyout();
+            }
+        }
+
+        private void TrayMouseUp(object? sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left && e.Button != MouseButtons.Right)
+            {
+                return;
+            }
+
+            // The click that dismissed an open flyout shouldn't immediately reopen it.
+            if (Environment.TickCount64 - _flyoutHiddenAt < ReopenGuardMs)
+            {
+                return;
+            }
+
+            ShowFlyout();
+        }
+
+        private void EnsureFlyout()
+        {
+            if (_flyout != null)
+                return;
+
+            _flyout = new TrayFlyoutWindow(_setTaskbarVisible, _setTaskbarVisibleThisDesktop,
+                _isTaskbarVisibleThisDesktop, _openFeedback, _checkOrInstallUpdate, _exit, ShowBalloon);
+            _flyout.Deactivated += (_, _) =>
+            {
+                _flyoutHiddenAt = Environment.TickCount64;
+                _flyout?.Hide();
+            };
+        }
+
+        private void ShowFlyout()
+        {
+            EnsureFlyout();
+            _flyout!.SetUpdateAvailable(_updateAvailable);
+            _flyout.ShowAtCursor();
+        }
+
+        /// <summary>
+        /// Creates the flyout and opens its help video ahead of any user interaction, so the first hover
+        /// over a video menu item shows the clip instantly instead of waiting for the media pipeline to
+        /// spin up. Scheduled off the startup path so it never delays launch.
+        /// </summary>
+        public void PrewarmFlyout()
+        {
+            EnsureFlyout();
+            _flyout!.WarmUp();
+        }
+
+        private void ShowBalloon(string title, string text)
+        {
+            // A generic informational balloon isn't the update toast, so a click on it does nothing.
+            _updateToastActive = false;
+            try { _tray.ShowBalloonTip(2000, title, text, ToolTipIcon.Info); } catch { }
+        }
+
+        // Tray tooltip: the (localized) product name followed by the product version.
+        private static string BuildTooltip()
+        {
+            string name = Loc("tray_tooltip", "DragThrough");
+            Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+            return version != null ? $"{name} v{version}" : name;
+        }
+
+        private static string Loc(string key, string fallback) =>
+            System.Windows.Application.Current?.TryFindResource(key) as string ?? fallback;
+
+        private static Icon LoadTrayIcon()
+        {
+            try
+            {
+                Assembly asm = Assembly.GetExecutingAssembly();
+                string? name = asm.GetManifestResourceNames()
+                    .FirstOrDefault(n => n.EndsWith("tray_icon.ico", StringComparison.OrdinalIgnoreCase));
+
+                if (name != null)
+                {
+                    using Stream? stream = asm.GetManifestResourceStream(name);
+                    if (stream != null)
+                    {
+                        return new Icon(stream, SystemInformation.SmallIconSize);
+                    }
+                }
+            }
+            catch { }
+
+            return SystemIcons.Application;
+        }
+
+        public void Dispose()
+        {
+            _tray.Visible = false;
+            _tray.Dispose();
+
+            if (_flyout != null)
+            {
+                _flyout.Close();
+                _flyout = null;
+            }
+        }
+    }
+}
