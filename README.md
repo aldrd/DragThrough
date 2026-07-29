@@ -6,16 +6,28 @@ DragThrough is a small Windows utility that gets File Explorer out of your way w
 
 <!-- Tip: add a screenshot here, e.g. ![DragThrough](docs/screenshot.png) -->
 
+[![Microsoft Store](https://img.shields.io/badge/Microsoft%20Store-Get%20the%20app-0078D6?style=for-the-badge&logo=microsoftstore&logoColor=white)](https://apps.microsoft.com/detail/9P08B85PZRF3)
 [![Download](https://img.shields.io/badge/Download-DragThrough%20Setup-2ea44f?style=for-the-badge&logo=windows)](https://github.com/aldrd/DragThrough/releases/latest/download/DragThrough-Setup.exe)
+
 [![Latest release](https://img.shields.io/github/v/release/aldrd/DragThrough?style=flat-square)](https://github.com/aldrd/DragThrough/releases/latest)
 [![License](https://img.shields.io/badge/License-CC%20BY--ND%204.0-blue?style=flat-square)](LICENSE)
 ![Platform](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows)
 
 ## Download
 
+Two ways to get it — same app, pick whichever you prefer.
+
+**➡️ [Microsoft Store](https://apps.microsoft.com/detail/9P08B85PZRF3)**
+
+Installs in one click and updates through the Store along with everything else.
+
 **➡️ [Download the installer (DragThrough-Setup.exe)](https://github.com/aldrd/DragThrough/releases/latest/download/DragThrough-Setup.exe)**
 
-Run the installer and you're done — the app lives in the system tray and updates itself automatically. No .NET runtime needs to be installed separately; everything ships in the single package.
+A per-user install — no administrator rights, no UAC prompt. This build updates itself: it checks for
+new versions and installs them with one click from the tray menu.
+
+Either way you're done after one step — the app lives in the system tray. No .NET runtime needs to be
+installed separately; everything ships in the single package.
 
 ## Features
 
