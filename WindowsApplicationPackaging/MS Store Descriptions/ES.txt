@@ -43,3 +43,7 @@ Configuración
 # Keywords
 DragThrough
 botones de tarea arrastrables
+
+# Trailer Thumbnail Titles
+Barra de tareas adicional
+Mantén pulsada la tecla Mayús al arrastrar y el Explorador se aparta

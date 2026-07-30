@@ -44,3 +44,7 @@ Paramètres
 # Keywords
 DragThrough
 boutons de tâche déplaçables
+
+# Trailer Thumbnail Titles
+Barre des tâches supplémentaire
+Maintenez la touche Maj pendant le glissement et l'Explorateur s'écarte

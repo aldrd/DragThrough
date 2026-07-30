@@ -43,3 +43,7 @@ Configurações
 # Keywords
 DragThrough
 botões de tarefa arrastáveis
+
+# Trailer Thumbnail Titles
+Barra de tarefas adicional
+Mantenha pressionada a tecla Shift ao arrastar e o Explorador sai da frente

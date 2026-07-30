@@ -41,3 +41,7 @@ Copyright (c) 2026 Alexey Redozubov, Valery Pogorelov
 # Keywords
 DragThrough
 可拖动的任务按钮
+
+# Trailer Thumbnail Titles
+附加任务栏
+拖动时按住 Shift，资源管理器便会让开

@@ -43,3 +43,7 @@ International (CC BY-ND 4.0).
 # Keywords
 DragThrough
 перетаскиваемые кнопки задач
+
+# Trailer Thumbnail Titles
+Дополнительная панель задач
+Удерживайте Shift при перетаскивании, и Проводник уйдёт с пути
