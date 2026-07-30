@@ -54,7 +54,7 @@ installed separately; everything ships in the single package.
 
 1. Install and launch DragThrough — a tray icon appears.
 2. Start dragging files in File Explorer and hold **Shift** (or the **Windows key**): Explorer hides so you can drop onto the window behind it.
-3. Right‑click the tray icon to toggle features (drag modifiers, auto‑minimize, the secondary taskbar, task centering) and to access About / updates.
+3. Click the tray icon to toggle features (drag modifiers, auto‑minimize, the secondary taskbar, task centering), to check for updates, and to see the version, authors and license.
 
 ## Building from source
 

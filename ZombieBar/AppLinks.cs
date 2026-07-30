@@ -39,4 +39,12 @@ public static class AppLinks
 
     // "Buy me a coffee" donation page for the developer.
     public const string BuyMeACoffeeUrl = "https://buymeacoffee.com/redozubov";
+
+    // The app's own license, linked from the tray flyout's about card.
+    public const string LicenseUrl = "https://creativecommons.org/licenses/by-nd/4.0/";
+
+    // Licenses of the bundled third-party components, which are more permissive than the app's own -
+    // linked next to it so nobody assumes the no-derivatives terms cover them too. "blob/HEAD" resolves
+    // to whatever the repository's default branch is called, so renaming it will not break this link.
+    public const string ThirdPartyNoticesUrl = RepoUrl + "/blob/HEAD/THIRD-PARTY-NOTICES.md";
 }

@@ -11,6 +11,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Navigation;
 using System.Windows.Resources;
 using ZombieBar.Utilities;
 using Application = System.Windows.Application;
@@ -70,6 +71,18 @@ namespace ZombieBar
 
             Version? version = Assembly.GetExecutingAssembly().GetName().Version;
             VersionText.Text = version != null ? $"v{version}" : "";
+
+            // The about card in the help pane: version, copyright and the license links. The copyright is
+            // read from the assembly (stamped there from ZombieBar.csproj's <Copyright>) instead of being
+            // repeated in XAML, so the csproj stays its single source of truth. It is deliberately not
+            // localized - a legal notice is not translated - and "(c)" is shown as the proper © glyph.
+            HelpVersionText.Text = VersionText.Text;
+            string copyright = Assembly.GetExecutingAssembly()
+                                       .GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? "";
+            HelpCopyrightText.Text = copyright.Replace("Copyright (c)", "©");
+
+            LicenseLink.NavigateUri = new Uri(AppLinks.LicenseUrl);
+            ThirdPartyLink.NavigateUri = new Uri(AppLinks.ThirdPartyNoticesUrl);
 
             // The update item only makes sense with the auto-updater compiled in; hide it otherwise
             // (e.g. the Microsoft Store build, where the store handles updates). Its label is set to the
@@ -432,6 +445,15 @@ namespace ZombieBar
         private void Coffee_Click(object sender, RoutedEventArgs e)
         {
             AppShare.OpenUrl(AppLinks.BuyMeACoffeeUrl);
+            Hide();
+        }
+
+        // A license link on the about card. The flyout is hidden as well, so the browser doesn't open
+        // behind this topmost window.
+        private void Link_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            AppShare.OpenUrl(e.Uri.ToString());
+            e.Handled = true;
             Hide();
         }
 

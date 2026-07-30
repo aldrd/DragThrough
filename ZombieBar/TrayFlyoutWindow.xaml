@@ -296,6 +296,41 @@
                                    HorizontalAlignment="Center"
                                    Margin="0,2,0,0"
                                    Foreground="{DynamicResource SubFgBrush}" />
+                        <!-- Version is also in the menu header, where it answers "what have I got
+                             installed"; here it reads as part of the about details. -->
+                        <TextBlock x:Name="HelpVersionText"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,6,0,0"
+                                   Foreground="{DynamicResource SubFgBrush}" />
+                        <!-- Copyright is not localized (a legal notice is not translated) and is read
+                             from the assembly, so ZombieBar.csproj stays its single source of truth. -->
+                        <TextBlock x:Name="HelpCopyrightText"
+                                   FontSize="12"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="300"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,14,0,0"
+                                   Foreground="{DynamicResource SubFgBrush}" />
+                        <!-- The app's own license, and next to it the bundled components' licenses -
+                             which grant more rights. Keeping them adjacent stops the no-derivatives
+                             terms from being read as covering the third-party code too. -->
+                        <TextBlock FontSize="12"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="300"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,4,0,0"
+                                   Foreground="{DynamicResource SubFgBrush}">
+                            <Hyperlink x:Name="LicenseLink"
+                                       Foreground="{DynamicResource AccentBrush}"
+                                       RequestNavigate="Link_RequestNavigate">CC BY-ND 4.0</Hyperlink>
+                            <Run Text=" · " />
+                            <Hyperlink x:Name="ThirdPartyLink"
+                                       Foreground="{DynamicResource AccentBrush}"
+                                       RequestNavigate="Link_RequestNavigate"><Run Text="{DynamicResource about_third_party}" /></Hyperlink>
+                        </TextBlock>
                     </StackPanel>
 
                     <!-- Bounded rather than fixed-size: Uniform scaling fits the clip inside the pane's

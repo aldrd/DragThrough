@@ -109,6 +109,7 @@
     <s:String x:Key="about_title">About DragThrough</s:String>
     <s:String x:Key="about_version">Version</s:String>
     <s:String x:Key="about_tagline">Windows helpers app</s:String>
+    <s:String x:Key="about_third_party">Third-party licenses</s:String>
     <s:String x:Key="about_check_updates">Check for updates</s:String>
     <s:String x:Key="about_checking">Checking for updates…</s:String>
     <s:String x:Key="about_up_to_date">You have the latest version.</s:String>
