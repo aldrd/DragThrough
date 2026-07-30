@@ -40,3 +40,7 @@ Settings
 # Keywords
 DragThrough
 draggable task buttons
+
+# Trailer Thumbnail Titles
+Additional Taskbar
+Hold Shift while dragging and Explorer slides out of the way

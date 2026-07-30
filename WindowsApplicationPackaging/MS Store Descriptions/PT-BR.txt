@@ -35,3 +35,11 @@ este aviso, o texto da licença e a atribuição acima.
 
 A versão juridicamente vinculante é o texto em inglês; esta tradução é
 apenas informativa.
+
+# Image Titles
+Barra de tarefas adicional
+Configurações
+
+# Keywords
+DragThrough
+botões de tarefa arrastáveis

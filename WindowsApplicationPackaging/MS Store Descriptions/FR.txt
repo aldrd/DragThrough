@@ -36,3 +36,11 @@ ci-dessus.
 
 Seul le texte anglais de la licence a valeur juridique ; cette traduction est
 fournie à titre indicatif.
+
+# Image Titles
+Barre des tâches supplémentaire
+Paramètres
+
+# Keywords
+DragThrough
+boutons de tâche déplaçables

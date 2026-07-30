@@ -33,3 +33,11 @@ Copyright (c) 2026 Alexey Redozubov, Valery Pogorelov
 上述署名信息。
 
 具有法律约束力的版本为英文原文，本译文仅供参考。
+
+# Image Titles
+附加任务栏
+设置
+
+# Keywords
+DragThrough
+可拖动的任务按钮
