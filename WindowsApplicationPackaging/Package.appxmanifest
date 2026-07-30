@@ -8,7 +8,7 @@
     management > Product identity (Package/Identity/Name, Publisher and Publisher display name).
     Version's 4th part must be 0 and the version must increase for every new submission.
   -->
-  <Identity Name="7223ruVal.DragThrough" Publisher="CN=878B0890-1057-42D0-9D04-4E6E87D697DE" Version="1.0.21.0" />
+  <Identity Name="7223ruVal.DragThrough" Publisher="CN=878B0890-1057-42D0-9D04-4E6E87D697DE" Version="1.0.22.0" />
   <Properties>
     <DisplayName>DragThrough</DisplayName>
     <PublisherDisplayName>ru_Val</PublisherDisplayName>

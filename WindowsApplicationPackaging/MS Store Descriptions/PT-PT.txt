@@ -1,0 +1,37 @@
+# Description
+Arraste ficheiros para qualquer janela — mesmo para as que ficam escondidas atrás do Explorador de Ficheiros.
+A cena é conhecida: pega em um ou vários ficheiros no Explorador de Ficheiros, mas a janela onde os quer largar está logo atrás, completamente tapada. Então cancela o arrasto, minimiza o Explorador, procura a janela, volta atrás e começa de novo.
+O DragThrough elimina esse passo. Mantenha premida a tecla Shift (ou a tecla Windows) enquanto arrasta ficheiros no Explorador e este afasta-se temporariamente, permitindo-lhe largar diretamente na janela que estava atrás. Um único arrasto e está feito.
+A aplicação acrescenta ainda uma barra de tarefas secundária opcional, com botões de tarefa arrastáveis e fluidos, que sabe em que área de trabalho virtual se encontra.
+
+# New in this version
+Pequenas melhorias.
+
+# Product features
+Mantenha premida a tecla Shift ou a tecla Windows ao arrastar no Explorador de Ficheiros para largar na janela de trás
+Minimiza automaticamente o Explorador de Ficheiros após largar com êxito
+Barra de tarefas secundária opcional e estreita, com botões de tarefa arrastáveis
+Reordene os botões de tarefa arrastando-os, ao estilo dos separadores do Chrome
+Por área de trabalho virtual: mostra apenas as janelas da área de trabalho atual
+Funciona discretamente a partir da área de notificação
+
+# Short description
+Arraste ficheiros para qualquer janela — mesmo para as que ficam escondidas atrás do Explorador de Ficheiros. Mantenha premida a tecla Shift ao arrastar e o Explorador afasta-se, permitindo-lhe largar diretamente na janela de trás. Inclui uma barra de tarefas secundária opcional com botões de tarefa arrastáveis, que tem em conta as suas áreas de trabalho virtuais.
+
+# Copyright
+Copyright (c) 2026 Alexey Redozubov, Valery Pogorelov
+
+# License
+Distribuído sob a licença Creative Commons Attribution-NoDerivatives 4.0
+International (CC BY-ND 4.0).
+
+    Texto completo:  LICENSE
+    Online:          https://creativecommons.org/licenses/by-nd/4.0/
+
+Pode utilizar e redistribuir este software livremente, incluindo para fins
+comerciais e dentro de uma empresa. Não pode publicar versões modificadas.
+Ao redistribuí-lo, a licença exige que mantenha intactos este aviso, o texto
+da licença e a atribuição acima.
+
+A versão juridicamente vinculativa é o texto em inglês; esta tradução é
+apenas informativa.

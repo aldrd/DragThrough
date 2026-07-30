@@ -1,0 +1,38 @@
+# Description
+Glissez des fichiers vers n'importe quelle fenêtre, même celles cachées derrière l'Explorateur de fichiers.
+Vous connaissez la manœuvre : vous saisissez un ou plusieurs fichiers dans l'Explorateur de fichiers, mais la fenêtre où vous voulez les déposer se trouve juste derrière, entièrement masquée. Vous annulez donc le glissement, réduisez l'Explorateur, cherchez la fenêtre, revenez et recommencez.
+DragThrough supprime cette étape. Maintenez la touche Maj (ou la touche Windows) enfoncée pendant que vous faites glisser des fichiers dans l'Explorateur : celui-ci s'écarte temporairement, ce qui vous permet de déposer directement sur la fenêtre qui se trouvait derrière. Un seul glissement, et c'est fait.
+L'application ajoute également une barre des tâches secondaire facultative, dotée de boutons de tâche déplaçables et fluides, qui sait sur quel bureau virtuel vous vous trouvez.
+
+# New in this version
+Petites améliorations.
+
+# Product features
+Maintenez la touche Maj ou la touche Windows pendant un glissement dans l'Explorateur de fichiers pour déposer sur la fenêtre située derrière
+Réduction automatique de l'Explorateur de fichiers après un dépôt réussi
+Barre des tâches secondaire fine et facultative, avec des boutons de tâche déplaçables
+Réorganisez les boutons de tâche en les faisant glisser, à la manière des onglets de Chrome
+Par bureau virtuel : n'affiche que les fenêtres du bureau actif
+Fonctionne discrètement depuis la zone de notification
+
+# Short description
+Glissez des fichiers vers n'importe quelle fenêtre, même celles cachées derrière l'Explorateur de fichiers. Maintenez la touche Maj pendant le glissement et l'Explorateur s'écarte, ce qui vous permet de déposer directement sur la fenêtre située derrière. Comprend une barre des tâches secondaire facultative avec des boutons de tâche déplaçables, qui tient compte de vos bureaux virtuels.
+
+# Copyright
+Copyright (c) 2026 Alexey Redozubov, Valery Pogorelov
+
+# License
+Distribué sous licence Creative Commons Attribution-NoDerivatives 4.0
+International (CC BY-ND 4.0).
+
+    Texte intégral :  LICENSE
+    En ligne :        https://creativecommons.org/licenses/by-nd/4.0/
+
+Vous pouvez utiliser et redistribuer ce logiciel librement, y compris à des
+fins commerciales et au sein d'une entreprise. Vous ne pouvez pas publier de
+versions modifiées. Lors de la redistribution, la licence exige que vous
+conserviez intacts cet avis, le texte de la licence et l'attribution
+ci-dessus.
+
+Seul le texte anglais de la licence a valeur juridique ; cette traduction est
+fournie à titre indicatif.

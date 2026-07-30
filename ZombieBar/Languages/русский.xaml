@@ -82,6 +82,10 @@
     <s:String x:Key="share_copy_link">Скопировать ссылку</s:String>
     <s:String x:Key="share_tweet">Твит (X)</s:String>
     <s:String x:Key="share_telegram">Пост в Telegram</s:String>
+    <s:String x:Key="share_whatsapp">WhatsApp</s:String>
+    <s:String x:Key="share_facebook">Facebook</s:String>
+    <s:String x:Key="share_linkedin">LinkedIn</s:String>
+    <s:String x:Key="share_reddit">Reddit</s:String>
     <s:String x:Key="share_email">Эл. почта</s:String>
     <s:String x:Key="share_link_copied">Ссылка скопирована в буфер обмена</s:String>
 

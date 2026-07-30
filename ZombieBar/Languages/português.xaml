@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:s="clr-namespace:System;assembly=mscorlib">
 
-    <s:String x:Key="zombiebar_properties">Propriedades da DragThrough</s:String>
+    <s:String x:Key="zombiebar_properties">Propriedades do DragThrough</s:String>
     <s:String x:Key="taskbar_options">Barra de tarefas</s:String>
     <BitmapImage x:Key="properties_95" UriSource="../Resources/pt/properties.png" />
     <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/pt/properties_noclock.png" />
@@ -41,12 +41,12 @@
     <s:String x:Key="show_taskman">_Gerenciador de tarefas</s:String>
     <s:String x:Key="tray_properties">P_ropriedades</s:String>
     <s:String x:Key="update_available">_Atualização disponível...</s:String>
-    <s:String x:Key="exit_zombiebar">_Sair da DragThrough</s:String>
+    <s:String x:Key="exit_zombiebar">_Sair do DragThrough</s:String>
     <s:String x:Key="taskbar_menu_title">Barra de tarefas com arrasto de tarefas</s:String>
     <s:String x:Key="remove">Remover</s:String>
 
     <!-- Tray menu (DragThrough) -->
-    <s:String x:Key="tray_drag_title">Ocultar temporariamente o Explorador ao arrastar ficheiros</s:String>
+    <s:String x:Key="tray_drag_title">Ocultar temporariamente o Explorador ao arrastar arquivos</s:String>
     <s:String x:Key="tray_use_windows_key">Usar também a tecla Windows (Shift pode não funcionar em alguns aplicativos, por exemplo, o Davinci Resolve)</s:String>
     <s:String x:Key="tray_enable_shift">Ocultar temporariamente o Explorador ao arrastar arquivos com a tecla Shift</s:String>
     <s:String x:Key="tray_minimize_explorer">Minimizar o Explorador após arrastar</s:String>
@@ -54,36 +54,40 @@
     <s:String x:Key="tray_show_taskbar">Mostrar a barra de tarefas em todas as áreas de trabalho</s:String>
     <s:String x:Key="tray_show_taskbar_this_desktop">Mostrar a barra de tarefas adicional com tarefas arrastáveis</s:String>
     <s:String x:Key="tray_center_tasks">Centralizar as tarefas na barra de tarefas</s:String>
-    <s:String x:Key="tray_compact_tasks">Vista compacta das tarefas na barra de tarefas</s:String>
-    <s:String x:Key="tray_buy_coffee">Pague-me um café</s:String>
+    <s:String x:Key="tray_compact_tasks">Exibição compacta das tarefas na barra de tarefas</s:String>
+    <s:String x:Key="tray_buy_coffee">Pague um café para o autor</s:String>
     <s:String x:Key="tray_feedback">Relatar um problema ou sugestão...</s:String>
     <s:String x:Key="tray_exit">Sair</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>
 
     <!-- Feedback form -->
     <s:String x:Key="feedback_title">Comentários</s:String>
-    <s:String x:Key="feedback_prompt">Descreva o problema ou a sugestão. Pode anexar capturas de ecrã.</s:String>
-    <s:String x:Key="feedback_screenshots">Capturas de ecrã:</s:String>
-    <s:String x:Key="feedback_add_file">Adicionar ficheiro...</s:String>
-    <s:String x:Key="feedback_capture">Capturar ecrã</s:String>
+    <s:String x:Key="feedback_prompt">Descreva o problema ou a sugestão. Você pode anexar capturas de tela.</s:String>
+    <s:String x:Key="feedback_screenshots">Capturas de tela:</s:String>
+    <s:String x:Key="feedback_add_file">Adicionar arquivo...</s:String>
+    <s:String x:Key="feedback_capture">Capturar tela</s:String>
     <s:String x:Key="feedback_remove">Remover</s:String>
     <s:String x:Key="feedback_no_screenshots">Nenhuma captura anexada</s:String>
     <s:String x:Key="feedback_send">Enviar</s:String>
     <s:String x:Key="feedback_cancel">Cancelar</s:String>
     <s:String x:Key="feedback_empty">Descreva o problema ou a sugestão, por favor.</s:String>
-    <s:String x:Key="feedback_screenshot_hint">Arraste as capturas da pasta aberta para a issue do GitHub e submeta-a.</s:String>
-    <s:String x:Key="feedback_clipboard_hint">O texto foi copiado para a área de transferência - cole-o (Ctrl+V) na issue.</s:String>
+    <s:String x:Key="feedback_screenshot_hint">Arraste as capturas da pasta aberta para a issue do GitHub e envie.</s:String>
+    <s:String x:Key="feedback_clipboard_hint">O texto foi copiado para a área de transferência - cole (Ctrl+V) na issue.</s:String>
     <s:String x:Key="feedback_body_screenshots">_Anexe aqui as capturas (arraste-as da pasta aberta)._</s:String>
     <s:String x:Key="feedback_image_filter">Imagens</s:String>
-    <s:String x:Key="feedback_all_files">Todos os ficheiros</s:String>
+    <s:String x:Key="feedback_all_files">Todos os arquivos</s:String>
 
     <!-- Share the app -->
-    <s:String x:Key="share_app">Partilhar a aplicação</s:String>
-    <s:String x:Key="share_copy_link">Copiar ligação</s:String>
+    <s:String x:Key="share_app">Compartilhar o aplicativo</s:String>
+    <s:String x:Key="share_copy_link">Copiar link</s:String>
     <s:String x:Key="share_tweet">Tweetar (X)</s:String>
     <s:String x:Key="share_telegram">Publicar no Telegram</s:String>
+    <s:String x:Key="share_whatsapp">WhatsApp</s:String>
+    <s:String x:Key="share_facebook">Facebook</s:String>
+    <s:String x:Key="share_linkedin">LinkedIn</s:String>
+    <s:String x:Key="share_reddit">Reddit</s:String>
     <s:String x:Key="share_email">E-mail</s:String>
-    <s:String x:Key="share_link_copied">Ligação copiada para a área de transferência</s:String>
+    <s:String x:Key="share_link_copied">Link copiado para a área de transferência</s:String>
 
     <s:String x:Key="restore">_Restaurar</s:String>
     <s:String x:Key="move">_Mover</s:String>
@@ -106,12 +110,12 @@
     <s:String x:Key="about_version">Versão</s:String>
     <s:String x:Key="about_tagline">Windows helpers app</s:String>
     <s:String x:Key="about_third_party">Licenças de terceiros</s:String>
-    <s:String x:Key="about_check_updates">Procurar atualizações</s:String>
-    <s:String x:Key="about_checking">Procurando atualizações…</s:String>
+    <s:String x:Key="about_check_updates">Verificar atualizações</s:String>
+    <s:String x:Key="about_checking">Verificando atualizações…</s:String>
     <s:String x:Key="about_up_to_date">Você tem a versão mais recente.</s:String>
     <s:String x:Key="about_update_available">A versão {0} está disponível.</s:String>
     <s:String x:Key="about_update_prompt">A versão {0} está disponível. Instalar agora?</s:String>
-    <s:String x:Key="about_check_failed">Não foi possível procurar atualizações. Tente novamente mais tarde.</s:String>
+    <s:String x:Key="about_check_failed">Não foi possível verificar atualizações. Tente novamente mais tarde.</s:String>
     <s:String x:Key="about_close">Fechar</s:String>
     <s:String x:Key="about_update_badge">Atualização disponível</s:String>
     <s:String x:Key="about_install_update">Instalar atualização</s:String>

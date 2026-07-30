@@ -1,0 +1,37 @@
+# Description
+Arraste arquivos para qualquer janela — mesmo as que ficam escondidas atrás do Explorador de Arquivos.
+A cena é conhecida: você pega um ou vários arquivos no Explorador de Arquivos, mas a janela onde quer soltá-los está logo atrás, completamente coberta. Então você cancela o arrasto, minimiza o Explorador, procura a janela, volta e começa de novo.
+O DragThrough elimina essa etapa. Mantenha pressionada a tecla Shift (ou a tecla Windows) enquanto arrasta arquivos no Explorador e ele sai da frente temporariamente, permitindo que você solte direto na janela que estava atrás. Um único arrasto e pronto.
+O aplicativo ainda acrescenta uma barra de tarefas secundária opcional, com botões de tarefa arrastáveis e fluidos, que sabe em qual área de trabalho virtual você está.
+
+# New in this version
+Pequenas melhorias.
+
+# Product features
+Mantenha pressionada a tecla Shift ou a tecla Windows ao arrastar no Explorador de Arquivos para soltar na janela de trás
+Minimiza o Explorador de Arquivos automaticamente após soltar com sucesso
+Barra de tarefas secundária opcional e estreita, com botões de tarefa arrastáveis
+Reordene os botões de tarefa arrastando-os, no estilo das abas do Chrome
+Por área de trabalho virtual: mostra apenas as janelas da área de trabalho atual
+Funciona discretamente na área de notificação
+
+# Short description
+Arraste arquivos para qualquer janela — mesmo as que ficam escondidas atrás do Explorador de Arquivos. Mantenha pressionada a tecla Shift ao arrastar e o Explorador sai da frente, permitindo que você solte direto na janela de trás. Inclui uma barra de tarefas secundária opcional com botões de tarefa arrastáveis, que leva em conta suas áreas de trabalho virtuais.
+
+# Copyright
+Copyright (c) 2026 Alexey Redozubov, Valery Pogorelov
+
+# License
+Distribuído sob a licença Creative Commons Attribution-NoDerivatives 4.0
+International (CC BY-ND 4.0).
+
+    Texto completo:  LICENSE
+    Online:          https://creativecommons.org/licenses/by-nd/4.0/
+
+Você pode usar e redistribuir este software livremente, inclusive para fins
+comerciais e dentro de uma empresa. Você não pode publicar versões
+modificadas. Ao redistribuí-lo, a licença exige que você mantenha intactos
+este aviso, o texto da licença e a atribuição acima.
+
+A versão juridicamente vinculante é o texto em inglês; esta tradução é
+apenas informativa.

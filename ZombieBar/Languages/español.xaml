@@ -82,6 +82,10 @@
     <s:String x:Key="share_copy_link">Copiar enlace</s:String>
     <s:String x:Key="share_tweet">Tuitear (X)</s:String>
     <s:String x:Key="share_telegram">Publicar en Telegram</s:String>
+    <s:String x:Key="share_whatsapp">WhatsApp</s:String>
+    <s:String x:Key="share_facebook">Facebook</s:String>
+    <s:String x:Key="share_linkedin">LinkedIn</s:String>
+    <s:String x:Key="share_reddit">Reddit</s:String>
     <s:String x:Key="share_email">Correo electrónico</s:String>
     <s:String x:Key="share_link_copied">Enlace copiado al portapapeles</s:String>
 

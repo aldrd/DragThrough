@@ -1,0 +1,37 @@
+# Description
+Arrastra archivos a cualquier ventana, incluso a las que quedan ocultas detrás del Explorador de archivos.
+Conoces la escena: coges uno o varios archivos en el Explorador de archivos, pero la ventana en la que quieres soltarlos está justo detrás, completamente cubierta. Así que cancelas el arrastre, minimizas el Explorador, buscas la ventana, vuelves y empiezas de nuevo.
+DragThrough elimina ese paso. Mantén pulsada la tecla Mayús (o la tecla Windows) mientras arrastras archivos en el Explorador y este se aparta temporalmente, de modo que puedes soltarlos directamente en la ventana que estaba detrás. Un solo arrastre y listo.
+También añade una barra de tareas secundaria opcional, con botones de tarea arrastrables y fluidos, que sabe en qué escritorio virtual te encuentras.
+
+# New in this version
+Pequeñas mejoras.
+
+# Product features
+Mantén pulsada la tecla Mayús o la tecla Windows al arrastrar en el Explorador de archivos para soltar en la ventana de detrás
+Minimiza automáticamente el Explorador de archivos tras soltar los archivos
+Barra de tareas secundaria opcional y estrecha, con botones de tarea arrastrables
+Reordena los botones de tarea arrastrándolos, al estilo de las pestañas de Chrome
+Por escritorio virtual: muestra solo las ventanas del escritorio actual
+Funciona discretamente desde el área de notificación
+
+# Short description
+Arrastra archivos a cualquier ventana, incluso a las que quedan ocultas detrás del Explorador de archivos. Mantén pulsada la tecla Mayús al arrastrar y el Explorador se aparta, así puedes soltarlos directamente en la ventana de detrás. Incluye una barra de tareas secundaria opcional con botones de tarea arrastrables que tiene en cuenta tus escritorios virtuales.
+
+# Copyright
+Copyright (c) 2026 Alexey Redozubov, Valery Pogorelov
+
+# License
+Publicado bajo la licencia Creative Commons Attribution-NoDerivatives 4.0
+International (CC BY-ND 4.0).
+
+    Texto completo:  LICENSE
+    En línea:        https://creativecommons.org/licenses/by-nd/4.0/
+
+Puedes usar y redistribuir este software libremente, incluso con fines
+comerciales y dentro de una empresa. No puedes publicar versiones
+modificadas. Al redistribuirlo, la licencia exige que conserves intactos
+este aviso, el texto de la licencia y la atribución anterior.
+
+La versión legalmente vinculante es el texto en inglés; esta traducción se
+ofrece únicamente como ayuda.
