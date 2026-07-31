@@ -53,8 +53,14 @@ $ErrorActionPreference = "Stop"
 $repoRoot   = Split-Path -Parent $PSScriptRoot
 $project    = Join-Path $repoRoot "ZombieBar\ZombieBar.csproj"
 $issScript  = Join-Path $PSScriptRoot "DragThrough.iss"
-$publishDir = Join-Path $repoRoot "ZombieBar\bin\$Configuration\net10.0-windows\$Runtime\publish"
 $outputDir  = Join-Path $PSScriptRoot "Output"
+
+# The publish path contains the target framework, so read it from the project instead of repeating it
+# here - a TFM bump would otherwise leave this pointing at a folder that is never created, and the
+# failure would surface much later as a confusing "published exe not found".
+$tfm = if ((Get-Content $project -Raw) -match '<TargetFramework>([^<]+)</TargetFramework>') { $Matches[1] }
+       else { throw "Could not read <TargetFramework> from $project" }
+$publishDir = Join-Path $repoRoot "ZombieBar\bin\$Configuration\$tfm\$Runtime\publish"
 
 # Name of the release asset (the exe the auto-updater downloads). Must match the project's
 # published exe and the file name in the manifest url.

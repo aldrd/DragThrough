@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap rescap">
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" IgnorableNamespaces="uap uap5 rescap">
   <!--
     Identity MUST match the reservation in Partner Center or the Store upload is rejected. The easiest,
     least error-prone way is Visual Studio: right-click this project > Publish > "Associate App with the
@@ -28,6 +28,26 @@
         <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Images\SplashScreen.png" />
       </uap:VisualElements>
+      <!--
+        Run at sign-in. The installer build does this with an HKCU\...\Run entry, but that is wrong for a
+        packaged app: the exe lives under a version-stamped WindowsApps folder, so the recorded path would
+        break on every Store update. A startupTask is the supported mechanism - Windows owns the entry and
+        keeps it pointing at the current version.
+
+        Executable is the path INSIDE the package (the app is staged in a ZombieBar subfolder), not the
+        $targetnametoken$ used above, which only the Application element expands.
+
+        Enabled="true" means no RequestEnableAsync call is needed. It is not forced on the user: Windows
+        only honours it after the app has been launched once, and the user can switch it off at any time
+        in Settings > Apps > Startup or Task Manager's Startup tab, where it shows up under DisplayName.
+      -->
+      <Extensions>
+        <uap5:Extension Category="windows.startupTask"
+                        Executable="ZombieBar\ZombieBar.exe"
+                        EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask TaskId="DragThroughStartup" Enabled="true" DisplayName="DragThrough" />
+        </uap5:Extension>
+      </Extensions>
     </Application>
   </Applications>
   <!-- Only the capability the app actually needs. runFullTrust is required for a Win32 (Desktop Bridge)

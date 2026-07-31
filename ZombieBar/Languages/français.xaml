@@ -7,6 +7,7 @@
     <BitmapImage x:Key="properties_95" UriSource="../Resources/fr/properties.png" />
     <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/fr/properties_noclock.png" />
     <s:String x:Key="autostart">_Démarrer automatiquement à la connexion</s:String>
+    <s:String x:Key="autostart_blocked">Le démarrage automatique de cette application a été désactivé dans le Gestionnaire des tâches. Réactivez-le à cet endroit, sous l'onglet Démarrage.</s:String>
     <s:String x:Key="language_text">Lan_gue:</s:String>
     <s:String x:Key="language_tip">Sélectionnez la langue à utiliser.</s:String>
     <s:String x:Key="theme_text">_Thème:</s:String>

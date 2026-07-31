@@ -37,6 +37,6 @@ dotnet publish ZombieBar\ZombieBar.csproj -c Release -r win-x64 --self-contained
     -p:EnableCompressionInSingleFile=true -p:DebugType=none
 
 ISCC.exe /DMyAppVersion=1.2.3.0 `
-    "/DPublishDir=ZombieBar\bin\Release\net10.0-windows\win-x64\publish" `
+    "/DPublishDir=ZombieBar\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish" `
     installer\DragThrough.iss
 ```

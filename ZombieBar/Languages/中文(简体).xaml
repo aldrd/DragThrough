@@ -7,6 +7,7 @@
     <BitmapImage x:Key="properties_95" UriSource="../Resources/zh/properties.png" />
     <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/zh/properties_noclock.png" />
     <s:String x:Key="autostart">登录时自动启动(_L)</s:String>
+    <s:String x:Key="autostart_blocked">此应用的开机启动已在任务管理器中关闭。请在任务管理器的“启动”选项卡中重新开启。</s:String>
     <s:String x:Key="language_text">语言(_G)：</s:String>
     <s:String x:Key="language_tip">选择要使用的语言。</s:String>
     <s:String x:Key="theme_text">主题(_T)</s:String>

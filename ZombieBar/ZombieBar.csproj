@@ -5,7 +5,12 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <!-- The Windows version in the TFM is what makes the WinRT projections available; the app needs
+         Windows.ApplicationModel.StartupTask to drive the Store build's run-at-sign-in task. It does NOT
+         raise the OS the app runs on - SupportedOSPlatformVersion below keeps that at 1809, matching the
+         MSIX manifest's TargetDeviceFamily/@MinVersion. Calls into newer APIs must stay guarded. -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <StartupObject>ZombieBar.App</StartupObject>

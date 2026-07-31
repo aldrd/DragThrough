@@ -47,29 +47,19 @@ namespace ZombieBar
             }
         }
 
-        private void LoadAutoStart()
-        {
-            try
-            {
-                using RegistryKey rKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", false);
-                List<string> rKeyValueNames = rKey?.GetValueNames().ToList();
+        // Set while the checkbox is being filled in from the current state, so that doing so does not
+        // look like a user click and write the setting straight back.
+        private bool _syncingAutoStart;
 
-                if (rKeyValueNames != null)
-                {
-                    if (rKeyValueNames.Contains("ZombieBar"))
-                    {
-                        AutoStartCheckBox.IsChecked = true;
-                    }
-                    else
-                    {
-                        AutoStartCheckBox.IsChecked = false;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                ShellLogger.Error($"PropertiesWindow: Unable to load autorun setting from registry: {e.Message}");
-            }
+        private async void LoadAutoStart()
+        {
+            bool? enabled = await AutoStart.IsEnabledAsync();
+            if (enabled == null)
+                return;
+
+            _syncingAutoStart = true;
+            AutoStartCheckBox.IsChecked = enabled.Value;
+            _syncingAutoStart = false;
         }
 
         private void LoadLanguages()
@@ -146,27 +136,36 @@ namespace ZombieBar
             UpdateWindowPosition();
         }
 
-        private void AutoStartCheckBox_OnChecked(object sender, RoutedEventArgs e)
+        private async void AutoStartCheckBox_OnChecked(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                using RegistryKey rKey = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
-                var chkBox = (System.Windows.Controls.CheckBox)sender;
+            if (_syncingAutoStart)
+                return;
 
-                if (chkBox.IsChecked.Equals(false))
-                {
-                    rKey?.DeleteValue("ZombieBar");
-                }
-                else
-                {
-                    rKey?.SetValue("ZombieBar", ExePath.GetExecutablePath());
-                }
-            }
-            catch (Exception exception)
+            var chkBox = (System.Windows.Controls.CheckBox)sender;
+            bool wanted = chkBox.IsChecked == true;
+
+            AutoStart.Result result = await AutoStart.SetEnabledAsync(wanted);
+            if (result == AutoStart.Result.Ok)
+                return;
+
+            // The change did not take, so put the checkbox back rather than leave it claiming otherwise.
+            _syncingAutoStart = true;
+            chkBox.IsChecked = !wanted;
+            _syncingAutoStart = false;
+
+            // Only the user can undo their own Task Manager opt-out, so say where to do it. A policy
+            // block or an outright failure is nothing they can act on here; those are just logged.
+            if (result == AutoStart.Result.BlockedByUser)
             {
-                ShellLogger.Error($"PropertiesWindow: Unable to update registry autorun setting: {exception.Message}");
+                System.Windows.MessageBox.Show(this,
+                    Loc("autostart_blocked", "Startup for this app was turned off in Task Manager. Turn it back on there, on the Startup tab."),
+                    Loc("about_title", "DragThrough"),
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
+
+        private static string Loc(string key, string fallback) =>
+            System.Windows.Application.Current?.TryFindResource(key) as string ?? fallback;
 
         private void cboEdgeSelect_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {

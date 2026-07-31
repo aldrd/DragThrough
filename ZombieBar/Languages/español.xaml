@@ -7,6 +7,7 @@
     <BitmapImage x:Key="properties_95" UriSource="../Resources/es/properties.png" />
     <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/es/properties_noclock.png" />
     <s:String x:Key="autostart">_Iniciar automáticamente al iniciar sesión</s:String>
+    <s:String x:Key="autostart_blocked">El inicio automático de esta aplicación se desactivó en el Administrador de tareas. Vuelve a activarlo allí, en la pestaña Inicio.</s:String>
     <s:String x:Key="language_text">Idi_oma:</s:String>
     <s:String x:Key="language_tip">Seleccione el idioma a usar.</s:String>
     <s:String x:Key="theme_text">_Tema:</s:String>

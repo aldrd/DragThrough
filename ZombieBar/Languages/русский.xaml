@@ -7,6 +7,7 @@
     <BitmapImage x:Key="properties_95" UriSource="../Resources/properties.png" />
     <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/properties_noclock.png" />
     <s:String x:Key="autostart">_Автоматически запускать при входе в систему</s:String>
+    <s:String x:Key="autostart_blocked">Автозапуск этого приложения отключён в Диспетчере задач. Включить обратно можно там же, на вкладке «Автозагрузка».</s:String>
     <s:String x:Key="language_text">_Язык:</s:String>
     <s:String x:Key="language_tip">Выберите язык интерфейса.</s:String>
     <s:String x:Key="theme_text">_Тема:</s:String>
