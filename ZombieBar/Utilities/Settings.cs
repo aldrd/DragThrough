@@ -265,12 +265,12 @@ namespace ZombieBar.Utilities
             set { if (settings.CompactSingleInstanceTasks != value) settings.CompactSingleInstanceTasks = value; }
         }
 
-        // Show only maximized windows in the additional taskbar. A minimized window that will restore
-        // to maximized still counts, so it can be brought back from the bar.
-        public bool ShowOnlyMaximizedTasks
+        // Show only open (non-minimized) windows in the additional taskbar, plus the most recently
+        // minimized one, parked at the right end and highlighted.
+        public bool ShowOnlyOpenTasks
         {
-            get { return settings.ShowOnlyMaximizedTasks; }
-            set { if (settings.ShowOnlyMaximizedTasks != value) settings.ShowOnlyMaximizedTasks = value; }
+            get { return settings.ShowOnlyOpenTasks; }
+            set { if (settings.ShowOnlyOpenTasks != value) settings.ShowOnlyOpenTasks = value; }
         }
         #endregion
 

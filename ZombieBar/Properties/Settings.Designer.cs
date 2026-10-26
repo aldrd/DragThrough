@@ -218,12 +218,12 @@ namespace ZombieBar.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ShowOnlyMaximizedTasks {
+        public bool ShowOnlyOpenTasks {
             get {
-                return ((bool)(this["ShowOnlyMaximizedTasks"]));
+                return ((bool)(this["ShowOnlyOpenTasks"]));
             }
             set {
-                this["ShowOnlyMaximizedTasks"] = value;
+                this["ShowOnlyOpenTasks"] = value;
             }
         }
     }

@@ -50,7 +50,7 @@
     <Setting Name="CompactSingleInstanceTasks" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="ShowOnlyMaximizedTasks" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowOnlyOpenTasks" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
