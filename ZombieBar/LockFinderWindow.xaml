@@ -1,0 +1,95 @@
+<Window x:Class="ZombieBar.LockFinderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        SizeToContent="Height"
+        Width="572"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI"
+        TextOptions.TextFormattingMode="Display"
+        Title="{DynamicResource lock_title}"
+        PreviewKeyDown="Window_PreviewKeyDown">
+
+    <Border Margin="16"
+            CornerRadius="10"
+            Background="{DynamicResource BgBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.30" Color="Black" />
+        </Border.Effect>
+
+        <StackPanel Margin="20">
+            <!-- Header (also the drag handle of this borderless window). -->
+            <Grid Margin="0,0,0,12" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0"
+                       x:Name="AppIcon"
+                       Width="24" Height="24"
+                       Margin="0,0,10,0"
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <TextBlock Grid.Column="1"
+                           Text="{DynamicResource lock_title}"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource FgBrush}" />
+                <Button Grid.Column="2" Style="{StaticResource DialogCloseButton}" Click="Close_Click" />
+            </Grid>
+
+            <!-- What is being checked, and the outcome. -->
+            <TextBlock x:Name="StatusText"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource FgBrush}" />
+            <TextBox x:Name="PathText"
+                     Visibility="Collapsed"
+                     Margin="0,6,0,0"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Padding="0"
+                     FontWeight="SemiBold"
+                     Foreground="{DynamicResource FgBrush}" />
+            <TextBlock x:Name="NoteText"
+                       Visibility="Collapsed"
+                       Margin="0,6,0,0"
+                       TextWrapping="Wrap"
+                       FontSize="11"
+                       Foreground="{DynamicResource SubFgBrush}" />
+
+            <!-- One row per locking process (built in code). -->
+            <ScrollViewer MaxHeight="360" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="ResultsPanel" />
+            </ScrollViewer>
+
+            <!-- Bottom actions. -->
+            <Grid Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" x:Name="ChooseFileButton" Style="{StaticResource DialogButton}"
+                        Content="{DynamicResource lock_choose_file}" Click="ChooseFile_Click" Margin="0,0,8,0" />
+                <Button Grid.Column="1" x:Name="ChooseFolderButton" Style="{StaticResource DialogButton}"
+                        Content="{DynamicResource lock_choose_folder}" Click="ChooseFolder_Click" />
+                <Button Grid.Column="3" x:Name="RefreshButton" Style="{StaticResource DialogButton}"
+                        Content="{DynamicResource lock_refresh}" Click="Refresh_Click" Margin="0,0,8,0" />
+                <Button Grid.Column="4" Style="{StaticResource DialogPrimaryButton}"
+                        Content="{DynamicResource lock_done}" Click="Close_Click" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

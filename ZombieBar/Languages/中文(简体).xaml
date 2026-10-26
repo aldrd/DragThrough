@@ -68,6 +68,35 @@
     <s:String x:Key="useful_buttons_title">实用按钮</s:String>
     <s:String x:Key="useful_restart_explorer">重启资源管理器</s:String>
     <s:String x:Key="useful_action_failed">无法完成该操作。</s:String>
+    <s:String x:Key="useful_restart_explorer_tip">重启 Windows 资源管理器：任务栏、桌面和文件夹窗口。在它们卡住或不再刷新时很有用。已打开的文件夹窗口将被关闭。</s:String>
+    <s:String x:Key="useful_find_locker">查找锁定文件的进程</s:String>
+    <s:String x:Key="useful_find_locker_tip">显示是哪个程序占用着文件或文件夹。当 Windows 提示“文件正在使用”或“文件夹正在使用”时使用：文件会从该窗口中获取，也可以自行选择。</s:String>
+    <s:String x:Key="lock_title">谁在使用该文件</s:String>
+    <s:String x:Key="lock_searching">正在查找…</s:String>
+    <s:String x:Key="lock_from_dialog">来自“正在使用”窗口：</s:String>
+    <s:String x:Key="lock_selected">已选择：</s:String>
+    <s:String x:Key="lock_no_dialog">未找到“文件正在使用”或“文件夹正在使用”窗口。请选择要检查的文件或文件夹。</s:String>
+    <s:String x:Key="lock_unresolved">已找到“正在使用”窗口，但无法确定“{0}”的位置。请选择要检查的文件或文件夹。</s:String>
+    <s:String x:Key="lock_not_found">该文件或文件夹已不存在。</s:String>
+    <s:String x:Key="lock_error">无法检查：{0}</s:String>
+    <s:String x:Key="lock_none">目前没有程序在使用它。以管理员身份运行的程序以及对文件夹本身打开的句柄无法检测到。</s:String>
+    <s:String x:Key="lock_truncated">文件夹较大：仅检查了其中的前 {0} 个文件。</s:String>
+    <s:String x:Key="lock_pid">PID {0}</s:String>
+    <s:String x:Key="lock_service">服务：{0}</s:String>
+    <s:String x:Key="lock_reason_file">打开了该文件</s:String>
+    <s:String x:Key="lock_reason_files_inside">打开了文件夹中的文件</s:String>
+    <s:String x:Key="lock_reason_cwd">其工作文件夹位于其中</s:String>
+    <s:String x:Key="lock_reason_exe">从此文件夹运行</s:String>
+    <s:String x:Key="lock_explorer_hint">这是 Windows 资源管理器：请关闭文件夹窗口或预览窗格，或使用“重启资源管理器”。</s:String>
+    <s:String x:Key="lock_no_window">此程序没有可切换或关闭的窗口。</s:String>
+    <s:String x:Key="lock_switch">切换到</s:String>
+    <s:String x:Key="lock_close">关闭程序</s:String>
+    <s:String x:Key="lock_close_confirm">要关闭 {0} 吗？程序可能会提示你保存未保存的更改。</s:String>
+    <s:String x:Key="lock_close_failed">无法关闭 {0}。它可能正以管理员身份运行。</s:String>
+    <s:String x:Key="lock_choose_file">选择文件…</s:String>
+    <s:String x:Key="lock_choose_folder">选择文件夹…</s:String>
+    <s:String x:Key="lock_refresh">重新检查</s:String>
+    <s:String x:Key="lock_done">关闭</s:String>
 
     <!-- Feedback form -->
     <s:String x:Key="feedback_title">反馈</s:String>
