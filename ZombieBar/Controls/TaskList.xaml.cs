@@ -377,6 +377,8 @@ namespace ZombieBar.Controls
             if (_minimizeHook != IntPtr.Zero)
                 SyncMinimizedWindows();
 
+            PinnedTasks.Forget(Tasks.Windows.Select(w => w.Handle));
+
             // A window opened/closed while dragging: don't relayout/refresh now (it would abort the
             // drag by regenerating the containers); catch up once the drag completes.
             if (_dragHandler?.IsDragging == true)
@@ -471,21 +473,6 @@ namespace ZombieBar.Controls
 
             if (_lastMinimizedWindow != IntPtr.Zero && !current.Contains(_lastMinimizedWindow))
                 _lastMinimizedWindow = IntPtr.Zero;
-
-            // The view filtered a new window before its pin key was known, so a pinned, minimized new
-            // window needs one more pass to appear.
-            PinnedTasks.Forget(current);
-            bool pinnedMinimizedAppeared = false;
-            foreach (ApplicationWindow window in windows)
-            {
-                bool wasPinned = PinnedTasks.IsPinned(window);
-                PinnedTasks.Register(window);
-                if (!wasPinned && PinnedTasks.IsPinned(window) && !IsActiveTask(window.Handle))
-                    pinnedMinimizedAppeared = true;
-            }
-
-            if (pinnedMinimizedAppeared)
-                ScheduleWindowStateRefresh();
         }
 
         private void PinnedTasks_Changed(object sender, EventArgs e)
@@ -666,7 +653,7 @@ namespace ZombieBar.Controls
 
             if (e.PropertyName == nameof(Settings.ShowOnlyOpenTasks))
             {
-                // Browser captions and the pin toggle depend on the mode.
+                // Compact view and the pin toggle depend on the mode.
                 SetTaskButtonWidth();
                 ApplyOpenModeFlags();
 
@@ -763,6 +750,10 @@ namespace ZombieBar.Controls
                 Settings.Instance.Edge == (int)AppBarEdge.Right)
                 return compact;
 
+            // The "only open windows" mode always shows every window's caption.
+            if (Settings.Instance.ShowOnlyOpenTasks)
+                return compact;
+
             List<ApplicationWindow> windows = TasksList.Items.OfType<ApplicationWindow>().ToList();
             if (windows.Count == 0)
                 return compact;
@@ -788,9 +779,6 @@ namespace ZombieBar.Controls
                 // meaningful text, so it is never collapsed to just an icon.
                 if (w.TaskBarDisplayType == TaskBarDisplayType.Right)
                     continue;
-                // In the "only open windows" mode a browser keeps its caption (the active tab's title).
-                if (Settings.Instance.ShowOnlyOpenTasks && IsBrowser(file))
-                    continue;
                 if (countByFile.TryGetValue(file, out int c) && c == 1)
                     compact.Add(w.Handle);
             }
@@ -800,18 +788,6 @@ namespace ZombieBar.Controls
 
         private static bool IsFileExplorer(string winFileName) =>
             winFileName.EndsWith("explorer.exe", StringComparison.OrdinalIgnoreCase);
-
-        // "browser.exe" is Yandex Browser.
-        private static readonly string[] BrowserExecutables =
-        {
-            "chrome.exe", "msedge.exe", "firefox.exe", "brave.exe", "opera.exe", "vivaldi.exe", "browser.exe"
-        };
-
-        private static bool IsBrowser(string winFileName)
-        {
-            string name = System.IO.Path.GetFileName(winFileName);
-            return BrowserExecutables.Any(b => string.Equals(b, name, StringComparison.OrdinalIgnoreCase));
-        }
 
         // The bar is crowded when its windows wouldn't all fit at the default button width. A floating
         // (content-sized) bar is measured against the widest it may grow, not its current width.

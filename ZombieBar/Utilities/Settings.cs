@@ -272,13 +272,6 @@ namespace ZombieBar.Utilities
             get { return settings.ShowOnlyOpenTasks; }
             set { if (settings.ShowOnlyOpenTasks != value) settings.ShowOnlyOpenTasks = value; }
         }
-
-        // Applications pinned in the "only open windows" mode, '|'-separated (see PinnedTasks).
-        public string PinnedTaskApps
-        {
-            get { return settings.PinnedTaskApps; }
-            set { if (settings.PinnedTaskApps != value) settings.PinnedTaskApps = value; }
-        }
         #endregion
 
         public void Save()
