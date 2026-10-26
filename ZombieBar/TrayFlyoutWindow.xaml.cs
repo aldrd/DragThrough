@@ -365,6 +365,7 @@ namespace ZombieBar
             ShowTaskbarThisDesktopToggle.IsChecked = _isTaskbarVisibleThisDesktop();
             CenterTasksToggle.IsChecked = Settings.Instance.CenterTasksInTaskbar;
             CompactTasksToggle.IsChecked = Settings.Instance.CompactSingleInstanceTasks;
+            OnlyMaximizedTasksToggle.IsChecked = Settings.Instance.ShowOnlyMaximizedTasks;
             _syncing = false;
         }
 
@@ -427,6 +428,12 @@ namespace ZombieBar
         {
             if (_syncing) return;
             Settings.Instance.CompactSingleInstanceTasks = CompactTasksToggle.IsChecked == true;
+        }
+
+        private void OnlyMaximizedTasksToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (_syncing) return;
+            Settings.Instance.ShowOnlyMaximizedTasks = OnlyMaximizedTasksToggle.IsChecked == true;
         }
 
         // === Actions ======================================================================

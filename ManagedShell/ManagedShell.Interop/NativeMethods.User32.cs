@@ -339,6 +339,12 @@ namespace ManagedShell.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsIconic(IntPtr hWnd);
 
+        [DllImport(User32_DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsZoomed(IntPtr hWnd);
+
+        public const int WPF_RESTORETOMAXIMIZED = 0x0002;
+
         [DllImport(User32_DllName, SetLastError = true)]
         public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, ref Rect pvParam, uint fWinIni);
 
@@ -1907,6 +1913,9 @@ namespace ManagedShell.Interop
         public static int WINEVENT_SKIPOWNPROCESS = 2;
         public static int EVENT_OBJECT_CLOAKED = 0x8017;
         public static int EVENT_OBJECT_UNCLOAKED = 0x8018;
+        public static int EVENT_OBJECT_LOCATIONCHANGE = 0x800B;
+        public static int OBJID_WINDOW = 0;
+        public static int CHILDID_SELF = 0;
 
         public delegate void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
 

@@ -63,6 +63,16 @@ namespace ZombieBar.Controls
         private readonly Dictionary<FrameworkElement, double> _slotOffsets = new();
         private int _prevItemCount = -1;
 
+        // "Only maximized windows" mode. Maximizing/restoring a window raises no shell-hook event, so while
+        // the mode is on a location-change WinEvent hook watches for it. The filter asks the OS directly;
+        // this set only remembers which taskbar windows were last seen maximized, so the hook can tell an
+        // actual state flip from an ordinary move/resize and re-filter only then.
+        private NativeMethods.WinEventProc _locationChangeProc;
+        private IntPtr _locationChangeHook = IntPtr.Zero;
+        private readonly HashSet<IntPtr> _maximizedWindows = new();
+        private bool _maximizedRefreshScheduled;
+        private bool _maximizedRefreshPendingAfterDrag;
+
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
         public double ButtonWidth
@@ -131,7 +141,9 @@ namespace ZombieBar.Controls
                         Filter = w => w is ApplicationWindow window
                                       && IsTaskbarEligible(window)
                                       && (_currentDesktopWindows == null
-                                          || _currentDesktopWindows.Contains(window.Handle)),
+                                          || _currentDesktopWindows.Contains(window.Handle))
+                                      && (!Settings.Instance.ShowOnlyMaximizedTasks
+                                          || IsMaximized(window.Handle)),
                         CustomSort = TasksOrderManager.Comparer,
                         IsLiveFiltering = true,
                         IsLiveSorting = true
@@ -174,6 +186,9 @@ namespace ZombieBar.Controls
                     // Re-align the task buttons live when the "center tasks" option is toggled.
                     Settings.Instance.PropertyChanged += Settings_PropertyChanged;
 
+                    if (Settings.Instance.ShowOnlyMaximizedTasks)
+                        StartMaximizedTracking();
+
                     // Compute the initial current-desktop set.
                     ScheduleDesktopRefresh();
                 }
@@ -192,6 +207,7 @@ namespace ZombieBar.Controls
                 Settings.Instance.PropertyChanged -= Settings_PropertyChanged;
             }
 
+            StopMaximizedTracking();
             LayoutUpdated -= TaskList_OnLayoutUpdated;
 
             _slotOffsets.Clear();
@@ -353,6 +369,9 @@ namespace ZombieBar.Controls
 
         private void GroupedWindows_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
+            if (_locationChangeHook != IntPtr.Zero)
+                SeedMaximizedWindows();
+
             // A window opened/closed while dragging: don't relayout/refresh now (it would abort the
             // drag by regenerating the containers); catch up once the drag completes.
             if (_dragHandler?.IsDragging == true)
@@ -377,12 +396,129 @@ namespace ZombieBar.Controls
         // Flush any refresh/relayout that was deferred because a drag was in progress.
         private void DragHandler_DragCompleted()
         {
+            if (_maximizedRefreshPendingAfterDrag)
+            {
+                _maximizedRefreshPendingAfterDrag = false;
+                _windowsView?.Refresh();
+                SetTaskButtonWidth();
+            }
+
             if (!_refreshPendingAfterDrag)
                 return;
 
             _refreshPendingAfterDrag = false;
             SetTaskButtonWidth();
             ScheduleDesktopRefresh();
+        }
+
+        // Maximized, or minimized from a maximized state (it restores to maximized), so a maximized window
+        // the user minimizes stays on the bar and can be brought back from it.
+        private static bool IsMaximized(IntPtr hwnd)
+        {
+            if (NativeMethods.IsZoomed(hwnd))
+                return true;
+
+            if (!NativeMethods.IsIconic(hwnd))
+                return false;
+
+            var placement = new NativeMethods.WINDOWPLACEMENT
+            {
+                length = System.Runtime.InteropServices.Marshal.SizeOf<NativeMethods.WINDOWPLACEMENT>()
+            };
+            return NativeMethods.GetWindowPlacement(hwnd, ref placement)
+                   && (placement.flags & NativeMethods.WPF_RESTORETOMAXIMIZED) != 0;
+        }
+
+        private void StartMaximizedTracking()
+        {
+            if (_locationChangeHook != IntPtr.Zero)
+                return;
+
+            SeedMaximizedWindows();
+
+            // Out-of-context hooks are called back on this (UI) thread through its message loop. The
+            // delegate is kept in a field so the GC can't collect it while native code holds it.
+            _locationChangeProc ??= LocationChangeCallback;
+            _locationChangeHook = NativeMethods.SetWinEventHook(
+                NativeMethods.EVENT_OBJECT_LOCATIONCHANGE,
+                NativeMethods.EVENT_OBJECT_LOCATIONCHANGE,
+                IntPtr.Zero,
+                _locationChangeProc,
+                0,
+                0,
+                NativeMethods.WINEVENT_OUTOFCONTEXT | NativeMethods.WINEVENT_SKIPOWNPROCESS);
+        }
+
+        private void StopMaximizedTracking()
+        {
+            if (_locationChangeHook != IntPtr.Zero)
+            {
+                NativeMethods.UnhookWinEvent(_locationChangeHook);
+                _locationChangeHook = IntPtr.Zero;
+            }
+
+            _maximizedWindows.Clear();
+            _maximizedRefreshPendingAfterDrag = false;
+        }
+
+        private void SeedMaximizedWindows()
+        {
+            _maximizedWindows.Clear();
+            if (Tasks?.Windows == null)
+                return;
+
+            foreach (ApplicationWindow window in Tasks.Windows)
+            {
+                if (IsMaximized(window.Handle))
+                    _maximizedWindows.Add(window.Handle);
+            }
+        }
+
+        // Fires for every top-level move/resize system-wide, so it stays cheap: only a change in a taskbar
+        // window's maximized state schedules a re-filter.
+        private void LocationChangeCallback(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+        {
+            if (hwnd == IntPtr.Zero || idObject != NativeMethods.OBJID_WINDOW || idChild != NativeMethods.CHILDID_SELF)
+                return;
+
+            bool maximized = IsMaximized(hwnd);
+            if (maximized == _maximizedWindows.Contains(hwnd))
+                return;
+
+            if (Tasks?.Windows == null || !Tasks.Windows.Any(w => w.Handle == hwnd))
+                return;
+
+            if (maximized)
+                _maximizedWindows.Add(hwnd);
+            else
+                _maximizedWindows.Remove(hwnd);
+
+            ScheduleMaximizedRefresh();
+        }
+
+        // Refresh() regenerates the item containers, so it is posted (never run from inside the hook
+        // callback), coalesced across a burst of events, and deferred while a drag is in progress.
+        private void ScheduleMaximizedRefresh()
+        {
+            if (_maximizedRefreshScheduled)
+                return;
+
+            _maximizedRefreshScheduled = true;
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                _maximizedRefreshScheduled = false;
+                if (!isLoaded)
+                    return;
+
+                if (_dragHandler?.IsDragging == true)
+                {
+                    _maximizedRefreshPendingAfterDrag = true;
+                    return;
+                }
+
+                _windowsView?.Refresh();
+                SetTaskButtonWidth();
+            }));
         }
 
         private void TaskList_OnLayoutUpdated(object sender, EventArgs e)
@@ -472,6 +608,16 @@ namespace ZombieBar.Controls
             if (e.PropertyName == nameof(Settings.CenterTasksInTaskbar) ||
                 e.PropertyName == nameof(Settings.CompactSingleInstanceTasks))
                 SetTaskButtonWidth();
+
+            if (e.PropertyName == nameof(Settings.ShowOnlyMaximizedTasks))
+            {
+                if (Settings.Instance.ShowOnlyMaximizedTasks)
+                    StartMaximizedTracking();
+                else
+                    StopMaximizedTracking();
+
+                ScheduleMaximizedRefresh();
+            }
         }
 
         private void TaskList_OnSizeChanged(object sender, SizeChangedEventArgs e)
