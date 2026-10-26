@@ -15,7 +15,7 @@ namespace ZombieBar.Utilities
     /// <summary>
     /// Finds the processes that keep a file or folder in use, without administrator rights.
     /// Files: the Restart Manager (the API behind Windows' own "file is open in ..." messages).
-    /// Folders: the Restart Manager over the files inside (capped), plus processes whose working
+    /// Folders: the Restart Manager over the files inside (capped, likely-locked file types first), plus processes whose working
     /// folder or executable is inside the folder. Open handles to the folder itself are not visible
     /// this way (that needs a system-wide handle scan, which is unreliable without elevation).
     /// </summary>
@@ -77,12 +77,9 @@ namespace ZombieBar.Utilities
             }
             else
             {
-                List<string> files = EnumerateFilesCapped(path, MaxFolderFiles + 1, token);
-                if (files.Count > MaxFolderFiles)
-                {
-                    files.RemoveAt(files.Count - 1);
+                List<string> files = SelectFolderFiles(path, token, out bool truncated);
+                if (truncated)
                     result.TruncatedAt = MaxFolderFiles;
-                }
 
                 foreach (RmProcess rp in RmGetLockers(files))
                     if (rp.Pid != self) Get(rp.Pid, rp.AppName, rp.Service).Reasons.Add(LockReason.FilesInside);
@@ -96,6 +93,31 @@ namespace ZombieBar.Utilities
         }
 
         // --- Folders: files inside, working folders, executables --------------------------------------
+        // Files a running program typically keeps open or mapped (and so blocks moving/deleting the
+        // folder): executables, libraries, native modules and packed app archives.
+        private static readonly HashSet<string> LikelyLockedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".exe", ".dll", ".node", ".asar", ".sys", ".ocx", ".pyd", ".so", ".jar", ".db", ".sqlite", ".lock", ".log", ".pak", ".dat"
+        };
+
+        private const int MaxFolderEntriesListed = 100_000;
+
+        // Picks up to MaxFolderFiles files to hand to the Restart Manager. For a large folder the files
+        // most likely to be locked go first, so e.g. an application's "resources" folder with tens of
+        // thousands of scripts still gets its native modules and archives checked.
+        private static List<string> SelectFolderFiles(string folder, CancellationToken token, out bool truncated)
+        {
+            List<string> all = EnumerateFilesCapped(folder, MaxFolderEntriesListed, token);
+            truncated = all.Count > MaxFolderFiles;
+            if (!truncated)
+                return all;
+
+            return all.Where(f => LikelyLockedExtensions.Contains(System.IO.Path.GetExtension(f)))
+                      .Concat(all.Where(f => !LikelyLockedExtensions.Contains(System.IO.Path.GetExtension(f))))
+                      .Take(MaxFolderFiles)
+                      .ToList();
+        }
+
         private static List<string> EnumerateFilesCapped(string folder, int cap, CancellationToken token)
         {
             var files = new List<string>();
@@ -218,9 +240,33 @@ namespace ZombieBar.Utilities
             catch { return null; }
         }
 
-        // Reads the working folder from the target's PEB (RTL_USER_PROCESS_PARAMETERS.CurrentDirectory).
-        // Works for same-user, non-elevated processes; returns null for anything it can't read.
-        private static string? GetCurrentDirectory(int pid)
+        /// <summary>The process's working folder, or null if it can't be read.</summary>
+        public static string? GetCurrentDirectory(int pid) => ReadProcessParametersString(pid, 0x38, 0x24);
+
+        /// <summary>The process's command line, or null if it can't be read.</summary>
+        public static string? GetCommandLine(int pid) => ReadProcessParametersString(pid, 0x70, 0x40);
+
+        /// <summary>The id of the process that started this one (it may have exited since), or 0.</summary>
+        public static int GetParentPid(int pid)
+        {
+            IntPtr h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+            if (h == IntPtr.Zero)
+                return 0;
+            try
+            {
+                var pbi = new PROCESS_BASIC_INFORMATION();
+                return NtQueryInformationProcess(h, ProcessBasicInformation, ref pbi, Marshal.SizeOf<PROCESS_BASIC_INFORMATION>(), out _) == 0
+                    ? (int)pbi.InheritedFromUniqueProcessId.ToInt64()
+                    : 0;
+            }
+            catch { return 0; }
+            finally { CloseHandle(h); }
+        }
+
+        // Reads a UNICODE_STRING field of the target's RTL_USER_PROCESS_PARAMETERS (via its PEB): the
+        // working folder is CurrentDirectory.DosPath, the command line is CommandLine. Works for
+        // same-user, non-elevated processes; returns null for anything it can't read.
+        private static string? ReadProcessParametersString(int pid, int offset64, int offset32)
         {
             if (!Environment.Is64BitProcess)
                 return null;
@@ -233,9 +279,9 @@ namespace ZombieBar.Utilities
                 if (NtQueryInformationProcess(h, ProcessWow64Information, out IntPtr peb32, IntPtr.Size, out _) == 0
                     && peb32 != IntPtr.Zero)
                 {
-                    // 32-bit process: PEB32.ProcessParameters at 0x10, CurrentDirectory.DosPath at 0x24.
+                    // 32-bit process: PEB32.ProcessParameters at 0x10.
                     long parameters = ReadUInt32(h, peb32.ToInt64() + 0x10);
-                    return parameters == 0 ? null : ReadUnicodeString32(h, parameters + 0x24);
+                    return parameters == 0 ? null : ReadUnicodeString32(h, parameters + offset32);
                 }
 
                 var pbi = new PROCESS_BASIC_INFORMATION();
@@ -243,9 +289,9 @@ namespace ZombieBar.Utilities
                     || pbi.PebBaseAddress == IntPtr.Zero)
                     return null;
 
-                // 64-bit process: PEB.ProcessParameters at 0x20, CurrentDirectory.DosPath at 0x38.
+                // 64-bit process: PEB.ProcessParameters at 0x20.
                 long parameters64 = ReadInt64(h, pbi.PebBaseAddress.ToInt64() + 0x20);
-                return parameters64 == 0 ? null : ReadUnicodeString64(h, parameters64 + 0x38);
+                return parameters64 == 0 ? null : ReadUnicodeString64(h, parameters64 + offset64);
             }
             catch
             {

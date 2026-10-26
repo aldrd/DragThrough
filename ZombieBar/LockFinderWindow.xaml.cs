@@ -18,9 +18,9 @@ using MessageBox = System.Windows.MessageBox;
 namespace ZombieBar
 {
     /// <summary>
-    /// "Find the process locking a file": takes the file or folder from an on-screen "File In Use" /
-    /// "Folder In Use" dialog (or lets the user choose one), lists the programs using it and offers to
-    /// switch to or close each of them. Single instance; opening it again re-runs the search.
+    /// "Find the process locking a file": takes the file or folder from an on-screen "File In Use"
+    /// dialog or another program's lock / access-denied error (or lets the user choose one), lists the
+    /// programs using it and offers to switch to or close each of them. Single instance; opening it again re-runs the search.
     /// </summary>
     public partial class LockFinderWindow : Window
     {
@@ -28,6 +28,7 @@ namespace ZombieBar
 
         private string? _path;
         private string _heading = "";
+        private LockDialogFinder.Result? _found;
         private CancellationTokenSource? _scanCts;
 
         private LockFinderWindow()
@@ -37,7 +38,7 @@ namespace ZombieBar
             AppIcon.Source = AppUi.LoadAppIcon();
         }
 
-        /// <summary>Shows the window (or brings the open one forward) and looks for an "In Use" dialog.</summary>
+        /// <summary>Shows the window (or brings the open one forward) and looks for a lock dialog.</summary>
         public static void Open()
         {
             if (_instance == null)
@@ -54,13 +55,20 @@ namespace ZombieBar
         private async Task FindFromDialogAsync()
         {
             ShowBusy();
-            FileInUseDialogFinder.Result found = await Task.Run(FileInUseDialogFinder.Find);
+            LockDialogFinder.Result found = await Task.Run(LockDialogFinder.Find);
             if (!IsLoaded)
                 return;
 
-            if (found.Path != null)
+            _found = found;
+            if (found.Candidates.Count == 1)
             {
-                await ScanAsync(found.Path, Loc("lock_from_dialog", "From the “In Use” window:"));
+                await ScanAsync(found.Candidates[0], DialogHeading(found));
+                return;
+            }
+
+            if (found.Candidates.Count > 1)
+            {
+                ShowCandidates(found);
                 return;
             }
 
@@ -69,10 +77,51 @@ namespace ZombieBar
             PathText.Visibility = Visibility.Collapsed;
             RefreshButton.IsEnabled = true;
             SetStatus(found.DialogFound
-                ? string.Format(Loc("lock_unresolved", "The “In Use” window was found, but the location of “{0}” could not be determined. Choose the file or folder to check."),
-                                found.UnresolvedName ?? "?")
-                : Loc("lock_no_dialog", "No “File In Use” or “Folder In Use” window was found. Choose a file or folder to check."));
+                ? string.Format(Loc("lock_unresolved", "The “{1}” window was found, but the location of “{0}” could not be determined. Choose the file or folder to check."),
+                                found.UnresolvedName ?? "?", DialogName(found))
+                : Loc("lock_no_dialog", "No window about a file in use or denied access was found. Choose a file or folder to check."));
             SetNote(null);
+        }
+
+        private static string DialogName(LockDialogFinder.Result found) =>
+            string.IsNullOrWhiteSpace(found.DialogTitle) ? found.ProcessName ?? "?" : found.DialogTitle!;
+
+        private static string DialogHeading(LockDialogFinder.Result found) =>
+            string.Format(Loc("lock_from_dialog", "From the “{0}” window ({1}):"), DialogName(found), found.ProcessName ?? "?");
+
+        // Several files or folders fit the dialog: let the user pick which one to check.
+        private void ShowCandidates(LockDialogFinder.Result found)
+        {
+            _scanCts?.Cancel();
+            _path = null;
+            ResultsPanel.Children.Clear();
+            PathText.Visibility = Visibility.Collapsed;
+            RefreshButton.IsEnabled = true;
+            SetStatus(string.Format(Loc("lock_candidates", "The “{0}” window ({1}) may be about any of these. Choose what to check:"),
+                                    DialogName(found), found.ProcessName ?? "?"));
+            SetNote(null);
+
+            foreach (string candidate in found.Candidates)
+            {
+                var grid = new Grid();
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                var info = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+                var name = new TextBlock { Text = Path.GetFileName(candidate.TrimEnd('\\')), FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap };
+                name.SetResourceReference(TextBlock.ForegroundProperty, "FgBrush");
+                info.Children.Add(name);
+                info.Children.Add(Small(candidate));
+
+                var check = new Button { Content = Loc("lock_check", "Check"), VerticalAlignment = VerticalAlignment.Center };
+                check.SetResourceReference(StyleProperty, "DialogButton");
+                check.Click += async (_, _) => await ScanAsync(candidate, DialogHeading(found));
+
+                Grid.SetColumn(check, 1);
+                grid.Children.Add(info);
+                grid.Children.Add(check);
+                ResultsPanel.Children.Add(RowBorder(grid));
+            }
         }
 
         private async Task ScanAsync(string path, string heading)
@@ -127,6 +176,19 @@ namespace ZombieBar
                 foreach (FileLockFinder.LockingProcess p in result.Processes)
                     ResultsPanel.Children.Add(BuildRow(p, result.IsFolder));
             }
+
+            if (_found is { Candidates.Count: > 1 } found && found.Candidates.Contains(path, StringComparer.OrdinalIgnoreCase))
+            {
+                var back = new Button
+                {
+                    Content = Loc("lock_back_to_candidates", "Other matches…"),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Margin = new Thickness(0, 4, 0, 0)
+                };
+                back.SetResourceReference(StyleProperty, "DialogButton");
+                back.Click += (_, _) => ShowCandidates(found);
+                ResultsPanel.Children.Add(back);
+            }
         }
 
         // --- Result rows ---------------------------------------------------------------------------
@@ -171,9 +233,14 @@ namespace ZombieBar
             grid.Children.Add(info);
             grid.Children.Add(buttons);
 
+            return RowBorder(grid);
+        }
+
+        private static Border RowBorder(FrameworkElement content)
+        {
             var row = new Border
             {
-                Child = grid,
+                Child = content,
                 CornerRadius = new CornerRadius(6),
                 BorderThickness = new Thickness(1),
                 Padding = new Thickness(12, 8, 12, 8),
