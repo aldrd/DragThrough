@@ -84,19 +84,12 @@ namespace ZombieBar.Utilities
         /// the item containers mid-drag would destroy the dragged button's mouse capture and abort it.
         /// </summary>
         public bool IsDragging => _gestureActive;
-
-        /// <summary>When false, presses never start a reorder (clicks still go to the task buttons).</summary>
-        public bool ReorderEnabled { get; set; } = true;
-
         /// <summary>Raised on the UI thread once a drag gesture has fully finished and committed.</summary>
         public event Action DragCompleted;
 
         private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Reset();
-
-            if (!ReorderEnabled)
-                return;
 
             if (_itemsControl.ContainerFromElement((DependencyObject)e.OriginalSource) is not FrameworkElement container)
                 return;

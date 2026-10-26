@@ -76,13 +76,18 @@ namespace ZombieBar.Controls
         private bool _windowStateRefreshScheduled;
         private bool _windowStateRefreshPendingAfterDrag;
 
-        // "Only open windows" mode follows the order of the main Windows taskbar. Rank per window from the
-        // last successful read; null when it couldn't be read (the bar's own saved order is used then).
-        private Dictionary<IntPtr, int> _taskbarRanks;
+        // "Only open windows" mode places windows by the main Windows taskbar order (see StartTaskbarOrderSync).
+        private TasksOrderManager _orderManager;
+        private bool _taskbarSyncActive;
+        private bool _initialPlacementDone;
+        private bool _reorderedBeforeInitialPlacement;
+        private readonly HashSet<IntPtr> _placedWindows = new();
+        private readonly Dictionary<IntPtr, int> _pendingPlacement = new(); // window -> failed attempts
         private bool _taskbarReadInFlight;
         private bool _taskbarReadDirty;
-        private DispatcherTimer _taskbarOrderTimer;
-        private static readonly TimeSpan TaskbarOrderPollInterval = TimeSpan.FromSeconds(2);
+        private DispatcherTimer _taskbarRetryTimer;
+        private static readonly TimeSpan TaskbarRetryInterval = TimeSpan.FromMilliseconds(700);
+        private const int MaxPlacementAttempts = 6;
 
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
@@ -190,6 +195,7 @@ namespace ZombieBar.Controls
                     _desktopSettleTimer.Tick += DesktopSettleTimer_Tick;
 
                     TasksOrderManager orderManager = app?.TasksOrderManager;
+                    _orderManager = orderManager;
                     if (orderManager != null && _dragHandler == null)
                     {
                         _dragHandler = new TabStripDragHandler(TasksList, _windowsView, orderManager);
@@ -397,8 +403,7 @@ namespace ZombieBar.Controls
 
             SetTaskButtonWidth();
 
-            if (_taskbarOrderTimer != null)
-                ScheduleTaskbarOrderRead();
+            QueueNewWindowsForPlacement();
 
             // A window opened/closed: refresh which of them are on the current desktop so a newly opened
             // window on this desktop shows up (scheduled off this handler to stay off the COM re-entrancy path).
@@ -414,6 +419,9 @@ namespace ZombieBar.Controls
         // Flush any refresh/relayout that was deferred because a drag was in progress.
         private void DragHandler_DragCompleted()
         {
+            if (_taskbarSyncActive && !_initialPlacementDone)
+                _reorderedBeforeInitialPlacement = true;
+
             if (_windowStateRefreshPendingAfterDrag)
             {
                 _windowStateRefreshPendingAfterDrag = false;
@@ -552,30 +560,69 @@ namespace ZombieBar.Controls
             }));
         }
 
-        // Windows raises no event when its taskbar buttons are rearranged, so the order is polled while the
-        // mode is on (plus read right away when a window opens or closes).
+        // The Windows taskbar order only *places* windows: all of them once when the mode starts (the bar
+        // first fills), and each newly opened one next to its Windows-taskbar neighbours. Placement is
+        // written into the bar's own order (TasksOrderManager), so afterwards the user's drag order wins and
+        // existing buttons are never re-sorted. The taskbar is read only when there is something to place.
         private void StartTaskbarOrderSync()
         {
-            if (_taskbarOrderTimer != null)
+            if (_taskbarSyncActive)
                 return;
 
-            _taskbarOrderTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TaskbarOrderPollInterval };
-            _taskbarOrderTimer.Tick += (_, _) =>
+            _taskbarSyncActive = true;
+            _initialPlacementDone = false;
+            _reorderedBeforeInitialPlacement = false;
+            _placedWindows.Clear();
+            _pendingPlacement.Clear();
+
+            if (_taskbarRetryTimer == null)
             {
-                if (IsVisible)
-                    ScheduleTaskbarOrderRead();
-            };
-            _taskbarOrderTimer.Start();
+                _taskbarRetryTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TaskbarRetryInterval };
+                _taskbarRetryTimer.Tick += TaskbarRetryTimer_Tick;
+            }
+
             ScheduleTaskbarOrderRead();
         }
 
         private void StopTaskbarOrderSync()
         {
-            _taskbarOrderTimer?.Stop();
-            _taskbarOrderTimer = null;
-            _taskbarRanks = null;
+            _taskbarSyncActive = false;
+            _taskbarRetryTimer?.Stop();
+            _placedWindows.Clear();
+            _pendingPlacement.Clear();
             _taskbarReadDirty = false;
-            UpdateReorderEnabled();
+        }
+
+        private void QueueNewWindowsForPlacement()
+        {
+            if (!_taskbarSyncActive || Tasks?.Windows == null)
+                return;
+
+            var live = new HashSet<IntPtr>(Tasks.Windows.Select(w => w.Handle));
+            _placedWindows.IntersectWith(live);
+            foreach (IntPtr gone in _pendingPlacement.Keys.Where(h => !live.Contains(h)).ToList())
+                _pendingPlacement.Remove(gone);
+
+            // Until the initial placement has run it covers every window present.
+            if (!_initialPlacementDone)
+                return;
+
+            foreach (IntPtr hwnd in live)
+            {
+                if (!_placedWindows.Contains(hwnd) && !_pendingPlacement.ContainsKey(hwnd))
+                    _pendingPlacement[hwnd] = 0;
+            }
+
+            // Windows adds its button (and the window settles its title) a moment after the window
+            // appears, so read after a short delay rather than right away.
+            if (_pendingPlacement.Count > 0)
+                _taskbarRetryTimer.Start();
+        }
+
+        private void TaskbarRetryTimer_Tick(object sender, EventArgs e)
+        {
+            _taskbarRetryTimer.Stop();
+            ScheduleTaskbarOrderRead();
         }
 
         private void ScheduleTaskbarOrderRead()
@@ -601,51 +648,163 @@ namespace ZombieBar.Controls
                 Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
                 {
                     _taskbarReadInFlight = false;
-                    if (!isLoaded || _taskbarOrderTimer == null)
+                    if (!isLoaded || !_taskbarSyncActive)
                         return;
 
-                    // A read that placed none of the windows means the matching failed (or the taskbar is
-                    // mid-restart): fall back rather than shuffle everything to the "unknown" end.
-                    if (ranks != null && ranks.Count == 0 && windows.Count > 0)
-                        ranks = null;
-
-                    if (!SameRanks(_taskbarRanks, ranks))
-                    {
-                        _taskbarRanks = ranks;
-                        UpdateReorderEnabled();
-                        ScheduleWindowStateRefresh();
-                    }
+                    ApplyTaskbarPlacement(ranks);
 
                     if (_taskbarReadDirty)
                         ScheduleTaskbarOrderRead();
+                    else if (_pendingPlacement.Count > 0)
+                        _taskbarRetryTimer.Start();
                 }));
             });
         }
 
-        private static bool SameRanks(Dictionary<IntPtr, int> a, Dictionary<IntPtr, int> b)
+        private void ApplyTaskbarPlacement(Dictionary<IntPtr, int> ranks)
         {
-            if (ReferenceEquals(a, b))
-                return true;
-            if (a == null || b == null || a.Count != b.Count)
-                return false;
-            foreach (var pair in a)
+            if (_orderManager == null || Tasks?.Windows == null)
+                return;
+
+            // Changing order keys mid-drag would fight the drag's own commit; try again afterwards.
+            if (_dragHandler?.IsDragging == true)
             {
-                if (!b.TryGetValue(pair.Key, out int rank) || rank != pair.Value)
-                    return false;
+                _taskbarRetryTimer.Start();
+                return;
+            }
+
+            if (ranks != null && ranks.Count == 0)
+                ranks = null;
+
+            List<ApplicationWindow> windows = Tasks.Windows.ToList();
+            bool changed = false;
+
+            if (!_initialPlacementDone)
+            {
+                _initialPlacementDone = true;
+                if (ranks != null && !_reorderedBeforeInitialPlacement)
+                    changed = PlaceAll(windows, ranks);
+                foreach (ApplicationWindow w in windows)
+                {
+                    // No order yet (still waiting for its title): place it like a new window once it has one.
+                    if (string.IsNullOrEmpty(w.Order))
+                        _pendingPlacement[w.Handle] = 0;
+                    else
+                        _placedWindows.Add(w.Handle);
+                }
+            }
+            else
+            {
+                foreach (IntPtr hwnd in _pendingPlacement.Keys.ToList())
+                {
+                    ApplicationWindow window = windows.FirstOrDefault(w => w.Handle == hwnd);
+                    if (window == null)
+                    {
+                        _pendingPlacement.Remove(hwnd);
+                        continue;
+                    }
+
+                    if (ranks != null && !string.IsNullOrEmpty(window.Order) && ranks.TryGetValue(hwnd, out int rank))
+                    {
+                        changed |= PlaceNew(window, rank, windows, ranks);
+                    }
+                    else if (++_pendingPlacement[hwnd] < MaxPlacementAttempts)
+                    {
+                        continue;
+                    }
+
+                    // Placed, or given up on: it then stays where the bar put it (the end).
+                    _pendingPlacement.Remove(hwnd);
+                    _placedWindows.Add(hwnd);
+                }
+            }
+
+            if (changed)
+                ScheduleWindowStateRefresh();
+        }
+
+        private static List<ApplicationWindow> InBarOrder(IEnumerable<ApplicationWindow> windows) => windows
+            .Where(w => !string.IsNullOrEmpty(w.Order))
+            .OrderBy(w => w.Order, StringComparer.Ordinal)
+            .ToList();
+
+        private static int RankOf(Dictionary<IntPtr, int> ranks, ApplicationWindow window) =>
+            ranks.TryGetValue(window.Handle, out int rank) ? rank : int.MaxValue;
+
+        // Rewrites the bar's order to the Windows taskbar order. Windows that couldn't be matched keep their
+        // relative order after the matched ones; windows of one combined button keep theirs among themselves.
+        private bool PlaceAll(List<ApplicationWindow> windows, Dictionary<IntPtr, int> ranks)
+        {
+            List<ApplicationWindow> current = InBarOrder(windows);
+            List<ApplicationWindow> target = current
+                .Select((w, i) => (Window: w, Index: i))
+                .OrderBy(p => RankOf(ranks, p.Window))
+                .ThenBy(p => p.Index)
+                .Select(p => p.Window)
+                .ToList();
+
+            if (target.SequenceEqual(current))
+                return false;
+
+            string previous = "";
+            foreach (ApplicationWindow window in target)
+            {
+                _orderManager.Reorder(window, previous, "");
+                previous = window.Order;
             }
             return true;
         }
 
-        // While the bar mirrors the Windows taskbar, dragging on it would be undone by the next read, so
-        // reordering is only offered when the bar falls back to its own saved order.
-        private void UpdateReorderEnabled()
+        // Moves a new window right after the last of the bar's windows that Windows shows at or before it,
+        // or, if there is none, right before the first one Windows shows after it. Other windows don't move.
+        private bool PlaceNew(ApplicationWindow window, int rank, List<ApplicationWindow> windows, Dictionary<IntPtr, int> ranks)
         {
-            if (_dragHandler != null)
-                _dragHandler.ReorderEnabled = _taskbarRanks == null;
+            List<ApplicationWindow> others = InBarOrder(windows.Where(w => w != window));
+
+            int after = -1, afterRank = int.MinValue;
+            int before = -1, beforeRank = int.MaxValue;
+            for (int i = 0; i < others.Count; i++)
+            {
+                if (!ranks.TryGetValue(others[i].Handle, out int r))
+                    continue;
+                if (r <= rank && r >= afterRank)
+                {
+                    after = i;
+                    afterRank = r;
+                }
+                if (r > rank && r < beforeRank)
+                {
+                    before = i;
+                    beforeRank = r;
+                }
+            }
+
+            string afterOrder, beforeOrder;
+            if (after >= 0)
+            {
+                afterOrder = others[after].Order;
+                beforeOrder = after + 1 < others.Count ? others[after + 1].Order : "";
+            }
+            else if (before >= 0)
+            {
+                afterOrder = before > 0 ? others[before - 1].Order : "";
+                beforeOrder = others[before].Order;
+            }
+            else
+            {
+                return false;
+            }
+
+            bool alreadyThere = string.CompareOrdinal(window.Order, afterOrder) > 0
+                                && (beforeOrder.Length == 0 || string.CompareOrdinal(window.Order, beforeOrder) < 0);
+            if (alreadyThere)
+                return false;
+
+            _orderManager.Reorder(window, afterOrder, beforeOrder);
+            return true;
         }
 
-        // Task order (the Windows taskbar's in the "only open windows" mode when it could be read, else the
-        // bar's saved order), except that the parked last-minimized window always sorts to the right end.
+        // Task order, except that the parked last-minimized window always sorts to the right end.
         private sealed class LastMinimizedLastComparer : System.Collections.IComparer
         {
             private readonly TaskList _owner;
@@ -661,15 +820,6 @@ namespace ZombieBar.Controls
                     bool yParked = (y as ApplicationWindow)?.Handle == parked;
                     if (xParked != yParked)
                         return xParked ? 1 : -1;
-                }
-
-                Dictionary<IntPtr, int> ranks = _owner._taskbarRanks;
-                if (ranks != null && x is ApplicationWindow wx && y is ApplicationWindow wy)
-                {
-                    int rx = ranks.TryGetValue(wx.Handle, out int a) ? a : int.MaxValue;
-                    int ry = ranks.TryGetValue(wy.Handle, out int b) ? b : int.MaxValue;
-                    if (rx != ry)
-                        return rx.CompareTo(ry);
                 }
 
                 return TasksOrderManager.Comparer.Compare(x, y);
