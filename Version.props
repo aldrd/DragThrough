@@ -8,6 +8,6 @@
     for every Store submission.
   -->
   <PropertyGroup>
-    <DragThroughVersion>1.0.25.0</DragThroughVersion>
+    <DragThroughVersion>1.0.26.0</DragThroughVersion>
   </PropertyGroup>
 </Project>
