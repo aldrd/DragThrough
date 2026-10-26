@@ -169,7 +169,8 @@
 
             <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />
 
-            <!-- Additional taskbar: show/hide on the current desktop, and centering of the tasks. -->
+            <!-- Additional taskbar: show/hide on the current desktop, centering, compact view, and
+                 the "only open windows" filter. -->
             <ToggleButton x:Name="ShowTaskbarThisDesktopToggle" Style="{StaticResource SwitchRow}" Click="ShowTaskbarThisDesktopToggle_Click" Tag="1.mp4">
                 <TextBlock Text="{DynamicResource tray_show_taskbar_this_desktop}" TextWrapping="Wrap" />
             </ToggleButton>
@@ -178,6 +179,9 @@
             </ToggleButton>
             <ToggleButton x:Name="CompactTasksToggle" Style="{StaticResource SwitchRow}" Click="CompactTasksToggle_Click">
                 <TextBlock Text="{DynamicResource tray_compact_tasks}" TextWrapping="Wrap" />
+            </ToggleButton>
+            <ToggleButton x:Name="OnlyOpenTasksToggle" Style="{StaticResource SwitchRow}" Click="OnlyOpenTasksToggle_Click">
+                <TextBlock Text="{DynamicResource tray_only_open_tasks}" TextWrapping="Wrap" />
             </ToggleButton>
 
             <Border Height="1" Margin="10,6" Background="{DynamicResource SepBrush}" />

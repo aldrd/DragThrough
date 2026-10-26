@@ -43,6 +43,27 @@ namespace ZombieBar.Controls
                 (bool)e.NewValue ? Visibility.Collapsed : Visibility.Visible;
         }
 
+        // The parked most-recently-minimized window in the "only open windows" mode. Set by TaskList;
+        // drawn dimmed with an italic title so it reads as minimized under every theme.
+        public static readonly DependencyProperty IsLastMinimizedProperty = DependencyProperty.Register(
+            nameof(IsLastMinimized), typeof(bool), typeof(TaskButton),
+            new PropertyMetadata(false, OnIsLastMinimizedChanged));
+
+        public bool IsLastMinimized
+        {
+            get => (bool)GetValue(IsLastMinimizedProperty);
+            set => SetValue(IsLastMinimizedProperty, value);
+        }
+
+        private static void OnIsLastMinimizedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var button = (TaskButton)d;
+            bool parked = (bool)e.NewValue;
+            button.AppButton.Opacity = parked ? 0.55 : 1.0;
+            button.LeftLabel.FontStyle = parked ? FontStyles.Italic : FontStyles.Normal;
+            button.RightLabel.FontStyle = parked ? FontStyles.Italic : FontStyles.Normal;
+        }
+
         public TaskButton()
         {
             InitializeComponent();

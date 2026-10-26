@@ -214,5 +214,17 @@ namespace ZombieBar.Properties {
                 this["CompactSingleInstanceTasks"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowOnlyOpenTasks {
+            get {
+                return ((bool)(this["ShowOnlyOpenTasks"]));
+            }
+            set {
+                this["ShowOnlyOpenTasks"] = value;
+            }
+        }
     }
 }

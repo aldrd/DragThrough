@@ -264,6 +264,14 @@ namespace ZombieBar.Utilities
             get { return settings.CompactSingleInstanceTasks; }
             set { if (settings.CompactSingleInstanceTasks != value) settings.CompactSingleInstanceTasks = value; }
         }
+
+        // Show only open (non-minimized) windows in the additional taskbar, plus the most recently
+        // minimized one, parked at the right end and highlighted.
+        public bool ShowOnlyOpenTasks
+        {
+            get { return settings.ShowOnlyOpenTasks; }
+            set { if (settings.ShowOnlyOpenTasks != value) settings.ShowOnlyOpenTasks = value; }
+        }
         #endregion
 
         public void Save()

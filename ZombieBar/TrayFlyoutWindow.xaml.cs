@@ -365,6 +365,7 @@ namespace ZombieBar
             ShowTaskbarThisDesktopToggle.IsChecked = _isTaskbarVisibleThisDesktop();
             CenterTasksToggle.IsChecked = Settings.Instance.CenterTasksInTaskbar;
             CompactTasksToggle.IsChecked = Settings.Instance.CompactSingleInstanceTasks;
+            OnlyOpenTasksToggle.IsChecked = Settings.Instance.ShowOnlyOpenTasks;
             _syncing = false;
         }
 
@@ -427,6 +428,12 @@ namespace ZombieBar
         {
             if (_syncing) return;
             Settings.Instance.CompactSingleInstanceTasks = CompactTasksToggle.IsChecked == true;
+        }
+
+        private void OnlyOpenTasksToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (_syncing) return;
+            Settings.Instance.ShowOnlyOpenTasks = OnlyOpenTasksToggle.IsChecked == true;
         }
 
         // === Actions ======================================================================

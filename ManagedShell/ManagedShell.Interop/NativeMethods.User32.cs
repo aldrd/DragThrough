@@ -1907,6 +1907,10 @@ namespace ManagedShell.Interop
         public static int WINEVENT_SKIPOWNPROCESS = 2;
         public static int EVENT_OBJECT_CLOAKED = 0x8017;
         public static int EVENT_OBJECT_UNCLOAKED = 0x8018;
+        public static int EVENT_SYSTEM_MINIMIZESTART = 0x0016;
+        public static int EVENT_SYSTEM_MINIMIZEEND = 0x0017;
+        public static int OBJID_WINDOW = 0;
+        public static int CHILDID_SELF = 0;
 
         public delegate void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
 
