@@ -45,6 +45,12 @@ namespace ZombieBar.Utilities
             public HashSet<LockReason> Reasons { get; set; } = new();
             /// <summary>A few of the files or folders it uses (full paths).</summary>
             public List<string> Items { get; set; } = new();
+
+            public LockingProcess Clone() => new()
+            {
+                Pid = Pid, Name = Name, ExePath = ExePath, ServiceName = ServiceName,
+                Reasons = new HashSet<LockReason>(Reasons), Items = new List<string>(Items),
+            };
         }
 
         public sealed class SkippedProcess
@@ -84,15 +90,20 @@ namespace ZombieBar.Utilities
             }
         }
 
-        /// <summary>Scans <paramref name="path"/>. Throws only if the path doesn't exist.</summary>
-        public static ScanResult Scan(string path, IProgress<ScanProgress>? progress = null, CancellationToken token = default)
+        /// <summary>
+        /// Scans <paramref name="path"/>. Throws only if the path doesn't exist. <paramref name="found"/>
+        /// is called on the scanning thread with a copy of a process each time one is found or gains a
+        /// new reason or item.
+        /// </summary>
+        public static ScanResult Scan(string path, IProgress<ScanProgress>? progress = null, CancellationToken token = default,
+                                      Action<LockingProcess>? found = null)
         {
             path = System.IO.Path.GetFullPath(path);
             bool isFolder = Directory.Exists(path);
             if (!isFolder && !File.Exists(path))
                 throw new FileNotFoundException(null, path);
 
-            var scan = new Scanner(path, isFolder, progress, token);
+            var scan = new Scanner(path, isFolder, progress, token, found);
             try
             {
                 scan.Processes();
@@ -115,6 +126,7 @@ namespace ZombieBar.Utilities
             private readonly string[] _forms;
             private readonly bool _isFolder;
             private readonly IProgress<ScanProgress>? _progress;
+            private readonly Action<LockingProcess>? _onFound;
             private readonly CancellationToken _token;
             private readonly int _self = Environment.ProcessId;
             private readonly int _session = Process.GetCurrentProcess().SessionId;
@@ -123,8 +135,9 @@ namespace ZombieBar.Utilities
             private readonly Dictionary<int, (string Name, int Session)> _processes = new();
             private readonly Stopwatch _sinceReport = Stopwatch.StartNew();
 
-            public Scanner(string path, bool isFolder, IProgress<ScanProgress>? progress, CancellationToken token)
+            public Scanner(string path, bool isFolder, IProgress<ScanProgress>? progress, CancellationToken token, Action<LockingProcess>? onFound)
             {
+                _onFound = onFound;
                 _path = path.TrimEnd('\\');
                 _isFolder = isFolder;
                 _progress = progress;
@@ -195,11 +208,20 @@ namespace ZombieBar.Utilities
                     p = new LockingProcess { Pid = pid, Name = name, ExePath = exe };
                     _found[pid] = p;
                 }
-                if (!string.IsNullOrEmpty(service))
-                    p.ServiceName ??= service;
-                p.Reasons.Add(reason);
+                bool changed = p.Reasons.Count == 0;
+                if (!string.IsNullOrEmpty(service) && p.ServiceName == null)
+                {
+                    p.ServiceName = service;
+                    changed = true;
+                }
+                changed |= p.Reasons.Add(reason);
                 if (item != null && p.Items.Count < MaxItemsPerProcess && !p.Items.Contains(item, StringComparer.OrdinalIgnoreCase))
+                {
                     p.Items.Add(item);
+                    changed = true;
+                }
+                if (changed)
+                    _onFound?.Invoke(p.Clone());
             }
 
             private void Skip(int pid)
