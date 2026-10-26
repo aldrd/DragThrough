@@ -55,7 +55,8 @@
                     <controls:Clock VerticalAlignment="Center"></controls:Clock>
                 </StackPanel>
             </GroupBox>-->
-            <controls:TaskList VerticalAlignment="Top"
+            <controls:TaskList x:Name="TaskList"
+                               VerticalAlignment="Top"
                                Tasks="{Binding Tasks}"></controls:TaskList>
         </DockPanel>
     </ContentControl>

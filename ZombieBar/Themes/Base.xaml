@@ -657,6 +657,40 @@
         </Setter>
     </Style>
 
+    <!-- Pin toggle used instead of the close button in the "only open windows" mode. Narrower than the
+         close button so a click aimed at the task doesn't land on it; the glyph (pin / pinned) and its
+         opacity are set by TaskButton. -->
+    <Style x:Key="TaskButtonPinButton" TargetType="Button">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Width" Value="9" />
+        <Setter Property="Height" Value="13.5" />
+        <Setter Property="Margin" Value="1,0,1,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="2">
+                        <TextBlock Text="{TemplateBinding Content}"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="8"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bg" Property="Background" Value="#33808080" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="LeftTaskButtonLabelStyle"
             TargetType="{x:Type Label}"
            BasedOn="{StaticResource GlobalFonts}">

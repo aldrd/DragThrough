@@ -57,6 +57,8 @@
     <s:String x:Key="tray_center_tasks">在任务栏中居中显示任务</s:String>
     <s:String x:Key="tray_compact_tasks">任务栏中的紧凑任务视图</s:String>
     <s:String x:Key="tray_only_open_tasks">任务栏中仅显示打开的（未最小化的）窗口</s:String>
+    <s:String x:Key="pin_task">固定：最小化时仍保留在任务栏中</s:String>
+    <s:String x:Key="unpin_task">取消固定</s:String>
     <s:String x:Key="tray_buy_coffee">请我喝杯咖啡</s:String>
     <s:String x:Key="tray_feedback">报告问题或建议...</s:String>
     <s:String x:Key="tray_exit">退出</s:String>
