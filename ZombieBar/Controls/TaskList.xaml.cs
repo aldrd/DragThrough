@@ -76,6 +76,14 @@ namespace ZombieBar.Controls
         private bool _windowStateRefreshScheduled;
         private bool _windowStateRefreshPendingAfterDrag;
 
+        // "Only open windows" mode follows the order of the main Windows taskbar. Rank per window from the
+        // last successful read; null when it couldn't be read (the bar's own saved order is used then).
+        private Dictionary<IntPtr, int> _taskbarRanks;
+        private bool _taskbarReadInFlight;
+        private bool _taskbarReadDirty;
+        private DispatcherTimer _taskbarOrderTimer;
+        private static readonly TimeSpan TaskbarOrderPollInterval = TimeSpan.FromSeconds(2);
+
         public static DependencyProperty ButtonWidthProperty = DependencyProperty.Register("ButtonWidth", typeof(double), typeof(TaskList), new PropertyMetadata(new double()));
 
         public double ButtonWidth
@@ -389,6 +397,9 @@ namespace ZombieBar.Controls
 
             SetTaskButtonWidth();
 
+            if (_taskbarOrderTimer != null)
+                ScheduleTaskbarOrderRead();
+
             // A window opened/closed: refresh which of them are on the current desktop so a newly opened
             // window on this desktop shows up (scheduled off this handler to stay off the COM re-entrancy path).
             ScheduleDesktopRefresh();
@@ -441,10 +452,14 @@ namespace ZombieBar.Controls
                 0,
                 0,
                 NativeMethods.WINEVENT_OUTOFCONTEXT | NativeMethods.WINEVENT_SKIPOWNPROCESS);
+
+            StartTaskbarOrderSync();
         }
 
         private void StopWindowStateTracking()
         {
+            StopTaskbarOrderSync();
+
             if (_minimizeHook != IntPtr.Zero)
             {
                 NativeMethods.UnhookWinEvent(_minimizeHook);
@@ -537,7 +552,100 @@ namespace ZombieBar.Controls
             }));
         }
 
-        // Task order, except that the parked last-minimized window always sorts to the right end.
+        // Windows raises no event when its taskbar buttons are rearranged, so the order is polled while the
+        // mode is on (plus read right away when a window opens or closes).
+        private void StartTaskbarOrderSync()
+        {
+            if (_taskbarOrderTimer != null)
+                return;
+
+            _taskbarOrderTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TaskbarOrderPollInterval };
+            _taskbarOrderTimer.Tick += (_, _) =>
+            {
+                if (IsVisible)
+                    ScheduleTaskbarOrderRead();
+            };
+            _taskbarOrderTimer.Start();
+            ScheduleTaskbarOrderRead();
+        }
+
+        private void StopTaskbarOrderSync()
+        {
+            _taskbarOrderTimer?.Stop();
+            _taskbarOrderTimer = null;
+            _taskbarRanks = null;
+            _taskbarReadDirty = false;
+            UpdateReorderEnabled();
+        }
+
+        private void ScheduleTaskbarOrderRead()
+        {
+            if (_taskbarReadInFlight)
+            {
+                _taskbarReadDirty = true;
+                return;
+            }
+
+            if (Tasks?.Windows == null)
+                return;
+
+            var windows = Tasks.Windows
+                .Select(w => new WindowsTaskbarOrder.WindowInfo(w.Handle, w.Title ?? "", w.WinFileName ?? ""))
+                .ToList();
+
+            _taskbarReadInFlight = true;
+            _taskbarReadDirty = false;
+            Task.Run(() => WindowsTaskbarOrder.Read(windows)).ContinueWith(t =>
+            {
+                Dictionary<IntPtr, int> ranks = t.IsCompletedSuccessfully ? t.Result : null;
+                Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                {
+                    _taskbarReadInFlight = false;
+                    if (!isLoaded || _taskbarOrderTimer == null)
+                        return;
+
+                    // A read that placed none of the windows means the matching failed (or the taskbar is
+                    // mid-restart): fall back rather than shuffle everything to the "unknown" end.
+                    if (ranks != null && ranks.Count == 0 && windows.Count > 0)
+                        ranks = null;
+
+                    if (!SameRanks(_taskbarRanks, ranks))
+                    {
+                        _taskbarRanks = ranks;
+                        UpdateReorderEnabled();
+                        ScheduleWindowStateRefresh();
+                    }
+
+                    if (_taskbarReadDirty)
+                        ScheduleTaskbarOrderRead();
+                }));
+            });
+        }
+
+        private static bool SameRanks(Dictionary<IntPtr, int> a, Dictionary<IntPtr, int> b)
+        {
+            if (ReferenceEquals(a, b))
+                return true;
+            if (a == null || b == null || a.Count != b.Count)
+                return false;
+            foreach (var pair in a)
+            {
+                if (!b.TryGetValue(pair.Key, out int rank) || rank != pair.Value)
+                    return false;
+            }
+            return true;
+        }
+
+        // While the bar mirrors the Windows taskbar, dragging on it would be undone by the next read, so
+        // reordering is only offered when the bar falls back to its own saved order.
+        private void UpdateReorderEnabled()
+        {
+            if (_dragHandler != null)
+                _dragHandler.ReorderEnabled = _taskbarRanks == null;
+        }
+
+        // Task order (the Windows taskbar's in the "only open windows" mode when it could be read, else the
+        // bar's saved order), except that the parked last-minimized window always sorts to the right end.
         private sealed class LastMinimizedLastComparer : System.Collections.IComparer
         {
             private readonly TaskList _owner;
@@ -553,6 +661,15 @@ namespace ZombieBar.Controls
                     bool yParked = (y as ApplicationWindow)?.Handle == parked;
                     if (xParked != yParked)
                         return xParked ? 1 : -1;
+                }
+
+                Dictionary<IntPtr, int> ranks = _owner._taskbarRanks;
+                if (ranks != null && x is ApplicationWindow wx && y is ApplicationWindow wy)
+                {
+                    int rx = ranks.TryGetValue(wx.Handle, out int a) ? a : int.MaxValue;
+                    int ry = ranks.TryGetValue(wy.Handle, out int b) ? b : int.MaxValue;
+                    if (rx != ry)
+                        return rx.CompareTo(ry);
                 }
 
                 return TasksOrderManager.Comparer.Compare(x, y);
