@@ -62,6 +62,11 @@
     <s:String x:Key="tray_exit">Выход</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>
 
+    <!-- Tray menu: "Useful buttons" panel -->
+    <s:String x:Key="useful_buttons_title">Полезные кнопки</s:String>
+    <s:String x:Key="useful_restart_explorer">Перезапустить Проводник</s:String>
+    <s:String x:Key="useful_action_failed">Не удалось выполнить действие.</s:String>
+
     <!-- Feedback form -->
     <s:String x:Key="feedback_title">Обратная связь</s:String>
     <s:String x:Key="feedback_prompt">Опишите проблему или пожелание. Можно приложить скриншоты.</s:String>
