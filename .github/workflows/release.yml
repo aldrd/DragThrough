@@ -1,0 +1,94 @@
+name: Release
+
+# Builds the GitHub (self-updating) release and publishes it as the latest GitHub release.
+# The in-app updater reads releases/latest/download/publish.json and downloads ZombieBar.exe from
+# releases/download/<version>/, so the tag must be the bare four-part version (no "v" prefix) and the
+# release must be marked Latest.
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version / tag to release (e.g. 1.0.24.0). Defaults to Version.props.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $props = Get-Content Version.props -Raw
+          if ($props -notmatch '<DragThroughVersion>([^<]+)</DragThroughVersion>') { throw "No <DragThroughVersion> in Version.props" }
+          $propsVersion = $Matches[1].Trim()
+
+          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' }
+                     elseif ('${{ inputs.version }}') { '${{ inputs.version }}' }
+                     else { $propsVersion }
+
+          if ($version -notmatch '^\d+\.\d+\.\d+\.\d+$') { throw "'$version' is not a four-part version." }
+          # The exe's assembly version comes from Version.props; a mismatch would make the updater
+          # offer the same release forever (or never).
+          if ($version -ne $propsVersion) { throw "Version $version does not match Version.props ($propsVersion)." }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install Inno Setup 6
+        shell: pwsh
+        run: |
+          $iscc = @("${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe", "${env:ProgramFiles}\Inno Setup 6\ISCC.exe") |
+                  Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) { choco install innosetup -y --no-progress }
+
+      - name: Build installer and update assets
+        shell: pwsh
+        run: ./installer/build.ps1 -Installer -Version '${{ steps.version.outputs.version }}'
+
+      - name: Check update manifest
+        shell: pwsh
+        run: |
+          $out = 'installer/Output'
+          $manifest = Get-Content "$out/publish.json" -Raw | ConvertFrom-Json
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath "$out/ZombieBar.exe").Hash
+          if ($manifest.version -ne '${{ steps.version.outputs.version }}') { throw "publish.json version is $($manifest.version)" }
+          if ($manifest.sha256 -ne $hash) { throw "publish.json sha256 does not match ZombieBar.exe" }
+          foreach ($f in 'ZombieBar.exe', 'publish.json', 'DragThrough-Setup.exe') {
+            if (-not (Test-Path "$out/$f")) { throw "Missing release asset $f" }
+          }
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = '${{ steps.version.outputs.version }}'
+          $out = 'installer/Output'
+          gh release view $version *> $null
+          if ($LASTEXITCODE -eq 0) { throw "Release $version already exists; not overwriting a published release." }
+
+          gh release create $version `
+            "$out/ZombieBar.exe" "$out/publish.json" "$out/DragThrough-Setup.exe" `
+            --title $version `
+            --notes "Version $version" `
+            --target '${{ github.sha }}' `
+            --latest
+          if ($LASTEXITCODE -ne 0) { throw "gh release create failed." }
