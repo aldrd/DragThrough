@@ -42,6 +42,11 @@ namespace ZombieBar
 
         public App()
         {
+            // An elevated copy started only to check which processes use a file.
+            if (ElevatedLockScan.TryRun(Environment.GetCommandLineArgs()))
+            {
+                Environment.Exit(0);
+            }
 #if AUTOUPDATE
             // If we were launched elevated only to replace the executable (read-only install
             // folder), do that and exit without starting the shell.

@@ -36,6 +36,8 @@ namespace ZombieBar.Utilities
             public bool DialogFound { get; init; }
             public string? DialogTitle { get; init; }
             public string? ProcessName { get; init; }
+            /// <summary>The dialog's window, so the results can be shown beside it.</summary>
+            public IntPtr DialogHandle { get; init; }
             /// <summary>Existing files or folders the dialog is about, most likely first.</summary>
             public IReadOnlyList<string> Candidates { get; init; } = Array.Empty<string>();
             /// <summary>A name read from the dialog that could not be located (for the user's information).</summary>
@@ -91,6 +93,7 @@ namespace ZombieBar.Utilities
             {
                 DialogFound = true,
                 DialogTitle = best.Title,
+                DialogHandle = best.Hwnd,
                 ProcessName = best.ProcessName,
                 Candidates = best.Candidates,
                 UnresolvedName = best.Candidates.Count == 0 ? best.Unresolved : null,
