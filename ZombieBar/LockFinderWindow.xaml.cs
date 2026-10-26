@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Threading;
 using ZombieBar.Utilities;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
@@ -20,7 +20,9 @@ namespace ZombieBar
     /// <summary>
     /// "Find the process locking a file": takes the file or folder from an on-screen "File In Use"
     /// dialog or another program's lock / access-denied error (or lets the user choose one), lists the
-    /// programs using it and offers to switch to or close each of them. Single instance; opening it again re-runs the search.
+    /// programs using it and offers to switch to or close each of them. Single instance; opening it
+    /// again re-runs the search. Stays on top and moves beside the dialog it read, so that dialog
+    /// (often not movable) stays visible.
     /// </summary>
     public partial class LockFinderWindow : Window
     {
@@ -30,6 +32,8 @@ namespace ZombieBar
         private string _heading = "";
         private LockDialogFinder.Result? _found;
         private CancellationTokenSource? _scanCts;
+        private IntPtr _anchor;
+        private bool _userMoved;
 
         private LockFinderWindow()
         {
@@ -48,18 +52,35 @@ namespace ZombieBar
                 _instance.Show();
             }
 
-            _instance.Activate();
+            _instance.BringToFront();
             _ = _instance.FindFromDialogAsync();
+        }
+
+        private void BringToFront()
+        {
+            if (WindowState == WindowState.Minimized)
+                WindowState = WindowState.Normal;
+            Topmost = true;
+            Activate();
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            if (hwnd != IntPtr.Zero)
+                NativeMethods.SetForegroundWindow(hwnd);
         }
 
         private async Task FindFromDialogAsync()
         {
-            ShowBusy();
+            CancelScan();
+            ShowBusy(Loc("lock_searching", "Searching…"), canStop: false);
             LockDialogFinder.Result found = await Task.Run(LockDialogFinder.Find);
             if (!IsLoaded)
                 return;
 
             _found = found;
+            _anchor = found.DialogFound ? found.DialogHandle : IntPtr.Zero;
+            _userMoved = false;
+            PlaceBesideAnchor();
+            BringToFront();
+
             if (found.Candidates.Count == 1)
             {
                 await ScanAsync(found.Candidates[0], DialogHeading(found));
@@ -73,9 +94,9 @@ namespace ZombieBar
             }
 
             _path = null;
+            EndBusy();
             ResultsPanel.Children.Clear();
             PathText.Visibility = Visibility.Collapsed;
-            RefreshButton.IsEnabled = true;
             SetStatus(found.DialogFound
                 ? string.Format(Loc("lock_unresolved", "The “{1}” window was found, but the location of “{0}” could not be determined. Choose the file or folder to check."),
                                 found.UnresolvedName ?? "?", DialogName(found))
@@ -92,11 +113,11 @@ namespace ZombieBar
         // Several files or folders fit the dialog: let the user pick which one to check.
         private void ShowCandidates(LockDialogFinder.Result found)
         {
-            _scanCts?.Cancel();
+            CancelScan();
             _path = null;
+            EndBusy();
             ResultsPanel.Children.Clear();
             PathText.Visibility = Visibility.Collapsed;
-            RefreshButton.IsEnabled = true;
             SetStatus(string.Format(Loc("lock_candidates", "The “{0}” window ({1}) may be about any of these. Choose what to check:"),
                                     DialogName(found), found.ProcessName ?? "?"));
             SetNote(null);
@@ -124,57 +145,105 @@ namespace ZombieBar
             }
         }
 
-        private async Task ScanAsync(string path, string heading)
+        // --- Scanning ------------------------------------------------------------------------------
+        private async Task ScanAsync(string path, string heading, bool elevated = false)
         {
-            _scanCts?.Cancel();
+            CancelScan();
             var cts = new CancellationTokenSource();
             _scanCts = cts;
 
             _path = path;
             _heading = heading;
-            ShowBusy();
+            ShowBusy(heading, canStop: true);
             PathText.Text = path;
             PathText.Visibility = Visibility.Visible;
+            ProgressText.Text = elevated
+                ? Loc("lock_progress_elevated", "Checking with administrator rights… Confirm the Windows prompt.")
+                : Loc("lock_progress_start", "Getting ready…");
+            ProgressText.Visibility = Visibility.Visible;
+
+            var progress = new Progress<FileLockFinder.ScanProgress>(p =>
+            {
+                if (cts == _scanCts)
+                    ProgressText.Text = ProgressLine(p);
+            });
 
             FileLockFinder.ScanResult? result = null;
             string? error = null;
-            try { result = await Task.Run(() => FileLockFinder.Scan(path, cts.Token), cts.Token); }
-            catch (OperationCanceledException) { return; }
+            try
+            {
+                if (elevated)
+                {
+                    result = await ElevatedLockScan.RunAsync(path, cts.Token);
+                    if (result == null)
+                        error = Loc("lock_admin_declined", "The check with administrator rights was cancelled.");
+                }
+                else
+                {
+                    // The scan stops itself on cancellation and returns what it has found so far.
+                    result = await Task.Run(() => FileLockFinder.Scan(path, progress, cts.Token));
+                }
+            }
+            catch (OperationCanceledException) { error = Loc("lock_cancelled", "The check was stopped."); }
             catch (FileNotFoundException) { error = Loc("lock_not_found", "The file or folder no longer exists."); }
             catch (Exception ex) { error = string.Format(Loc("lock_error", "Could not check: {0}"), ex.Message); }
 
             if (cts != _scanCts || !IsLoaded)
                 return;
+            _scanCts = null;
+            EndBusy();
+            ShowResult(path, heading, result, error);
+        }
 
-            RefreshButton.IsEnabled = true;
+        private void ShowResult(string path, string heading, FileLockFinder.ScanResult? result, string? error)
+        {
             ResultsPanel.Children.Clear();
+            SetStatus(heading);
 
-            if (result == null)
+            var notes = new List<string>();
+            if (error != null)
+                notes.Add(error);
+            if (result != null)
             {
-                SetStatus(heading);
-                SetNote(error);
-                return;
+                if (result.Elevated)
+                    notes.Add(Loc("lock_elevated_done", "Checked with administrator rights."));
+                if (result.Cancelled)
+                    notes.Add(Loc("lock_partial", "The check was stopped: only what was found until then is shown."));
+                if (result.FileListCapped)
+                    notes.Add(string.Format(Loc("lock_truncated", "The folder has more than {0} files: only that many were checked by name (open files and folders of programs were checked in full)."),
+                                            result.FilesFound.ToString("N0")));
+                if (result.HandleScanFailed)
+                    notes.Add(Loc("lock_handles_unavailable", "Windows did not provide the list of open files, so only loaded libraries, working folders and the files themselves were checked."));
             }
+            SetNote(notes.Count > 0 ? string.Join("\n", notes) : null);
 
-            if (result.Processes.Count == 0)
+            if (result != null)
             {
-                SetStatus(heading);
-                var none = new TextBlock
+                if (result.Processes.Count == 0)
                 {
-                    Text = Loc("lock_none", "No program is using it right now. Programs running as administrator, and open handles to a folder itself, can't be detected."),
-                    TextWrapping = TextWrapping.Wrap
-                };
-                none.SetResourceReference(TextBlock.ForegroundProperty, "FgBrush");
-                ResultsPanel.Children.Add(none);
-            }
-            else
-            {
-                SetStatus(heading);
-                SetNote(result.TruncatedAt is int n
-                    ? string.Format(Loc("lock_truncated", "The folder is large: only the first {0} files inside were checked."), n)
-                    : null);
-                foreach (FileLockFinder.LockingProcess p in result.Processes)
-                    ResultsPanel.Children.Add(BuildRow(p, result.IsFolder));
+                    var none = new TextBlock
+                    {
+                        Text = Loc("lock_none", "None of the programs that could be checked is using it right now."),
+                        TextWrapping = TextWrapping.Wrap
+                    };
+                    none.SetResourceReference(TextBlock.ForegroundProperty, "FgBrush");
+                    ResultsPanel.Children.Add(none);
+
+                    var hints = new List<string>();
+                    if (result.Scanners.Count > 0)
+                        hints.Add(string.Format(Loc("lock_hint_scanners", "An antivirus or the search indexer ({0}) may be opening the files for a moment: wait a little and check again."),
+                                                string.Join(", ", result.Scanners)));
+                    hints.Add(Loc("lock_hint_general", "If the folder is open in File Explorer (or selected with the preview pane on), close that window. If an installer or updater reports the error, quit the program completely, including its tray icon, and retry."));
+                    foreach (string hint in hints)
+                        ResultsPanel.Children.Add(Small("• " + hint));
+                }
+                else
+                {
+                    foreach (FileLockFinder.LockingProcess p in result.Processes)
+                        ResultsPanel.Children.Add(BuildRow(p, result));
+                }
+
+                AddSkippedInfo(path, heading, result);
             }
 
             if (_found is { Candidates.Count: > 1 } found && found.Candidates.Contains(path, StringComparer.OrdinalIgnoreCase))
@@ -191,8 +260,60 @@ namespace ZombieBar
             }
         }
 
+        // Processes that couldn't be opened, and (when not elevated) the offer to check as administrator.
+        private void AddSkippedInfo(string path, string heading, FileLockFinder.ScanResult result)
+        {
+            if (result.Skipped.Count == 0)
+                return;
+
+            const int shown = 8;
+            List<string> names = result.Skipped.Select(s => s.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            string list = string.Join(", ", names.Take(shown)) + (names.Count > shown ? ", …" : "");
+            string text = result.Elevated
+                ? string.Format(Loc("lock_skipped_elevated", "{0} protected system processes could not be checked even with administrator rights: {1}"), result.Skipped.Count, list)
+                : string.Format(Loc("lock_skipped", "{0} processes could not be checked (system services or programs running as administrator): {1}"), result.Skipped.Count, list);
+            var info = Small(text);
+            info.Margin = new Thickness(0, 8, 0, 0);
+            ResultsPanel.Children.Add(info);
+
+            if (result.Elevated)
+                return;
+            var admin = new Button
+            {
+                Content = Loc("lock_check_admin", "Check with administrator rights"),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Margin = new Thickness(0, 6, 0, 0)
+            };
+            admin.SetResourceReference(StyleProperty, "DialogButton");
+            admin.Click += async (_, _) => await ScanAsync(path, heading, elevated: true);
+            ResultsPanel.Children.Add(admin);
+        }
+
+        private static string ProgressLine(FileLockFinder.ScanProgress p)
+        {
+            string line = p.Stage switch
+            {
+                FileLockFinder.ScanStage.Processes => string.Format(Loc("lock_progress_processes", "Checking programs and their libraries: {0} of {1}"), p.Done, p.Total),
+                FileLockFinder.ScanStage.Handles when p.Total == 0 => Loc("lock_progress_handle_list", "Reading the list of open files…"),
+                FileLockFinder.ScanStage.Handles => string.Format(Loc("lock_progress_handles", "Checking open files and folders: program {0} of {1}"), p.Done, p.Total),
+                FileLockFinder.ScanStage.Explorer => Loc("lock_progress_explorer", "Checking File Explorer windows…"),
+                FileLockFinder.ScanStage.ListingFiles => string.Format(Loc("lock_progress_listing", "Listing files in the folder: {0}"), p.Done.ToString("N0")),
+                FileLockFinder.ScanStage.Files => string.Format(Loc("lock_progress_files", "Checking files: {0} of {1}"), p.Done.ToString("N0"), p.Total.ToString("N0")),
+                _ => ""
+            };
+            if (p.Found > 0)
+                line += " · " + string.Format(Loc("lock_progress_found", "programs found: {0}"), p.Found);
+            return line;
+        }
+
+        private void CancelScan()
+        {
+            _scanCts?.Cancel();
+            _scanCts = null;
+        }
+
         // --- Result rows ---------------------------------------------------------------------------
-        private FrameworkElement BuildRow(FileLockFinder.LockingProcess p, bool isFolder)
+        private FrameworkElement BuildRow(FileLockFinder.LockingProcess p, FileLockFinder.ScanResult result)
         {
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -208,7 +329,10 @@ namespace ZombieBar
             var details = new List<string>();
             if (p.ExePath != null) details.Add(p.ExePath);
             if (p.ServiceName != null) details.Add(string.Format(Loc("lock_service", "Service: {0}"), p.ServiceName));
-            details.Add(string.Join(", ", p.Reasons.Select(ReasonText)));
+            details.Add(string.Join(", ", p.Reasons.OrderBy(r => r).Select(ReasonText)));
+            List<string> items = p.Items.Select(i => ItemText(i, result)).Where(i => i.Length > 0).ToList();
+            if (items.Count > 0)
+                details.Add(string.Format(Loc("lock_items", "Uses: {0}"), string.Join("; ", items)));
             info.Children.Add(Small(string.Join("\n", details)));
 
             bool isExplorer = p.ExePath != null
@@ -236,6 +360,21 @@ namespace ZombieBar
             return RowBorder(grid);
         }
 
+        // Items inside the checked folder are shown relative to it ("app\node_modules.asar").
+        private static string ItemText(string item, FileLockFinder.ScanResult result)
+        {
+            if (!result.IsFolder)
+                return "";
+            try
+            {
+                string relative = Path.GetRelativePath(result.Path, item);
+                return relative == "." ? Loc("lock_item_self", "the folder itself")
+                     : relative.StartsWith("..", StringComparison.Ordinal) ? item
+                     : relative;
+            }
+            catch { return item; }
+        }
+
         private static Border RowBorder(FrameworkElement content)
         {
             var row = new Border
@@ -260,10 +399,13 @@ namespace ZombieBar
 
         private static string ReasonText(FileLockFinder.LockReason r) => r switch
         {
-            FileLockFinder.LockReason.FileOpen      => Loc("lock_reason_file", "has the file open"),
-            FileLockFinder.LockReason.FilesInside   => Loc("lock_reason_files_inside", "has files inside the folder open"),
-            FileLockFinder.LockReason.WorkingFolder => Loc("lock_reason_cwd", "its working folder is inside the folder"),
-            FileLockFinder.LockReason.Executable    => Loc("lock_reason_exe", "runs from this folder"),
+            FileLockFinder.LockReason.FileOpen       => Loc("lock_reason_file", "has the file open"),
+            FileLockFinder.LockReason.FilesInside    => Loc("lock_reason_files_inside", "has files inside the folder open"),
+            FileLockFinder.LockReason.FolderOpen     => Loc("lock_reason_folder", "has the folder or a folder inside it open"),
+            FileLockFinder.LockReason.WorkingFolder  => Loc("lock_reason_cwd", "its working folder is inside the folder"),
+            FileLockFinder.LockReason.Executable     => Loc("lock_reason_exe", "runs from this folder"),
+            FileLockFinder.LockReason.ModuleLoaded   => Loc("lock_reason_module", "has a library from here loaded"),
+            FileLockFinder.LockReason.ExplorerWindow => Loc("lock_reason_explorer", "shows the folder in a File Explorer window"),
             _ => ""
         };
 
@@ -277,9 +419,17 @@ namespace ZombieBar
                 return;
             }
 
+            // Let the program come above this always-on-top window until the user returns here.
+            Topmost = false;
             if (NativeMethods.IsIconic(hwnd))
                 NativeMethods.ShowWindow(hwnd, NativeMethods.WindowShowStyle.Restore);
             NativeMethods.SetForegroundWindow(hwnd);
+        }
+
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+            Topmost = true;
         }
 
         private async void CloseProgram(FileLockFinder.LockingProcess p)
@@ -302,6 +452,7 @@ namespace ZombieBar
             }
 
             // Give the program a moment to close (or show its "save changes?" prompt), then re-check.
+            Topmost = false;
             await Task.Delay(TimeSpan.FromSeconds(2));
             if (IsLoaded && _path != null)
                 await ScanAsync(_path, _heading);
@@ -322,6 +473,50 @@ namespace ZombieBar
             }, 0);
             return result;
         }
+
+        // --- Placement beside the source dialog ----------------------------------------------------
+        // Right of the dialog, else left, below, above - the first that fits in the work area without
+        // covering it; if none does, the one covering least. In physical pixels (both windows' rects).
+        private void PlaceBesideAnchor()
+        {
+            IntPtr self = new WindowInteropHelper(this).Handle;
+            if (_anchor == IntPtr.Zero || _userMoved || self == IntPtr.Zero
+                || !NativeMethods.IsWindowVisible(_anchor) || !GetWindowRect(_anchor, out RECT d) || !GetWindowRect(self, out RECT me))
+                return;
+
+            var mi = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+            if (!GetMonitorInfo(MonitorFromWindow(_anchor, MONITOR_DEFAULTTONEAREST), ref mi))
+                return;
+            RECT wa = mi.rcWork;
+            int w = me.Right - me.Left, h = me.Bottom - me.Top;
+
+            (int X, int Y)[] options =
+            {
+                (d.Right, d.Top), (d.Left - w, d.Top), (d.Left, d.Bottom), (d.Left, d.Top - h),
+            };
+
+            (int X, int Y) best = default;
+            long bestOverlap = long.MaxValue;
+            foreach ((int x0, int y0) in options)
+            {
+                int x = Math.Max(wa.Left, Math.Min(x0, wa.Right - w));
+                int y = Math.Max(wa.Top, Math.Min(y0, wa.Bottom - h));
+                long ox = Math.Max(0, Math.Min(x + w, d.Right) - Math.Max(x, d.Left));
+                long oy = Math.Max(0, Math.Min(y + h, d.Bottom) - Math.Max(y, d.Top));
+                long overlap = ox * oy;
+                if (overlap < bestOverlap)
+                {
+                    bestOverlap = overlap;
+                    best = (x, y);
+                    if (overlap == 0)
+                        break;
+                }
+            }
+
+            SetWindowPos(self, HWND_TOPMOST, best.X, best.Y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e) => PlaceBesideAnchor();
 
         // --- Bottom buttons ------------------------------------------------------------------------
         private async void ChooseFile_Click(object sender, RoutedEventArgs e)
@@ -350,18 +545,28 @@ namespace ZombieBar
                 await FindFromDialogAsync();
         }
 
+        private void Stop_Click(object sender, RoutedEventArgs e)
+        {
+            _scanCts?.Cancel();
+            StopButton.IsEnabled = false;
+            ProgressText.Text = Loc("lock_stopping", "Stopping…");
+        }
+
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
         protected override void OnClosed(EventArgs e)
         {
-            _scanCts?.Cancel();
+            CancelScan();
             base.OnClosed(e);
         }
 
         private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                _userMoved = true;
                 DragMove();
+            }
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -374,12 +579,26 @@ namespace ZombieBar
         }
 
         // --- State helpers -------------------------------------------------------------------------
-        private void ShowBusy()
+        private void ShowBusy(string status, bool canStop)
         {
-            RefreshButton.IsEnabled = false;
             ResultsPanel.Children.Clear();
-            SetStatus(Loc("lock_searching", "Searching…"));
+            SetStatus(status);
             SetNote(null);
+            Progress.Visibility = Visibility.Visible;
+            ProgressText.Visibility = Visibility.Collapsed;
+            RefreshButton.Visibility = canStop ? Visibility.Collapsed : Visibility.Visible;
+            RefreshButton.IsEnabled = false;
+            StopButton.Visibility = canStop ? Visibility.Visible : Visibility.Collapsed;
+            StopButton.IsEnabled = true;
+        }
+
+        private void EndBusy()
+        {
+            Progress.Visibility = Visibility.Collapsed;
+            ProgressText.Visibility = Visibility.Collapsed;
+            StopButton.Visibility = Visibility.Collapsed;
+            RefreshButton.Visibility = Visibility.Visible;
+            RefreshButton.IsEnabled = true;
         }
 
         private void SetStatus(string text) => StatusText.Text = text;
@@ -392,5 +611,35 @@ namespace ZombieBar
 
         private static string Loc(string key, string fallback) =>
             Application.Current?.TryFindResource(key) as string ?? fallback;
+
+        // --- Interop -------------------------------------------------------------------------------
+        private static readonly IntPtr HWND_TOPMOST = new(-1);
+        private const uint SWP_NOSIZE = 0x0001;
+        private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint MONITOR_DEFAULTTONEAREST = 2;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT { public int Left, Top, Right, Bottom; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MONITORINFO
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [DllImport("user32.dll")]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
     }
 }
