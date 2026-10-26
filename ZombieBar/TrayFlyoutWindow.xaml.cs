@@ -547,7 +547,9 @@ namespace ZombieBar
                 grid.Children.Add(icon);
                 grid.Children.Add(label);
 
-                var button = new Button { Style = (Style)Resources["MenuButton"], Tag = item, Content = grid };
+                var tip = new TextBlock { TextWrapping = TextWrapping.Wrap, MaxWidth = 320 };
+                tip.SetResourceReference(TextBlock.TextProperty, item.TooltipKey);
+                var button = new Button { Style = (Style)Resources["MenuButton"], Tag = item, Content = grid, ToolTip = tip };
                 button.Click += UsefulButton_Click;
                 UsefulPanel.Children.Add(button);
             }

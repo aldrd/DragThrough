@@ -68,6 +68,35 @@
     <s:String x:Key="useful_buttons_title">Botões úteis</s:String>
     <s:String x:Key="useful_restart_explorer">Reiniciar o Explorador</s:String>
     <s:String x:Key="useful_action_failed">Não foi possível concluir a ação.</s:String>
+    <s:String x:Key="useful_restart_explorer_tip">Reinicia o Explorador do Windows: a barra de tarefas, a área de trabalho e as janelas de pastas. Ajuda quando eles travam ou param de atualizar. As janelas de pastas abertas serão fechadas.</s:String>
+    <s:String x:Key="useful_find_locker">Encontrar o processo que bloqueia um arquivo</s:String>
+    <s:String x:Key="useful_find_locker_tip">Mostra qual programa mantém um arquivo ou pasta aberto. Use quando o Windows disser “Arquivo em Uso” ou “Pasta em Uso”: o arquivo é obtido dessa janela, ou você pode escolhê-lo.</s:String>
+    <s:String x:Key="lock_title">Quem está usando o arquivo</s:String>
+    <s:String x:Key="lock_searching">Procurando…</s:String>
+    <s:String x:Key="lock_from_dialog">Da janela “em uso”:</s:String>
+    <s:String x:Key="lock_selected">Selecionado:</s:String>
+    <s:String x:Key="lock_no_dialog">Nenhuma janela “Arquivo em Uso” ou “Pasta em Uso” foi encontrada. Escolha um arquivo ou uma pasta para verificar.</s:String>
+    <s:String x:Key="lock_unresolved">A janela “em uso” foi encontrada, mas não foi possível determinar onde está “{0}”. Escolha o arquivo ou a pasta para verificar.</s:String>
+    <s:String x:Key="lock_not_found">O arquivo ou a pasta não existe mais.</s:String>
+    <s:String x:Key="lock_error">Não foi possível verificar: {0}</s:String>
+    <s:String x:Key="lock_none">Nenhum programa está usando agora. Programas executados como administrador e identificadores abertos da própria pasta não podem ser detectados.</s:String>
+    <s:String x:Key="lock_truncated">A pasta é grande: apenas os primeiros {0} arquivos foram verificados.</s:String>
+    <s:String x:Key="lock_pid">PID {0}</s:String>
+    <s:String x:Key="lock_service">Serviço: {0}</s:String>
+    <s:String x:Key="lock_reason_file">está com o arquivo aberto</s:String>
+    <s:String x:Key="lock_reason_files_inside">está com arquivos da pasta abertos</s:String>
+    <s:String x:Key="lock_reason_cwd">sua pasta de trabalho está dentro</s:String>
+    <s:String x:Key="lock_reason_exe">é executado a partir desta pasta</s:String>
+    <s:String x:Key="lock_explorer_hint">Este é o Explorador do Windows: feche a janela da pasta ou o painel de visualização, ou use “Reiniciar o Explorador”.</s:String>
+    <s:String x:Key="lock_no_window">Este programa não tem janela para alternar ou fechar.</s:String>
+    <s:String x:Key="lock_switch">Alternar para</s:String>
+    <s:String x:Key="lock_close">Fechar programa</s:String>
+    <s:String x:Key="lock_close_confirm">Fechar {0}? O programa pode pedir para salvar alterações não salvas.</s:String>
+    <s:String x:Key="lock_close_failed">Não foi possível fechar {0}. Ele pode estar sendo executado como administrador.</s:String>
+    <s:String x:Key="lock_choose_file">Escolher arquivo…</s:String>
+    <s:String x:Key="lock_choose_folder">Escolher pasta…</s:String>
+    <s:String x:Key="lock_refresh">Verificar novamente</s:String>
+    <s:String x:Key="lock_done">Fechar</s:String>
 
     <!-- Feedback form -->
     <s:String x:Key="feedback_title">Comentários</s:String>

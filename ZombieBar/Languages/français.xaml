@@ -68,6 +68,35 @@
     <s:String x:Key="useful_buttons_title">Boutons utiles</s:String>
     <s:String x:Key="useful_restart_explorer">Redémarrer l'Explorateur</s:String>
     <s:String x:Key="useful_action_failed">L'action n'a pas pu être effectuée.</s:String>
+    <s:String x:Key="useful_restart_explorer_tip">Redémarre l'Explorateur Windows : la barre des tâches, le bureau et les fenêtres de dossiers. Utile lorsqu'ils se figent ou ne se mettent plus à jour. Les fenêtres de dossiers ouvertes seront fermées.</s:String>
+    <s:String x:Key="useful_find_locker">Trouver le processus qui bloque un fichier</s:String>
+    <s:String x:Key="useful_find_locker_tip">Indique quel programme garde un fichier ou un dossier ouvert. À utiliser lorsque Windows affiche « Fichier en cours d'utilisation » ou « Dossier en cours d'utilisation » : le fichier est repris de cette fenêtre, ou vous pouvez le choisir vous-même.</s:String>
+    <s:String x:Key="lock_title">Qui utilise le fichier</s:String>
+    <s:String x:Key="lock_searching">Recherche…</s:String>
+    <s:String x:Key="lock_from_dialog">Depuis la fenêtre « en cours d'utilisation » :</s:String>
+    <s:String x:Key="lock_selected">Sélection :</s:String>
+    <s:String x:Key="lock_no_dialog">Aucune fenêtre « Fichier en cours d'utilisation » ou « Dossier en cours d'utilisation » n'a été trouvée. Choisissez un fichier ou un dossier à vérifier.</s:String>
+    <s:String x:Key="lock_unresolved">La fenêtre « en cours d'utilisation » a été trouvée, mais l'emplacement de « {0} » n'a pas pu être déterminé. Choisissez le fichier ou le dossier à vérifier.</s:String>
+    <s:String x:Key="lock_not_found">Le fichier ou le dossier n'existe plus.</s:String>
+    <s:String x:Key="lock_error">Vérification impossible : {0}</s:String>
+    <s:String x:Key="lock_none">Aucun programme ne l'utilise pour le moment. Les programmes exécutés en tant qu'administrateur et les handles ouverts sur le dossier lui-même ne peuvent pas être détectés.</s:String>
+    <s:String x:Key="lock_truncated">Le dossier est volumineux : seuls les {0} premiers fichiers ont été vérifiés.</s:String>
+    <s:String x:Key="lock_pid">PID {0}</s:String>
+    <s:String x:Key="lock_service">Service : {0}</s:String>
+    <s:String x:Key="lock_reason_file">a le fichier ouvert</s:String>
+    <s:String x:Key="lock_reason_files_inside">a des fichiers du dossier ouverts</s:String>
+    <s:String x:Key="lock_reason_cwd">son dossier de travail est à l'intérieur</s:String>
+    <s:String x:Key="lock_reason_exe">s'exécute depuis ce dossier</s:String>
+    <s:String x:Key="lock_explorer_hint">C'est l'Explorateur Windows : fermez la fenêtre du dossier ou le volet de visualisation, ou utilisez « Redémarrer l'Explorateur ».</s:String>
+    <s:String x:Key="lock_no_window">Ce programme n'a aucune fenêtre vers laquelle basculer ou à fermer.</s:String>
+    <s:String x:Key="lock_switch">Basculer</s:String>
+    <s:String x:Key="lock_close">Fermer le programme</s:String>
+    <s:String x:Key="lock_close_confirm">Fermer {0} ? Le programme peut vous proposer d'enregistrer les modifications.</s:String>
+    <s:String x:Key="lock_close_failed">Impossible de fermer {0}. Il est peut-être exécuté en tant qu'administrateur.</s:String>
+    <s:String x:Key="lock_choose_file">Choisir un fichier…</s:String>
+    <s:String x:Key="lock_choose_folder">Choisir un dossier…</s:String>
+    <s:String x:Key="lock_refresh">Vérifier à nouveau</s:String>
+    <s:String x:Key="lock_done">Fermer</s:String>
 
     <!-- Feedback form -->
     <s:String x:Key="feedback_title">Commentaires</s:String>
