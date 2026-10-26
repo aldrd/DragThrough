@@ -92,6 +92,8 @@ namespace ZombieBar
             else
                 SetUpdateAvailable(false);
 
+            BuildUsefulPanel();
+
             // Any menu item whose Tag names a video shows it in the help pane on hover; every other
             // item resets the pane to the brand card. Wired here so future items need no extra code.
             foreach (ButtonBase item in FindLogicalDescendants<ButtonBase>(MenuPanel))
@@ -520,6 +522,61 @@ namespace ZombieBar
             }
 
             Hide();
+        }
+
+        // === Useful buttons ===============================================================
+        private void BuildUsefulPanel()
+        {
+            UsefulPanel.Children.Clear();
+            foreach (UsefulActions.Item item in UsefulActions.All)
+            {
+                var grid = new Grid();
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(24) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                var icon = new TextBlock
+                {
+                    Style = (Style)Resources["RowIcon"],
+                    FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                    FontSize = 13,
+                    Text = item.Glyph
+                };
+                var label = new TextBlock { TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+                label.SetResourceReference(TextBlock.TextProperty, item.Key);
+                Grid.SetColumn(label, 1);
+                grid.Children.Add(icon);
+                grid.Children.Add(label);
+
+                var button = new Button { Style = (Style)Resources["MenuButton"], Tag = item, Content = grid };
+                button.Click += UsefulButton_Click;
+                UsefulPanel.Children.Add(button);
+            }
+        }
+
+        private async void UsefulButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button { Tag: UsefulActions.Item item } button)
+                return;
+
+            Hide();
+
+            string title = Loc(item.Key, item.Fallback);
+            if (item.ConfirmKey != null
+                && System.Windows.MessageBox.Show(Loc(item.ConfirmKey, item.ConfirmFallback ?? ""), title,
+                       MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            button.IsEnabled = false;
+            string? error;
+            try { error = await item.Run(); }
+            catch (Exception ex) { error = ex.Message; }
+            finally { button.IsEnabled = true; }
+
+            if (error != null)
+            {
+                System.Windows.MessageBox.Show($"{Loc("useful_action_failed", "The action could not be completed.")}\n\n{error}",
+                    title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)

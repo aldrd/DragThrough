@@ -62,6 +62,12 @@
     <s:String x:Key="tray_exit">Quitter</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>
 
+    <!-- Tray menu: "Useful buttons" panel -->
+    <s:String x:Key="useful_buttons_title">Boutons utiles</s:String>
+    <s:String x:Key="useful_restart_explorer">Redémarrer l'Explorateur</s:String>
+    <s:String x:Key="useful_restart_explorer_confirm">Redémarrer l'Explorateur Windows ? Les fenêtres de l'Explorateur de fichiers ouvertes seront fermées.</s:String>
+    <s:String x:Key="useful_action_failed">L'action n'a pas pu être effectuée.</s:String>
+
     <!-- Feedback form -->
     <s:String x:Key="feedback_title">Commentaires</s:String>
     <s:String x:Key="feedback_prompt">Décrivez le problème ou la suggestion. Vous pouvez joindre des captures d'écran.</s:String>

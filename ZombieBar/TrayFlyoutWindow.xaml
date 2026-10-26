@@ -115,10 +115,12 @@
             <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.30" Color="Black" />
         </Border.Effect>
 
-        <!-- Left: the menu. Right: an explanatory-video pane that some menu items drive on hover. -->
+        <!-- Left: the menu. Middle: an explanatory-video pane that some menu items drive on hover.
+             Right: the "Useful buttons" panel (one-click helpers, built in code from UsefulActions). -->
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="312" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -277,7 +279,7 @@
                  video is hovered, then plays that video (looping, muted). -->
             <Border x:Name="HelpPane"
                     Grid.Column="1"
-                    Width="680"
+                    Width="480"
                     Margin="0,6,6,6"
                     CornerRadius="8"
                     Background="{DynamicResource HelpBgBrush}">
@@ -344,7 +346,7 @@
                          own margin, which the cap has to leave room for. -->
                     <MediaElement x:Name="HelpVideo"
                                   Visibility="Collapsed"
-                                  MaxWidth="656"
+                                  MaxWidth="456"
                                   MaxHeight="{Binding ActualHeight, ElementName=MenuPanel,
                                                       Converter={StaticResource Subtract}, ConverterParameter=24}"
                                   HorizontalAlignment="Center"
@@ -360,6 +362,15 @@
                                   MediaEnded="HelpVideo_MediaEnded" />
                 </Grid>
             </Border>
+
+            <StackPanel Grid.Column="2" Width="220" Margin="0,6,6,6">
+                <TextBlock Text="{DynamicResource useful_buttons_title}"
+                           Margin="10,10,10,6"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource SubFgBrush}" />
+                <StackPanel x:Name="UsefulPanel" />
+            </StackPanel>
         </Grid>
     </Border>
 

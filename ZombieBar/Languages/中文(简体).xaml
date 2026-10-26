@@ -62,6 +62,12 @@
     <s:String x:Key="tray_exit">退出</s:String>
     <s:String x:Key="tray_tooltip">DragThrough</s:String>
 
+    <!-- Tray menu: "Useful buttons" panel -->
+    <s:String x:Key="useful_buttons_title">实用按钮</s:String>
+    <s:String x:Key="useful_restart_explorer">重启资源管理器</s:String>
+    <s:String x:Key="useful_restart_explorer_confirm">要重启 Windows 资源管理器吗？已打开的文件资源管理器窗口将被关闭。</s:String>
+    <s:String x:Key="useful_action_failed">无法完成该操作。</s:String>
+
     <!-- Feedback form -->
     <s:String x:Key="feedback_title">反馈</s:String>
     <s:String x:Key="feedback_prompt">请描述问题或建议。可以附加屏幕截图。</s:String>
