@@ -65,18 +65,29 @@
                 </Label>
             </Grid>
             <!-- Close (X) button, styled like the main taskbar's window-close button (red on hover).
-                 Shown when the button is compact (icon + close) or wide enough to fit it. -->
-            <Button x:Name="CloseButton"
+                 Shown when the button is compact (icon + close) or wide enough to fit it. Hosted in a
+                 Border so the "only open windows" mode can swap it for the pin without clobbering the
+                 visibility binding. -->
+            <Border x:Name="CloseHost" Grid.Column="2">
+                <Button x:Name="CloseButton"
+                        Style="{DynamicResource TaskButtonCloseButton}"
+                        Click="CloseButton_OnClick">
+                    <Button.Visibility>
+                        <MultiBinding Converter="{StaticResource CompactCloseVisibilityConverter}" ConverterParameter="90">
+                            <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType={x:Type local:TaskButton}}" />
+                            <Binding Path="IsCompact" RelativeSource="{RelativeSource AncestorType={x:Type local:TaskButton}}" />
+                        </MultiBinding>
+                    </Button.Visibility>
+                </Button>
+            </Border>
+            <!-- Pin toggle, replacing the close button in the "only open windows" mode. Deliberately
+                 narrow so it isn't hit by accident when clicking the task. -->
+            <Button x:Name="PinButton"
                     Grid.Column="2"
-                    Style="{DynamicResource TaskButtonCloseButton}"
-                    Click="CloseButton_OnClick">
-                <Button.Visibility>
-                    <MultiBinding Converter="{StaticResource CompactCloseVisibilityConverter}" ConverterParameter="90">
-                        <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType={x:Type local:TaskButton}}" />
-                        <Binding Path="IsCompact" RelativeSource="{RelativeSource AncestorType={x:Type local:TaskButton}}" />
-                    </MultiBinding>
-                </Button.Visibility>
-            </Button>
+                    Visibility="Collapsed"
+                    Style="{DynamicResource TaskButtonPinButton}"
+                    ToolTip="{DynamicResource pin_task}"
+                    Click="PinButton_OnClick" />
         </Grid>
         <Button.ContextMenu>
             <ContextMenu>

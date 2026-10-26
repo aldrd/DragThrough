@@ -147,7 +147,8 @@ namespace ZombieBar.Controls
                                           || _currentDesktopWindows.Contains(window.Handle))
                                       && (!Settings.Instance.ShowOnlyOpenTasks
                                           || IsActiveTask(window.Handle)
-                                          || window.Handle == _lastMinimizedWindow),
+                                          || window.Handle == _lastMinimizedWindow
+                                          || PinnedTasks.IsPinned(window)),
                         CustomSort = new LastMinimizedLastComparer(this),
                         IsLiveFiltering = true,
                         IsLiveSorting = true
@@ -425,6 +426,7 @@ namespace ZombieBar.Controls
 
             _minimizedWindows.Clear();
             SyncMinimizedWindows();
+            PinnedTasks.Changed += PinnedTasks_Changed;
 
             // Out-of-context hooks are called back on this (UI) thread through its message loop. The
             // delegate is kept in a field so the GC can't collect it while native code holds it.
@@ -447,6 +449,7 @@ namespace ZombieBar.Controls
                 _minimizeHook = IntPtr.Zero;
             }
 
+            PinnedTasks.Changed -= PinnedTasks_Changed;
             _minimizedWindows.Clear();
             _lastMinimizedWindow = IntPtr.Zero;
             _windowStateRefreshPendingAfterDrag = false;
@@ -456,7 +459,8 @@ namespace ZombieBar.Controls
         // "just minimized") and forgets closed ones, including a closed last-minimized window.
         private void SyncMinimizedWindows()
         {
-            var current = new HashSet<IntPtr>(Tasks?.Windows?.Select(w => w.Handle) ?? Enumerable.Empty<IntPtr>());
+            List<ApplicationWindow> windows = Tasks?.Windows?.ToList() ?? new List<ApplicationWindow>();
+            var current = new HashSet<IntPtr>(windows.Select(w => w.Handle));
 
             _minimizedWindows.RemoveWhere(h => !current.Contains(h));
             foreach (IntPtr hwnd in current)
@@ -467,6 +471,26 @@ namespace ZombieBar.Controls
 
             if (_lastMinimizedWindow != IntPtr.Zero && !current.Contains(_lastMinimizedWindow))
                 _lastMinimizedWindow = IntPtr.Zero;
+
+            // The view filtered a new window before its pin key was known, so a pinned, minimized new
+            // window needs one more pass to appear.
+            PinnedTasks.Forget(current);
+            bool pinnedMinimizedAppeared = false;
+            foreach (ApplicationWindow window in windows)
+            {
+                bool wasPinned = PinnedTasks.IsPinned(window);
+                PinnedTasks.Register(window);
+                if (!wasPinned && PinnedTasks.IsPinned(window) && !IsActiveTask(window.Handle))
+                    pinnedMinimizedAppeared = true;
+            }
+
+            if (pinnedMinimizedAppeared)
+                ScheduleWindowStateRefresh();
+        }
+
+        private void PinnedTasks_Changed(object sender, EventArgs e)
+        {
+            ScheduleWindowStateRefresh();
         }
 
         // A taskbar window that goes from open to minimized becomes the parked last-minimized window
@@ -486,7 +510,10 @@ namespace ZombieBar.Controls
             if (minimized)
             {
                 _minimizedWindows.Add(hwnd);
-                _lastMinimizedWindow = hwnd;
+                // A pinned window stays on the bar anyway; parking it would push the previous
+                // last-minimized window off for nothing.
+                if (!PinnedTasks.IsPinned(Tasks.Windows.First(w => w.Handle == hwnd)))
+                    _lastMinimizedWindow = hwnd;
             }
             else
             {
@@ -553,7 +580,7 @@ namespace ZombieBar.Controls
 
             // Containers are regenerated a layout pass after a Refresh(), so the parked flag is kept in
             // sync here rather than only when the parked window changes.
-            ApplyLastMinimizedFlags();
+            ApplyOpenModeFlags();
 
             // A window added/removed during a drag changes the item count; recomputing button widths
             // then would disrupt the in-flight gesture. Leave the layout as captured until it ends.
@@ -639,6 +666,10 @@ namespace ZombieBar.Controls
 
             if (e.PropertyName == nameof(Settings.ShowOnlyOpenTasks))
             {
+                // Browser captions and the pin toggle depend on the mode.
+                SetTaskButtonWidth();
+                ApplyOpenModeFlags();
+
                 if (Settings.Instance.ShowOnlyOpenTasks)
                     StartWindowStateTracking();
                 else
@@ -668,19 +699,21 @@ namespace ZombieBar.Controls
                 return;
             }
 
+            double margin = TaskButtonLeftMargin + TaskButtonRightMargin;
+            int compactCount = compact.Count;
+            int normalCount = TasksList.Items.Count - compactCount;
+            double compactFootprint = CompactButtonWidth + margin;
+            double defaultWidth = DefaultButtonWidth + margin;
+            double minWidth = MinButtonWidth + margin;
+
+            SetNaturalItemsWidth(normalCount * defaultWidth + compactCount * compactFootprint);
+
             if (TasksList.Items.Count == 0)
             {
                 return;
             }
 
-            double margin = TaskButtonLeftMargin + TaskButtonRightMargin;
-            int compactCount = compact.Count;
-            int normalCount = TasksList.Items.Count - compactCount;
-            double compactFootprint = CompactButtonWidth + margin;
             double availableForNormal = TasksList.ActualWidth - compactCount * compactFootprint;
-
-            double defaultWidth = DefaultButtonWidth + margin;
-            double minWidth = MinButtonWidth + margin;
 
             // "Not full" = the normal buttons stay at their default width with room to spare; when full
             // they shrink to fit (or overflow), so centering no longer applies.
@@ -755,6 +788,9 @@ namespace ZombieBar.Controls
                 // meaningful text, so it is never collapsed to just an icon.
                 if (w.TaskBarDisplayType == TaskBarDisplayType.Right)
                     continue;
+                // In the "only open windows" mode a browser keeps its caption (the active tab's title).
+                if (Settings.Instance.ShowOnlyOpenTasks && IsBrowser(file))
+                    continue;
                 if (countByFile.TryGetValue(file, out int c) && c == 1)
                     compact.Add(w.Handle);
             }
@@ -765,11 +801,51 @@ namespace ZombieBar.Controls
         private static bool IsFileExplorer(string winFileName) =>
             winFileName.EndsWith("explorer.exe", StringComparison.OrdinalIgnoreCase);
 
-        // The bar is crowded when its windows wouldn't all fit at the default button width.
+        // "browser.exe" is Yandex Browser.
+        private static readonly string[] BrowserExecutables =
+        {
+            "chrome.exe", "msedge.exe", "firefox.exe", "brave.exe", "opera.exe", "vivaldi.exe", "browser.exe"
+        };
+
+        private static bool IsBrowser(string winFileName)
+        {
+            string name = System.IO.Path.GetFileName(winFileName);
+            return BrowserExecutables.Any(b => string.Equals(b, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // The bar is crowded when its windows wouldn't all fit at the default button width. A floating
+        // (content-sized) bar is measured against the widest it may grow, not its current width.
         private bool IsBarCrowded(int totalCount)
         {
             double footprint = DefaultButtonWidth + TaskButtonLeftMargin + TaskButtonRightMargin;
-            return TasksList.ActualWidth > 0 && footprint > 0 && totalCount * footprint > TasksList.ActualWidth;
+            double width = double.IsNaN(MaxItemsWidth) ? TasksList.ActualWidth : MaxItemsWidth;
+            return width > 0 && footprint > 0 && totalCount * footprint > width;
+        }
+
+        /// <summary>
+        /// Set by a floating (content-sized) taskbar: the widest the items area may become. NaN when the
+        /// bar spans the screen edge.
+        /// </summary>
+        public double MaxItemsWidth { get; set; } = double.NaN;
+
+        /// <summary>Current width of the area the task buttons are laid out in.</summary>
+        public double ItemsWidth => TasksList.ActualWidth;
+
+        /// <summary>
+        /// Width the task buttons need at their default size (horizontal bars). A floating taskbar sizes
+        /// itself to this.
+        /// </summary>
+        public double NaturalItemsWidth { get; private set; }
+
+        public event EventHandler NaturalItemsWidthChanged;
+
+        private void SetNaturalItemsWidth(double width)
+        {
+            if (Math.Abs(width - NaturalItemsWidth) < 0.5)
+                return;
+
+            NaturalItemsWidth = width;
+            NaturalItemsWidthChanged?.Invoke(this, EventArgs.Empty);
         }
 
         // Push the compact flag onto each realized task button so its labels collapse and its width
@@ -787,24 +863,33 @@ namespace ZombieBar.Controls
             }
         }
 
-        private void ApplyLastMinimizedFlags()
+        // Per-button state of the "only open windows" mode: pin toggle instead of close, pinned state, and
+        // the minimized look for the parked last-minimized window and for pinned minimized windows.
+        private void ApplyOpenModeFlags()
         {
             if (!isLoaded)
                 return;
 
-            IntPtr parked = Settings.Instance.ShowOnlyOpenTasks ? _lastMinimizedWindow : IntPtr.Zero;
+            bool mode = Settings.Instance.ShowOnlyOpenTasks;
             for (int i = 0; i < TasksList.Items.Count; i++)
             {
                 if (TasksList.ItemContainerGenerator.ContainerFromIndex(i) is not DependencyObject container)
                     continue;
 
                 TaskButton button = FindVisualChild<TaskButton>(container);
-                if (button?.DataContext is ApplicationWindow window)
-                {
-                    bool isParked = parked != IntPtr.Zero && window.Handle == parked;
-                    if (button.IsLastMinimized != isParked)
-                        button.IsLastMinimized = isParked;
-                }
+                if (button?.DataContext is not ApplicationWindow window)
+                    continue;
+
+                bool pinned = mode && PinnedTasks.IsPinned(window);
+                bool parked = mode && _lastMinimizedWindow != IntPtr.Zero && window.Handle == _lastMinimizedWindow;
+                bool showAsMinimized = parked || (pinned && !IsActiveTask(window.Handle));
+
+                if (button.IsPinMode != mode)
+                    button.IsPinMode = mode;
+                if (button.IsPinned != pinned)
+                    button.IsPinned = pinned;
+                if (button.ShowAsMinimized != showAsMinimized)
+                    button.ShowAsMinimized = showAsMinimized;
             }
         }
 

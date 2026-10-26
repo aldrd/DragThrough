@@ -43,25 +43,58 @@ namespace ZombieBar.Controls
                 (bool)e.NewValue ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        // The parked most-recently-minimized window in the "only open windows" mode. Set by TaskList;
-        // drawn dimmed with an italic title so it reads as minimized under every theme.
-        public static readonly DependencyProperty IsLastMinimizedProperty = DependencyProperty.Register(
-            nameof(IsLastMinimized), typeof(bool), typeof(TaskButton),
-            new PropertyMetadata(false, OnIsLastMinimizedChanged));
+        // A minimized window still shown in the "only open windows" mode (the parked last-minimized one,
+        // or a pinned one). Set by TaskList; drawn dimmed with an italic title so it reads as minimized
+        // under every theme.
+        public static readonly DependencyProperty ShowAsMinimizedProperty = DependencyProperty.Register(
+            nameof(ShowAsMinimized), typeof(bool), typeof(TaskButton),
+            new PropertyMetadata(false, OnShowAsMinimizedChanged));
 
-        public bool IsLastMinimized
+        public bool ShowAsMinimized
         {
-            get => (bool)GetValue(IsLastMinimizedProperty);
-            set => SetValue(IsLastMinimizedProperty, value);
+            get => (bool)GetValue(ShowAsMinimizedProperty);
+            set => SetValue(ShowAsMinimizedProperty, value);
         }
 
-        private static void OnIsLastMinimizedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnShowAsMinimizedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var button = (TaskButton)d;
-            bool parked = (bool)e.NewValue;
-            button.AppButton.Opacity = parked ? 0.55 : 1.0;
-            button.LeftLabel.FontStyle = parked ? FontStyles.Italic : FontStyles.Normal;
-            button.RightLabel.FontStyle = parked ? FontStyles.Italic : FontStyles.Normal;
+            bool minimized = (bool)e.NewValue;
+            button.AppButton.Opacity = minimized ? 0.55 : 1.0;
+            button.LeftLabel.FontStyle = minimized ? FontStyles.Italic : FontStyles.Normal;
+            button.RightLabel.FontStyle = minimized ? FontStyles.Italic : FontStyles.Normal;
+        }
+
+        // "Only open windows" mode: the close button is replaced by the pin toggle. Set by TaskList.
+        public static readonly DependencyProperty IsPinModeProperty = DependencyProperty.Register(
+            nameof(IsPinMode), typeof(bool), typeof(TaskButton),
+            new PropertyMetadata(false, OnPinStateChanged));
+
+        public bool IsPinMode
+        {
+            get => (bool)GetValue(IsPinModeProperty);
+            set => SetValue(IsPinModeProperty, value);
+        }
+
+        public static readonly DependencyProperty IsPinnedProperty = DependencyProperty.Register(
+            nameof(IsPinned), typeof(bool), typeof(TaskButton),
+            new PropertyMetadata(false, OnPinStateChanged));
+
+        public bool IsPinned
+        {
+            get => (bool)GetValue(IsPinnedProperty);
+            set => SetValue(IsPinnedProperty, value);
+        }
+
+        private static void OnPinStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var button = (TaskButton)d;
+            button.CloseHost.Visibility = button.IsPinMode ? Visibility.Collapsed : Visibility.Visible;
+            button.PinButton.Visibility = button.IsPinMode ? Visibility.Visible : Visibility.Collapsed;
+            // Segoe MDL2 "Pinned" (filled) / "Pin" (outline); an unpinned pin is also faded.
+            button.PinButton.Content = button.IsPinned ? "\uE840" : "\uE718";
+            button.PinButton.Opacity = button.IsPinned ? 1.0 : 0.6;
+            button.PinButton.SetResourceReference(ToolTipProperty, button.IsPinned ? "unpin_task" : "pin_task");
         }
 
         public TaskButton()
@@ -222,6 +255,13 @@ namespace ZombieBar.Controls
             // Don't let the click bubble to the task button (which would activate/minimize the window).
             e.Handled = true;
             Window?.Close();
+        }
+
+        private void PinButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            // Don't let the click bubble to the task button (which would activate/minimize the window).
+            e.Handled = true;
+            PinnedTasks.Toggle(Window);
         }
 
         private void RestoreMenuItem_OnClick(object sender, RoutedEventArgs e)

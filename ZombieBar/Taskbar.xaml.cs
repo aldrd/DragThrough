@@ -64,6 +64,96 @@ namespace ZombieBar
             {
                 QuickLaunchToolbar.Visibility = Visibility.Visible;
             }
+
+            // Decided before the window handle exists, so a floating bar never registers an app bar.
+            EnableAppBar = !IsFloating;
+            TaskList.NaturalItemsWidthChanged += (_, _) => ScheduleFloatingPosition();
+            SizeChanged += (_, _) => ScheduleFloatingPosition();
+        }
+
+        // "Only open windows" mode on a horizontal edge: the bar floats at the screen edge, only as wide
+        // as its tasks. An app bar always reserves the whole edge of the work area however narrow its
+        // window is, so the app-bar registration is dropped as well - the bar overlays (a strip of) the
+        // windows behind it instead of shrinking every maximized window.
+        private bool IsFloating => Settings.Instance.ShowOnlyOpenTasks && Orientation == Orientation.Horizontal;
+
+        private bool _floatingPositionScheduled;
+
+        private void UpdateFloatingMode()
+        {
+            bool floating = IsFloating;
+            if (floating == !EnableAppBar)
+            {
+                SetPosition();
+                return;
+            }
+
+            if (floating)
+            {
+                UnregisterAppBar();
+                EnableAppBar = false;
+            }
+            else
+            {
+                EnableAppBar = true;
+                TaskList.MaxItemsWidth = double.NaN;
+                if (_shownState)
+                {
+                    RegisterAppBar();
+                }
+            }
+
+            SetPosition();
+        }
+
+        // Coalesced: the content width, the window size and the work area all feed the position, and
+        // they tend to change together.
+        private void ScheduleFloatingPosition()
+        {
+            if (_floatingPositionScheduled || !IsFloating || EnableAppBar)
+            {
+                return;
+            }
+
+            _floatingPositionScheduled = true;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _floatingPositionScheduled = false;
+                if (IsFloating && !EnableAppBar && !AllowClose)
+                {
+                    SetPosition();
+                }
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        public override void SetPositionSimple()
+        {
+            if (!IsFloating)
+            {
+                base.SetPositionSimple();
+                return;
+            }
+
+            // Read fresh: ScreenInfo.WorkingArea is a snapshot, and dropping the app bar changes it.
+            System.Drawing.Rectangle area = System.Windows.Forms.Screen.FromRectangle(ScreenInfo.Bounds).WorkingArea;
+            double areaLeft = area.Left / DpiScale;
+            double areaWidth = area.Width / DpiScale;
+
+            // Everything around the task buttons (borders, list margin) - constant, so measuring it from
+            // the current layout converges in one pass.
+            double chrome = ActualWidth > 0 && TaskList.ItemsWidth > 0 ? ActualWidth - TaskList.ItemsWidth : 0;
+            TaskList.MaxItemsWidth = Math.Max(0, areaWidth - chrome);
+
+            // +1 absorbs DPI rounding so a bar sized exactly to its buttons doesn't wrap the last one. An
+            // empty bar keeps a small square so it can still be right-clicked.
+            double width = Math.Min(areaWidth, Math.Max(DesiredHeight, TaskList.NaturalItemsWidth + chrome + 1));
+
+            Width = width;
+            Height = DesiredHeight;
+            Left = Settings.Instance.CenterTasksInTaskbar ? areaLeft + (areaWidth - width) / 2 : areaLeft;
+            Top = AppBarEdge == AppBarEdge.Top
+                ? area.Top / DpiScale
+                : area.Bottom / DpiScale - Height;
         }
 
         protected override void OnSourceInitialized(object sender, EventArgs e)
@@ -73,6 +163,7 @@ namespace ZombieBar
             _taskbarCreatedMsg = NativeMethods.RegisterWindowMessage("TaskbarCreated");
 
             SetBlur(AllowsTransparency);
+            ScheduleFloatingPosition();
         }
 
         /// <summary>
@@ -139,6 +230,12 @@ namespace ZombieBar
                 Dispatcher.BeginInvoke(new Action(() => ((App)Application.Current).ReopenTaskbar()),
                     System.Windows.Threading.DispatcherPriority.Background);
                 return IntPtr.Zero;
+            }
+
+            // The work area changed (e.g. Explorer's taskbar moved or auto-hides): re-anchor a floating bar.
+            if (msg == (int)NativeMethods.WM.SETTINGCHANGE)
+            {
+                ScheduleFloatingPosition();
             }
 
             bool colorMessage = msg == (int)NativeMethods.WM.SYSCOLORCHANGE ||
@@ -233,7 +330,15 @@ namespace ZombieBar
             else if (e.PropertyName == "Edge")
             {
                 AppBarEdge = (AppBarEdge)Settings.Instance.Edge;
-                SetPosition();
+                UpdateFloatingMode();
+            }
+            else if (e.PropertyName == nameof(Settings.ShowOnlyOpenTasks))
+            {
+                UpdateFloatingMode();
+            }
+            else if (e.PropertyName == nameof(Settings.CenterTasksInTaskbar))
+            {
+                ScheduleFloatingPosition();
             }
         }
 

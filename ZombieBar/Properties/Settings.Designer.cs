@@ -226,5 +226,17 @@ namespace ZombieBar.Properties {
                 this["ShowOnlyOpenTasks"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PinnedTaskApps {
+            get {
+                return ((string)(this["PinnedTaskApps"]));
+            }
+            set {
+                this["PinnedTaskApps"] = value;
+            }
+        }
     }
 }

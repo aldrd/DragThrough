@@ -57,6 +57,8 @@
     <s:String x:Key="tray_center_tasks">Centralizar as tarefas na barra de tarefas</s:String>
     <s:String x:Key="tray_compact_tasks">Exibição compacta das tarefas na barra de tarefas</s:String>
     <s:String x:Key="tray_only_open_tasks">Mostrar apenas as janelas abertas (não minimizadas) na barra de tarefas</s:String>
+    <s:String x:Key="pin_task">Fixar: manter na barra de tarefas ao minimizar</s:String>
+    <s:String x:Key="unpin_task">Desafixar</s:String>
     <s:String x:Key="tray_buy_coffee">Pague um café para o autor</s:String>
     <s:String x:Key="tray_feedback">Relatar um problema ou sugestão...</s:String>
     <s:String x:Key="tray_exit">Sair</s:String>
