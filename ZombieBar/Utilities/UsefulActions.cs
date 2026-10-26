@@ -23,8 +23,7 @@ namespace ZombieBar.Utilities
         public static readonly Item[] All =
         {
             new Item("useful_restart_explorer", "Restart Explorer", "\uE72C",
-                       "useful_restart_explorer_confirm",
-                       "Restart Windows Explorer? Open File Explorer windows will be closed.",
+                       null, null,
                        ExplorerRestarter.RestartAsync),
         };
     }

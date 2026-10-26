@@ -65,7 +65,6 @@
     <!-- Tray menu: "Useful buttons" panel -->
     <s:String x:Key="useful_buttons_title">Botones útiles</s:String>
     <s:String x:Key="useful_restart_explorer">Reiniciar el Explorador</s:String>
-    <s:String x:Key="useful_restart_explorer_confirm">¿Reiniciar el Explorador de Windows? Se cerrarán las ventanas abiertas del Explorador de archivos.</s:String>
     <s:String x:Key="useful_action_failed">No se pudo completar la acción.</s:String>
 
     <!-- Feedback form -->

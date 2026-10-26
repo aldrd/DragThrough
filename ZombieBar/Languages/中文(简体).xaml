@@ -65,7 +65,6 @@
     <!-- Tray menu: "Useful buttons" panel -->
     <s:String x:Key="useful_buttons_title">实用按钮</s:String>
     <s:String x:Key="useful_restart_explorer">重启资源管理器</s:String>
-    <s:String x:Key="useful_restart_explorer_confirm">要重启 Windows 资源管理器吗？已打开的文件资源管理器窗口将被关闭。</s:String>
     <s:String x:Key="useful_action_failed">无法完成该操作。</s:String>
 
     <!-- Feedback form -->
