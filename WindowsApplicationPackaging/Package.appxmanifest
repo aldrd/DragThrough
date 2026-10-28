@@ -34,7 +34,7 @@
         break on every Store update. A startupTask is the supported mechanism - Windows owns the entry and
         keeps it pointing at the current version.
 
-        Executable is the path INSIDE the package (the app is staged in a ZombieBar subfolder), not the
+        Executable is the path INSIDE the package (the app is staged in a DragThrough subfolder), not the
         $targetnametoken$ used above, which only the Application element expands.
 
         Enabled="true" means no RequestEnableAsync call is needed. It is not forced on the user: Windows
@@ -42,7 +42,7 @@
         in Settings > Apps > Startup or Task Manager's Startup tab, where it shows up under DisplayName.
       -->
       <Extensions>
-        <uap5:Extension Category="windows.startupTask" Executable="ZombieBar\ZombieBar.exe" EntryPoint="Windows.FullTrustApplication">
+        <uap5:Extension Category="windows.startupTask" Executable="DragThrough\DragThrough.exe" EntryPoint="Windows.FullTrustApplication">
           <uap5:StartupTask TaskId="DragThroughStartup" Enabled="true" DisplayName="DragThrough" />
         </uap5:Extension>
       </Extensions>

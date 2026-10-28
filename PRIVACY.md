@@ -18,7 +18,7 @@ To function and to remember your preferences, DragThrough stores a small amount 
 - the secondary taskbar layout, such as the order of task buttons and which virtual desktops it is shown on;
 - local diagnostic log files, which may include titles and executable names of open windows.
 
-This data is kept only in your own Windows user profile (folders `ZombieBar` under `%AppData%` and `%LocalAppData%`), never leaves your device, and is not accessible to the developer. You may delete it at any time by removing those folders or uninstalling the app.
+This data is kept only in your own Windows user profile (folders `DragThrough` under `%AppData%` and `%LocalAppData%`), never leaves your device, and is not accessible to the developer. You may delete it at any time by removing those folders or uninstalling the app.
 
 ## 3. Information the app reads in order to work
 
@@ -66,7 +66,7 @@ DragThrough («приложение») — служебная программа
 - оформление дополнительной панели задач: порядок кнопок и то, на каких виртуальных рабочих столах она отображается;
 - локальные файлы диагностических журналов, в которые могут попадать заголовки окон и имена исполняемых файлов.
 
-Эти данные хранятся только в вашем профиле Windows (папки `ZombieBar` в `%AppData%` и `%LocalAppData%`), не покидают устройство и недоступны разработчику. Вы можете удалить их в любой момент, удалив указанные папки или само приложение.
+Эти данные хранятся только в вашем профиле Windows (папки `DragThrough` в `%AppData%` и `%LocalAppData%`), не покидают устройство и недоступны разработчику. Вы можете удалить их в любой момент, удалив указанные папки или само приложение.
 
 ## 3. Данные, которые приложение читает для работы
 

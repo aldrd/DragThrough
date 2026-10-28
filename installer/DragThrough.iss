@@ -9,9 +9,9 @@
 ;     ISCC.exe /DMyAppVersion=1.0.0.8 /DPublishDir=<path-to-publish> DragThrough.iss
 
 #define MyAppName "DragThrough"
-; The published assembly is still named ZombieBar.exe; keep it so the app's own paths/updater
-; assumptions are untouched. The user-facing name everywhere is "DragThrough".
-#define MyAppExeName "ZombieBar.exe"
+#define MyAppExeName "DragThrough.exe"
+; Versions up to 1.0.30.0 installed the same app as ZombieBar.exe; an upgrade removes it.
+#define LegacyExeName "ZombieBar.exe"
 #define MyAppPublisher "Alexey Redozubov, Valery Pogorelov"
 #define MyAppURL "https://buymeacoffee.com/redozubov"
 #define MyAppCopyright "Copyright (c) 2026 Alexey Redozubov, Valery Pogorelov"
@@ -23,7 +23,7 @@
 
 ; Folder that holds the published single-file exe. Override with /DPublishDir=...
 #ifndef PublishDir
-  #define PublishDir "..\ZombieBar\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish"
+  #define PublishDir "..\DragThrough\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish"
 #endif
 
 [Setup]
@@ -46,7 +46,7 @@ DisableProgramGroupPage=yes
 DisableDirPage=yes
 OutputDir=Output
 OutputBaseFilename=DragThrough-Setup
-SetupIconFile=..\ZombieBar\Resources\zombiebar.ico
+SetupIconFile=..\DragThrough\Resources\dragthrough.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
 Compression=lzma2/max
@@ -73,6 +73,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; Flags: unchecked
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Excludes: "*.pdb"; \
     Flags: ignoreversion recursesubdirs createallsubdirs
 
+[InstallDelete]
+; Upgrading an install from before the rename: drop the old exe and the updater's backup of it.
+Type: files; Name: "{app}\{#LegacyExeName}"
+Type: files; Name: "{app}\{#LegacyExeName}.old"
+
 [Icons]
 Name: "{userprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
@@ -91,6 +96,14 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}
 ; Make sure the app isn't running while we uninstall, so the exe can be removed.
 Filename: "{cmd}"; Parameters: "/C taskkill /IM ""{#MyAppExeName}"" /F"; \
     Flags: runhidden; RunOnceId: "KillApp"
+Filename: "{cmd}"; Parameters: "/C taskkill /IM ""{#LegacyExeName}"" /F"; \
+    Flags: runhidden; RunOnceId: "KillLegacyApp"
+
+[UninstallDelete]
+; Leftovers the in-app updater can leave next to the exe, under either name.
+Type: files; Name: "{app}\{#MyAppExeName}.old"
+Type: files; Name: "{app}\{#LegacyExeName}"
+Type: files; Name: "{app}\{#LegacyExeName}.old"
 
 [CustomMessages]
 english.AutoStartGroup=Startup:
@@ -106,6 +119,10 @@ var
   ResultCode: Integer;
 begin
   if CurStep = ssInstall then
+  begin
     Exec(ExpandConstant('{cmd}'), '/C taskkill /IM "{#MyAppExeName}" /F',
          '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{cmd}'), '/C taskkill /IM "{#LegacyExeName}" /F',
+         '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  end;
 end;

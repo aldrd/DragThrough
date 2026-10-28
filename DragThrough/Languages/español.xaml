@@ -1,0 +1,195 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+    <s:String x:Key="dragthrough_properties">Propiedades de DragThrough</s:String>
+    <s:String x:Key="taskbar_options">Opciones de la barra de tareas</s:String>
+    <BitmapImage x:Key="properties_95" UriSource="../Resources/es/properties.png" />
+    <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/es/properties_noclock.png" />
+    <s:String x:Key="autostart">_Iniciar automáticamente al iniciar sesión</s:String>
+    <s:String x:Key="autostart_blocked">El inicio automático de esta aplicación se desactivó en el Administrador de tareas. Vuelve a activarlo allí, en la pestaña Inicio.</s:String>
+    <s:String x:Key="language_text">Idi_oma:</s:String>
+    <s:String x:Key="language_tip">Seleccione el idioma a usar.</s:String>
+    <s:String x:Key="theme_text">_Tema:</s:String>
+    <s:String x:Key="theme_tip">Instale temas en la carpeta Themes.</s:String>
+    <s:String x:Key="location_text">_Ubicación:</s:String>
+    <s:String x:Key="location_tip">Cambie la ubicación de la barra de tareas en pantalla.</s:String>
+    <x:Array x:Key="location_values" Type="s:String">
+        <s:String>Izquierda</s:String>
+        <s:String>Superior</s:String>
+        <s:String>Derecha</s:String>
+        <s:String>Inferior</s:String>
+    </x:Array>
+    <s:String x:Key="allow_font_smoothing">_Permitir suavizado de fuentes</s:String>
+    <s:String x:Key="collapse_tray_icons">_Contraer los iconos del área de notificación</s:String>
+    <s:String x:Key="show_clock">Mostrar el _reloj</s:String>
+    <s:String x:Key="show_quick_launch">Mostrar inicio rápi_do</s:String>
+    <s:String x:Key="select_location">_Cambiar carpeta...</s:String>
+    <s:String x:Key="quick_launch_folder">Inicio rápido: elegir una carpeta</s:String>
+    <s:String x:Key="ok_dialog">Aceptar</s:String>
+
+    <s:String x:Key="start_text">Inicio</s:String>
+    <s:String x:Key="start_text_xp">Inicio</s:String>
+    <s:String x:Key="start_button_tip_98">Haga clic aquí para empezar.</s:String>
+    <s:String x:Key="start_button_tip">Haga clic aquí para iniciar</s:String>
+    <s:String x:Key="start_button_tip_vista">Iniciar</s:String>
+
+    <s:String x:Key="dragthrough_title">Barra de tareas DragThrough</s:String>
+    <s:String x:Key="toolbars">_Barras de herramientas</s:String>
+    <s:String x:Key="quick_launch">Inicio _rápido</s:String>
+    <s:String x:Key="new_toolbar">_Nueva barra de herramientas...</s:String>
+    <s:String x:Key="show_taskman_2k">Admi_nistrador de tareas...</s:String>
+    <s:String x:Key="show_taskman">Admi_nistrador de tareas</s:String>
+    <s:String x:Key="tray_properties">_Propiedades</s:String>
+    <s:String x:Key="update_available">_Actualización disponible...</s:String>
+    <s:String x:Key="exit_dragthrough">_Salir de DragThrough</s:String>
+    <s:String x:Key="taskbar_menu_title">Barra de tareas con arrastre de tareas</s:String>
+    <s:String x:Key="remove">Quitar</s:String>
+
+    <!-- Tray menu (DragThrough) -->
+    <s:String x:Key="tray_drag_title">Ocultar temporalmente el Explorador al arrastrar archivos</s:String>
+    <s:String x:Key="tray_use_windows_key">Usar también la tecla Windows (Mayús puede no funcionar en algunas aplicaciones, p. ej. Davinci Resolve)</s:String>
+    <s:String x:Key="tray_enable_shift">Ocultar temporalmente el Explorador al arrastrar archivos con la tecla Mayús</s:String>
+    <s:String x:Key="tray_minimize_explorer">Minimizar el Explorador después de arrastrar</s:String>
+    <s:String x:Key="tray_dismiss_search">Cerrar la Búsqueda de Windows con Escape</s:String>
+    <s:String x:Key="tray_show_taskbar">Mostrar la barra de tareas en todos los escritorios</s:String>
+    <s:String x:Key="tray_show_taskbar_this_desktop">Mostrar la barra de tareas adicional con tareas arrastrables</s:String>
+    <s:String x:Key="tray_center_tasks">Centrar las tareas en la barra de tareas</s:String>
+    <s:String x:Key="tray_compact_tasks">Vista compacta de tareas en la barra de tareas</s:String>
+    <s:String x:Key="tray_only_open_tasks">Mostrar solo las ventanas abiertas (no minimizadas) en la barra de tareas</s:String>
+    <s:String x:Key="pin_task">Anclar: mantener en la barra de tareas al minimizar</s:String>
+    <s:String x:Key="unpin_task">Desanclar</s:String>
+    <s:String x:Key="tray_buy_coffee">Invítame a un café</s:String>
+    <s:String x:Key="tray_feedback">Informar de un problema o sugerencia...</s:String>
+    <s:String x:Key="tray_exit">Salir</s:String>
+    <s:String x:Key="tray_tooltip">DragThrough</s:String>
+
+    <!-- Tray menu: "Useful buttons" panel -->
+    <s:String x:Key="useful_buttons_title">Botones útiles</s:String>
+    <s:String x:Key="useful_restart_explorer">Reiniciar el Explorador</s:String>
+    <s:String x:Key="useful_action_failed">No se pudo completar la acción.</s:String>
+    <s:String x:Key="useful_restart_explorer_tip">Reinicia el Explorador de Windows: la barra de tareas, el escritorio y las ventanas de carpetas. Ayuda cuando se bloquean o dejan de actualizarse. Se cerrarán las ventanas de carpetas abiertas.</s:String>
+    <s:String x:Key="useful_find_locker">Buscar el proceso que bloquea un archivo</s:String>
+    <s:String x:Key="useful_find_locker_tip">Muestra qué programa mantiene abierto un archivo o una carpeta. Úsalo cuando Windows indique «Archivo en uso» o un programa diga que un archivo está en uso o que se denegó el acceso: el archivo se toma de esa ventana, o puedes elegirlo tú.</s:String>
+    <s:String x:Key="lock_title">Quién usa el archivo</s:String>
+    <s:String x:Key="lock_searching">Buscando…</s:String>
+    <s:String x:Key="lock_from_dialog">Desde la ventana «{0}» ({1}):</s:String>
+    <s:String x:Key="lock_selected">Seleccionado:</s:String>
+    <s:String x:Key="lock_no_dialog">No se encontró ninguna ventana sobre un archivo en uso o un acceso denegado. Elige un archivo o una carpeta para comprobar.</s:String>
+    <s:String x:Key="lock_unresolved">Se encontró la ventana «{1}», pero no se pudo determinar dónde está «{0}». Elige el archivo o la carpeta para comprobar.</s:String>
+    <s:String x:Key="lock_back_to_candidates">Otras coincidencias…</s:String>
+    <s:String x:Key="lock_stop">Detener</s:String>
+    <s:String x:Key="lock_stopping">Deteniendo…</s:String>
+    <s:String x:Key="lock_progress_start">Preparando…</s:String>
+    <s:String x:Key="lock_progress_elevated">Comprobando con permisos de administrador… Confirma el aviso de Windows.</s:String>
+    <s:String x:Key="lock_progress_processes">Comprobando programas y sus bibliotecas: {0} de {1}</s:String>
+    <s:String x:Key="lock_progress_handle_list">Leyendo la lista de archivos abiertos…</s:String>
+    <s:String x:Key="lock_progress_handles">Comprobando archivos y carpetas abiertos: programa {0} de {1}</s:String>
+    <s:String x:Key="lock_progress_explorer">Comprobando ventanas del Explorador…</s:String>
+    <s:String x:Key="lock_progress_listing">Enumerando archivos de la carpeta: {0}</s:String>
+    <s:String x:Key="lock_progress_files">Comprobando archivos: {0} de {1}</s:String>
+    <s:String x:Key="lock_progress_found">programas encontrados: {0}</s:String>
+    <s:String x:Key="lock_cancelled">La comprobación se detuvo.</s:String>
+    <s:String x:Key="lock_partial">La comprobación se detuvo: solo se muestra lo encontrado hasta entonces.</s:String>
+    <s:String x:Key="lock_admin_declined">Se canceló la comprobación con permisos de administrador.</s:String>
+    <s:String x:Key="lock_elevated_done">Comprobado con permisos de administrador.</s:String>
+    <s:String x:Key="lock_handles_unavailable">Windows no proporcionó la lista de archivos abiertos, así que solo se comprobaron las bibliotecas cargadas, las carpetas de trabajo y los propios archivos.</s:String>
+    <s:String x:Key="lock_hint_scanners">Un antivirus o el indexador de búsqueda ({0}) puede estar abriendo los archivos un momento: espera un poco y vuelve a comprobar.</s:String>
+    <s:String x:Key="lock_hint_general">Si la carpeta está abierta en el Explorador (o seleccionada con el panel de vista previa), cierra esa ventana. Si el error lo muestra un instalador o actualizador, cierra el programa por completo, incluido su icono de la bandeja, y vuelve a intentarlo.</s:String>
+    <s:String x:Key="lock_skipped">No se pudieron comprobar {0} procesos (servicios del sistema o programas ejecutados como administrador): {1}</s:String>
+    <s:String x:Key="lock_skipped_elevated">No se pudieron comprobar {0} procesos protegidos del sistema ni siquiera como administrador: {1}</s:String>
+    <s:String x:Key="lock_check_admin">Comprobar como administrador</s:String>
+    <s:String x:Key="lock_items">Usa: {0}</s:String>
+    <s:String x:Key="lock_item_self">la propia carpeta</s:String>
+    <s:String x:Key="lock_reason_folder">tiene abierta la carpeta o una carpeta interior</s:String>
+    <s:String x:Key="lock_reason_module">tiene cargada una biblioteca de aquí</s:String>
+    <s:String x:Key="lock_reason_explorer">muestra la carpeta en una ventana del Explorador</s:String>
+    <s:String x:Key="lock_check">Comprobar</s:String>
+    <s:String x:Key="lock_candidates">La ventana «{0}» ({1}) puede referirse a cualquiera de estos. Elige qué comprobar:</s:String>
+    <s:String x:Key="lock_not_found">El archivo o la carpeta ya no existe.</s:String>
+    <s:String x:Key="lock_error">No se pudo comprobar: {0}</s:String>
+    <s:String x:Key="lock_none">Ninguno de los programas que se pudieron comprobar lo está usando ahora.</s:String>
+    <s:String x:Key="lock_truncated">La carpeta tiene más de {0} archivos: solo esa cantidad se comprobó por nombre (los archivos y carpetas abiertos por programas se comprobaron por completo).</s:String>
+    <s:String x:Key="lock_pid">PID {0}</s:String>
+    <s:String x:Key="lock_service">Servicio: {0}</s:String>
+    <s:String x:Key="lock_reason_file">tiene el archivo abierto</s:String>
+    <s:String x:Key="lock_reason_files_inside">tiene abiertos archivos de la carpeta</s:String>
+    <s:String x:Key="lock_reason_cwd">su carpeta de trabajo está dentro</s:String>
+    <s:String x:Key="lock_reason_exe">se ejecuta desde esta carpeta</s:String>
+    <s:String x:Key="lock_explorer_hint">Es el Explorador de Windows: cierra la ventana de la carpeta o el panel de vista previa, o usa «Reiniciar el Explorador».</s:String>
+    <s:String x:Key="lock_no_window">Este programa no tiene ninguna ventana a la que cambiar o que cerrar.</s:String>
+    <s:String x:Key="lock_switch">Cambiar a</s:String>
+    <s:String x:Key="lock_close">Cerrar programa</s:String>
+    <s:String x:Key="lock_close_confirm">¿Cerrar {0}? Es posible que el programa pida guardar los cambios.</s:String>
+    <s:String x:Key="lock_close_failed">No se pudo cerrar {0}. Puede que se esté ejecutando como administrador.</s:String>
+    <s:String x:Key="lock_choose_file">Elegir archivo…</s:String>
+    <s:String x:Key="lock_choose_folder">Elegir carpeta…</s:String>
+    <s:String x:Key="lock_refresh">Comprobar de nuevo</s:String>
+    <s:String x:Key="lock_done">Cerrar</s:String>
+
+    <!-- Feedback form -->
+    <s:String x:Key="feedback_title">Comentarios</s:String>
+    <s:String x:Key="feedback_prompt">Describe el problema o la sugerencia. Puedes adjuntar capturas de pantalla.</s:String>
+    <s:String x:Key="feedback_screenshots">Capturas de pantalla:</s:String>
+    <s:String x:Key="feedback_add_file">Añadir archivo...</s:String>
+    <s:String x:Key="feedback_capture">Capturar pantalla</s:String>
+    <s:String x:Key="feedback_remove">Quitar</s:String>
+    <s:String x:Key="feedback_no_screenshots">No hay capturas adjuntas</s:String>
+    <s:String x:Key="feedback_send">Enviar</s:String>
+    <s:String x:Key="feedback_cancel">Cancelar</s:String>
+    <s:String x:Key="feedback_empty">Describe el problema o la sugerencia, por favor.</s:String>
+    <s:String x:Key="feedback_screenshot_hint">Arrastra las capturas desde la carpeta abierta a la incidencia de GitHub y envíala.</s:String>
+    <s:String x:Key="feedback_clipboard_hint">El texto se copió al portapapeles: pégalo (Ctrl+V) en la incidencia.</s:String>
+    <s:String x:Key="feedback_body_screenshots">_Adjunta aquí las capturas (arrástralas desde la carpeta abierta)._</s:String>
+    <s:String x:Key="feedback_image_filter">Imágenes</s:String>
+    <s:String x:Key="feedback_all_files">Todos los archivos</s:String>
+
+    <!-- Share the app -->
+    <s:String x:Key="share_app">Compartir la aplicación</s:String>
+    <s:String x:Key="share_copy_link">Copiar enlace</s:String>
+    <s:String x:Key="share_tweet">Tuitear (X)</s:String>
+    <s:String x:Key="share_telegram">Publicar en Telegram</s:String>
+    <s:String x:Key="share_whatsapp">WhatsApp</s:String>
+    <s:String x:Key="share_facebook">Facebook</s:String>
+    <s:String x:Key="share_linkedin">LinkedIn</s:String>
+    <s:String x:Key="share_reddit">Reddit</s:String>
+    <s:String x:Key="share_email">Correo electrónico</s:String>
+    <s:String x:Key="share_link_copied">Enlace copiado al portapapeles</s:String>
+
+    <s:String x:Key="restore">_Restaurar</s:String>
+    <s:String x:Key="move">_Mover</s:String>
+    <s:String x:Key="size">_Tamaño</s:String>
+    <s:String x:Key="minimize">Mi_nimizar</s:String>
+    <s:String x:Key="maximize">Ma_ximizar</s:String>
+    <s:String x:Key="close">_Cerrar</s:String>
+
+    <s:String x:Key="show_hidden">Mostrar iconos ocultos</s:String>
+    <s:String x:Key="hide">Ocultar</s:String>
+
+    <s:String x:Key="set_time">Ajustar _fecha y hora</s:String>
+
+    <s:String x:Key="open_folder">&amp;Abrir carpeta</s:String>
+
+    <!-- About window -->
+    <s:String x:Key="tray_about">Acerca de</s:String>
+    <s:String x:Key="tray_update_available">Actualización disponible, instalar</s:String>
+    <s:String x:Key="about_title">Acerca de DragThrough</s:String>
+    <s:String x:Key="about_version">Versión</s:String>
+    <s:String x:Key="about_tagline">Windows helpers app</s:String>
+    <s:String x:Key="about_third_party">Licencias de terceros</s:String>
+    <s:String x:Key="about_check_updates">Buscar actualizaciones</s:String>
+    <s:String x:Key="about_checking">Buscando actualizaciones…</s:String>
+    <s:String x:Key="about_up_to_date">Tienes la última versión.</s:String>
+    <s:String x:Key="about_update_available">La versión {0} está disponible.</s:String>
+    <s:String x:Key="about_update_prompt">La versión {0} está disponible. ¿Instalarla ahora?</s:String>
+    <s:String x:Key="about_check_failed">No se pudo buscar actualizaciones. Inténtalo de nuevo más tarde.</s:String>
+    <s:String x:Key="about_close">Cerrar</s:String>
+    <s:String x:Key="about_update_badge">Actualización disponible</s:String>
+    <s:String x:Key="about_install_update">Instalar actualización</s:String>
+
+    <!-- Update progress -->
+    <s:String x:Key="update_title">Actualización</s:String>
+    <s:String x:Key="update_downloading">Descargando la actualización…</s:String>
+    <s:String x:Key="update_installing">Instalando…</s:String>
+    <s:String x:Key="update_failed">No se pudo instalar la actualización. Inténtalo de nuevo más tarde.</s:String>
+</ResourceDictionary>

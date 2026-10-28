@@ -87,7 +87,7 @@ namespace ManagedShell.WindowsTasks
         private string _order = "";
 
         // Order identifier determining this window's position on the taskbar.
-        // Assigned and persisted by ZombieBar (keyed on the title the window had when added);
+        // Assigned and persisted by DragThrough (keyed on the title the window had when added);
         // an empty value means no order has been assigned yet.
         public string Order
         {

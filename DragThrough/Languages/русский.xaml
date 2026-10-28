@@ -1,0 +1,195 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+    <s:String x:Key="dragthrough_properties">Свойства DragThrough</s:String>
+    <s:String x:Key="taskbar_options">Параметры панели задач</s:String>
+    <BitmapImage x:Key="properties_95" UriSource="../Resources/properties.png" />
+    <BitmapImage x:Key="properties_95_noclock" UriSource="../Resources/properties_noclock.png" />
+    <s:String x:Key="autostart">_Автоматически запускать при входе в систему</s:String>
+    <s:String x:Key="autostart_blocked">Автозапуск этого приложения отключён в Диспетчере задач. Включить обратно можно там же, на вкладке «Автозагрузка».</s:String>
+    <s:String x:Key="language_text">_Язык:</s:String>
+    <s:String x:Key="language_tip">Выберите язык интерфейса.</s:String>
+    <s:String x:Key="theme_text">_Тема:</s:String>
+    <s:String x:Key="theme_tip">Устанавливайте темы в папку Themes.</s:String>
+    <s:String x:Key="location_text">_Расположение:</s:String>
+    <s:String x:Key="location_tip">Измените расположение панели задач на экране.</s:String>
+    <x:Array x:Key="location_values" Type="s:String">
+        <s:String>Слева</s:String>
+        <s:String>Сверху</s:String>
+        <s:String>Справа</s:String>
+        <s:String>Снизу</s:String>
+    </x:Array>
+    <s:String x:Key="allow_font_smoothing">_Сглаживание шрифтов</s:String>
+    <s:String x:Key="collapse_tray_icons">_Сворачивать значки области уведомлений</s:String>
+    <s:String x:Key="show_clock">Показывать _часы</s:String>
+    <s:String x:Key="show_quick_launch">Показывать панель _быстрого запуска</s:String>
+    <s:String x:Key="select_location">_Выбрать папку...</s:String>
+    <s:String x:Key="quick_launch_folder">Быстрый запуск — выберите папку</s:String>
+    <s:String x:Key="ok_dialog">ОК</s:String>
+
+    <s:String x:Key="start_text">Пуск</s:String>
+    <s:String x:Key="start_text_xp">пуск</s:String>
+    <s:String x:Key="start_button_tip_98">Нажмите здесь, чтобы начать.</s:String>
+    <s:String x:Key="start_button_tip">Нажмите здесь, чтобы начать</s:String>
+    <s:String x:Key="start_button_tip_vista">Пуск</s:String>
+
+    <s:String x:Key="dragthrough_title">Панель задач DragThrough</s:String>
+    <s:String x:Key="toolbars">_Панели инструментов</s:String>
+    <s:String x:Key="quick_launch">_Быстрый запуск</s:String>
+    <s:String x:Key="new_toolbar">_Создать панель инструментов...</s:String>
+    <s:String x:Key="show_taskman_2k">_Диспетчер задач...</s:String>
+    <s:String x:Key="show_taskman">_Диспетчер задач</s:String>
+    <s:String x:Key="tray_properties">_Свойства</s:String>
+    <s:String x:Key="update_available">_Доступно обновление...</s:String>
+    <s:String x:Key="exit_dragthrough">_Выйти из DragThrough</s:String>
+    <s:String x:Key="taskbar_menu_title">Панель с перетаскиваемыми задачами</s:String>
+    <s:String x:Key="remove">Убрать</s:String>
+
+    <!-- Tray menu (DragThrough) -->
+    <s:String x:Key="tray_drag_title">Временно скрывать Проводник при перетаскивании файлов</s:String>    
+    <s:String x:Key="tray_enable_shift">Временно скрывать Проводник при перетаскивании файлов с клавишей Shift</s:String>
+    <s:String x:Key="tray_use_windows_key">Так же использовать клавишу Windows (Shift может не работать в некоторых приложениях, например в Davinci Resolve)</s:String>
+    <s:String x:Key="tray_minimize_explorer">Сворачивать Проводник после перетаскивания</s:String>
+    <s:String x:Key="tray_dismiss_search">Закрывать Поиск Windows клавишей Escape</s:String>
+    <s:String x:Key="tray_show_taskbar">Показывать панель задач на всех столах</s:String>
+    <s:String x:Key="tray_show_taskbar_this_desktop">Показывать дополнительный таскбар с возможностью перетаскивания задач</s:String>
+    <s:String x:Key="tray_center_tasks">Располагать задачи по центру в таскбаре</s:String>
+    <s:String x:Key="tray_compact_tasks">Компактный вид задач в таскбаре</s:String>
+    <s:String x:Key="tray_only_open_tasks">Показывать в таскбаре только открытые (несвёрнутые) окна</s:String>
+    <s:String x:Key="pin_task">Закрепить: оставлять в таскбаре при сворачивании</s:String>
+    <s:String x:Key="unpin_task">Открепить</s:String>
+    <s:String x:Key="tray_buy_coffee">Купить кофе автору</s:String>
+    <s:String x:Key="tray_feedback">Сообщить о проблеме/пожелании...</s:String>
+    <s:String x:Key="tray_exit">Выход</s:String>
+    <s:String x:Key="tray_tooltip">DragThrough</s:String>
+
+    <!-- Tray menu: "Useful buttons" panel -->
+    <s:String x:Key="useful_buttons_title">Полезные кнопки</s:String>
+    <s:String x:Key="useful_restart_explorer">Перезапустить Проводник</s:String>
+    <s:String x:Key="useful_action_failed">Не удалось выполнить действие.</s:String>
+    <s:String x:Key="useful_restart_explorer_tip">Перезапускает Проводник Windows: панель задач, рабочий стол и окна папок. Помогает, если они зависли или перестали обновляться. Открытые окна папок будут закрыты.</s:String>
+    <s:String x:Key="useful_find_locker">Найти процесс, блокирующий файл</s:String>
+    <s:String x:Key="useful_find_locker_tip">Показывает, какая программа держит открытым файл или папку. Используйте, когда Windows сообщает «Файл уже используется» или программа пишет, что файл занят или в доступе отказано: файл берётся из этого окна, либо его можно выбрать вручную.</s:String>
+    <s:String x:Key="lock_title">Кто использует файл</s:String>
+    <s:String x:Key="lock_searching">Поиск…</s:String>
+    <s:String x:Key="lock_from_dialog">Из окна «{0}» ({1}):</s:String>
+    <s:String x:Key="lock_selected">Выбрано:</s:String>
+    <s:String x:Key="lock_no_dialog">Окно о занятом файле или отказе в доступе не найдено. Выберите файл или папку для проверки.</s:String>
+    <s:String x:Key="lock_unresolved">Окно «{1}» найдено, но не удалось определить, где находится «{0}». Выберите файл или папку для проверки.</s:String>
+    <s:String x:Key="lock_back_to_candidates">Другие варианты…</s:String>
+    <s:String x:Key="lock_stop">Остановить</s:String>
+    <s:String x:Key="lock_stopping">Остановка…</s:String>
+    <s:String x:Key="lock_progress_start">Подготовка…</s:String>
+    <s:String x:Key="lock_progress_elevated">Проверка с правами администратора… Подтвердите запрос Windows.</s:String>
+    <s:String x:Key="lock_progress_processes">Проверка программ и их библиотек: {0} из {1}</s:String>
+    <s:String x:Key="lock_progress_handle_list">Получение списка открытых файлов…</s:String>
+    <s:String x:Key="lock_progress_handles">Проверка открытых файлов и папок: программа {0} из {1}</s:String>
+    <s:String x:Key="lock_progress_explorer">Проверка окон Проводника…</s:String>
+    <s:String x:Key="lock_progress_listing">Подсчёт файлов в папке: {0}</s:String>
+    <s:String x:Key="lock_progress_files">Проверка файлов: {0} из {1}</s:String>
+    <s:String x:Key="lock_progress_found">найдено программ: {0}</s:String>
+    <s:String x:Key="lock_cancelled">Проверка остановлена.</s:String>
+    <s:String x:Key="lock_partial">Проверка остановлена: показано то, что успели найти.</s:String>
+    <s:String x:Key="lock_admin_declined">Проверка с правами администратора отменена.</s:String>
+    <s:String x:Key="lock_elevated_done">Проверено с правами администратора.</s:String>
+    <s:String x:Key="lock_handles_unavailable">Windows не выдала список открытых файлов, поэтому проверены только загруженные библиотеки, рабочие папки и сами файлы.</s:String>
+    <s:String x:Key="lock_hint_scanners">Файлы может ненадолго открывать антивирус или служба индексирования ({0}): подождите немного и проверьте снова.</s:String>
+    <s:String x:Key="lock_hint_general">Если папка открыта в Проводнике (или выделена при включённой области просмотра), закройте это окно. Если ошибку показывает установщик или программа обновления, полностью закройте программу, включая значок в трее, и повторите.</s:String>
+    <s:String x:Key="lock_skipped">Не удалось проверить процессов: {0} (системные службы или программы, запущенные от имени администратора): {1}</s:String>
+    <s:String x:Key="lock_skipped_elevated">Даже с правами администратора не удалось проверить защищённых системных процессов: {0}: {1}</s:String>
+    <s:String x:Key="lock_check_admin">Проверить с правами администратора</s:String>
+    <s:String x:Key="lock_items">Использует: {0}</s:String>
+    <s:String x:Key="lock_item_self">саму папку</s:String>
+    <s:String x:Key="lock_reason_folder">держит открытой папку или папку внутри неё</s:String>
+    <s:String x:Key="lock_reason_module">загрузила библиотеку отсюда</s:String>
+    <s:String x:Key="lock_reason_explorer">показывает папку в окне Проводника</s:String>
+    <s:String x:Key="lock_check">Проверить</s:String>
+    <s:String x:Key="lock_candidates">Окно «{0}» ({1}) может относиться к любому из этих объектов. Выберите, что проверить:</s:String>
+    <s:String x:Key="lock_not_found">Файл или папка больше не существует.</s:String>
+    <s:String x:Key="lock_error">Не удалось выполнить проверку: {0}</s:String>
+    <s:String x:Key="lock_none">Сейчас его не использует ни одна из программ, которые удалось проверить.</s:String>
+    <s:String x:Key="lock_truncated">В папке больше {0} файлов: по именам проверено только столько (открытые файлы и папки программ проверены полностью).</s:String>
+    <s:String x:Key="lock_pid">PID {0}</s:String>
+    <s:String x:Key="lock_service">Служба: {0}</s:String>
+    <s:String x:Key="lock_reason_file">держит файл открытым</s:String>
+    <s:String x:Key="lock_reason_files_inside">держит открытыми файлы в папке</s:String>
+    <s:String x:Key="lock_reason_cwd">её рабочая папка находится внутри</s:String>
+    <s:String x:Key="lock_reason_exe">запущена из этой папки</s:String>
+    <s:String x:Key="lock_explorer_hint">Это Проводник Windows: закройте окно папки или область предпросмотра либо воспользуйтесь кнопкой «Перезапустить Проводник».</s:String>
+    <s:String x:Key="lock_no_window">У этой программы нет окна, на которое можно переключиться или закрыть.</s:String>
+    <s:String x:Key="lock_switch">Переключиться</s:String>
+    <s:String x:Key="lock_close">Закрыть программу</s:String>
+    <s:String x:Key="lock_close_confirm">Закрыть {0}? Программа может предложить сохранить несохранённые изменения.</s:String>
+    <s:String x:Key="lock_close_failed">Не удалось закрыть {0}. Возможно, программа запущена от имени администратора.</s:String>
+    <s:String x:Key="lock_choose_file">Выбрать файл…</s:String>
+    <s:String x:Key="lock_choose_folder">Выбрать папку…</s:String>
+    <s:String x:Key="lock_refresh">Проверить снова</s:String>
+    <s:String x:Key="lock_done">Закрыть</s:String>
+
+    <!-- Feedback form -->
+    <s:String x:Key="feedback_title">Обратная связь</s:String>
+    <s:String x:Key="feedback_prompt">Опишите проблему или пожелание. Можно приложить скриншоты.</s:String>
+    <s:String x:Key="feedback_screenshots">Скриншоты:</s:String>
+    <s:String x:Key="feedback_add_file">Добавить файл...</s:String>
+    <s:String x:Key="feedback_capture">Снимок экрана</s:String>
+    <s:String x:Key="feedback_remove">Удалить</s:String>
+    <s:String x:Key="feedback_no_screenshots">Скриншоты не добавлены</s:String>
+    <s:String x:Key="feedback_send">Отправить</s:String>
+    <s:String x:Key="feedback_cancel">Отмена</s:String>
+    <s:String x:Key="feedback_empty">Пожалуйста, опишите проблему или пожелание.</s:String>
+    <s:String x:Key="feedback_screenshot_hint">Перетащите скриншоты из открытой папки в issue на GitHub, затем отправьте его.</s:String>
+    <s:String x:Key="feedback_clipboard_hint">Текст скопирован в буфер обмена - вставьте его (Ctrl+V) в issue.</s:String>
+    <s:String x:Key="feedback_body_screenshots">_Прикрепите скриншоты сюда (перетащите их из открытой папки)._</s:String>
+    <s:String x:Key="feedback_image_filter">Изображения</s:String>
+    <s:String x:Key="feedback_all_files">Все файлы</s:String>
+
+    <!-- Share the app -->
+    <s:String x:Key="share_app">Поделиться приложением</s:String>
+    <s:String x:Key="share_copy_link">Скопировать ссылку</s:String>
+    <s:String x:Key="share_tweet">Твит (X)</s:String>
+    <s:String x:Key="share_telegram">Пост в Telegram</s:String>
+    <s:String x:Key="share_whatsapp">WhatsApp</s:String>
+    <s:String x:Key="share_facebook">Facebook</s:String>
+    <s:String x:Key="share_linkedin">LinkedIn</s:String>
+    <s:String x:Key="share_reddit">Reddit</s:String>
+    <s:String x:Key="share_email">Эл. почта</s:String>
+    <s:String x:Key="share_link_copied">Ссылка скопирована в буфер обмена</s:String>
+
+    <s:String x:Key="restore">_Восстановить</s:String>
+    <s:String x:Key="move">Пере_местить</s:String>
+    <s:String x:Key="size">_Размер</s:String>
+    <s:String x:Key="minimize">_Свернуть</s:String>
+    <s:String x:Key="maximize">_Развернуть</s:String>
+    <s:String x:Key="close">_Закрыть</s:String>
+
+    <s:String x:Key="show_hidden">Показать скрытые значки</s:String>
+    <s:String x:Key="hide">Скрыть</s:String>
+
+    <s:String x:Key="set_time">_Настроить дату и время</s:String>
+
+    <s:String x:Key="open_folder">&amp;Открыть папку</s:String>
+
+    <!-- About window -->
+    <s:String x:Key="tray_about">О программе</s:String>
+    <s:String x:Key="tray_update_available">Доступно обновление, установить</s:String>
+    <s:String x:Key="about_title">О программе DragThrough</s:String>
+    <s:String x:Key="about_version">Версия</s:String>
+    <s:String x:Key="about_tagline">Windows helpers app</s:String>
+    <s:String x:Key="about_third_party">Лицензии сторонних компонентов</s:String>
+    <s:String x:Key="about_check_updates">Проверить обновления</s:String>
+    <s:String x:Key="about_checking">Проверка обновлений…</s:String>
+    <s:String x:Key="about_up_to_date">У вас установлена последняя версия.</s:String>
+    <s:String x:Key="about_update_available">Доступна версия {0}.</s:String>
+    <s:String x:Key="about_update_prompt">Доступна версия {0}. Установить сейчас?</s:String>
+    <s:String x:Key="about_check_failed">Не удалось проверить обновления. Повторите попытку позже.</s:String>
+    <s:String x:Key="about_close">Закрыть</s:String>
+    <s:String x:Key="about_update_badge">Доступно обновление</s:String>
+    <s:String x:Key="about_install_update">Установить обновление</s:String>
+
+    <!-- Update progress -->
+    <s:String x:Key="update_title">Обновление</s:String>
+    <s:String x:Key="update_downloading">Скачивание обновления…</s:String>
+    <s:String x:Key="update_installing">Установка…</s:String>
+    <s:String x:Key="update_failed">Не удалось установить обновление. Повторите попытку позже.</s:String>
+</ResourceDictionary>

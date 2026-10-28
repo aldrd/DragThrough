@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZombieBar", "ZombieBar\ZombieBar.csproj", "{9D976354-1F87-415C-9AB1-5DC50350CBFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DragThrough", "DragThrough\DragThrough.csproj", "{9D976354-1F87-415C-9AB1-5DC50350CBFC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ManagedShell", "ManagedShell", "{456C3C5D-1196-4D5E-87B9-01D168B8C52A}"
 EndProject

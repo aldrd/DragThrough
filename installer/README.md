@@ -22,7 +22,7 @@ A per-user Windows installer built with [Inno Setup 6](https://jrsoftware.org/is
 Requires the .NET SDK and Inno Setup 6 (`ISCC.exe` on PATH or in its default folder).
 
 ```powershell
-pwsh installer\build.ps1                 # version taken from ZombieBar.csproj <FileVersion>
+pwsh installer\build.ps1                 # version taken from DragThrough.csproj <FileVersion>
 pwsh installer\build.ps1 -Version 1.2.3.0
 ```
 
@@ -32,11 +32,11 @@ The script publishes a self-contained single-file build and compiles the install
 ## Manual build
 
 ```powershell
-dotnet publish ZombieBar\ZombieBar.csproj -c Release -r win-x64 --self-contained true `
+dotnet publish DragThrough\DragThrough.csproj -c Release -r win-x64 --self-contained true `
     -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
     -p:EnableCompressionInSingleFile=true -p:DebugType=none
 
 ISCC.exe /DMyAppVersion=1.2.3.0 `
-    "/DPublishDir=ZombieBar\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish" `
+    "/DPublishDir=DragThrough\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish" `
     installer\DragThrough.iss
 ```

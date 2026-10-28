@@ -63,7 +63,7 @@ DragThrough is a .NET 10 WPF application.
 ```bash
 git clone https://github.com/aldrd/DragThrough.git
 cd DragThrough
-dotnet build ZombieBar/ZombieBar.csproj -c Release
+dotnet build DragThrough/DragThrough.csproj -c Release
 ```
 
 The whole app builds into a single self‑contained executable.

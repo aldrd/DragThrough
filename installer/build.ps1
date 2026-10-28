@@ -8,12 +8,12 @@
     or -Store to build just that one. The version comes from Version.props in every mode.
 
     GitHub installer:
-      1. dotnet publish  -> one self-contained ZombieBar.exe (no .NET runtime needed on the target).
+      1. dotnet publish  -> one self-contained DragThrough.exe (no .NET runtime needed on the target).
       2. Inno Setup ISCC -> installer\Output\DragThrough-Setup.exe
 
       Everything a release needs ends up in installer\Output:
         - DragThrough-Setup.exe             the installer
-        - ZombieBar.exe                     the raw app exe (the auto-update download asset)
+        - DragThrough.exe                   the raw app exe (the auto-update download asset)
         - publish.json                      the auto-update manifest, with version, url and sha256
                                             filled in for this build
 
@@ -51,7 +51,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot   = Split-Path -Parent $PSScriptRoot
-$project    = Join-Path $repoRoot "ZombieBar\ZombieBar.csproj"
+$project    = Join-Path $repoRoot "DragThrough\DragThrough.csproj"
 $issScript  = Join-Path $PSScriptRoot "DragThrough.iss"
 $outputDir  = Join-Path $PSScriptRoot "Output"
 
@@ -60,11 +60,11 @@ $outputDir  = Join-Path $PSScriptRoot "Output"
 # failure would surface much later as a confusing "published exe not found".
 $tfm = if ((Get-Content $project -Raw) -match '<TargetFramework>([^<]+)</TargetFramework>') { $Matches[1] }
        else { throw "Could not read <TargetFramework> from $project" }
-$publishDir = Join-Path $repoRoot "ZombieBar\bin\$Configuration\$tfm\$Runtime\publish"
+$publishDir = Join-Path $repoRoot "DragThrough\bin\$Configuration\$tfm\$Runtime\publish"
 
 # Name of the release asset (the exe the auto-updater downloads). Must match the project's
 # published exe and the file name in the manifest url.
-$AssetName = "ZombieBar.exe"
+$AssetName = "DragThrough.exe"
 
 # Neither switch given means "build everything"; either one narrows the run to just that artifact.
 $anySelected    = $Store -or $Installer
@@ -118,8 +118,8 @@ function Build-Installer {
 }
 "@
     Set-Content -LiteralPath (Join-Path $outputDir "publish.json") -Value $manifestJson -Encoding utf8
-    Write-Host "  ZombieBar.exe  -> Output\$AssetName" -ForegroundColor Green
-    Write-Host "  publish.json   -> version $Version, sha256 $hash" -ForegroundColor Green
+    Write-Host "  DragThrough.exe -> Output\$AssetName" -ForegroundColor Green
+    Write-Host "  publish.json    -> version $Version, sha256 $hash" -ForegroundColor Green
 
     # --- 3. Compile the installer --------------------------------------------------------------
     Write-Host "`n[3/3] Compiling installer with Inno Setup..." -ForegroundColor Cyan

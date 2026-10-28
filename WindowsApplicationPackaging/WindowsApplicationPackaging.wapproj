@@ -58,7 +58,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <NoWarn>$(NoWarn);NU1702</NoWarn>
-    <EntryPointProjectUniqueName>..\ZombieBar\ZombieBar.csproj</EntryPointProjectUniqueName>
+    <EntryPointProjectUniqueName>..\DragThrough\DragThrough.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <!--
     Microsoft Store submission. Builds a single "App Package Upload File" (.msixupload) that bundles
@@ -115,7 +115,7 @@
          AUTOUPDATE constant), and MicrosoftStoreBuild=true turns on the MSSTORE constant for Store-only
          behaviour (e.g. "Share the app" links to the Store listing). AdditionalProperties flows these
          into the app build without disturbing the Configuration/Platform the packaging project passes. -->
-    <ProjectReference Include="..\ZombieBar\ZombieBar.csproj">
+    <ProjectReference Include="..\DragThrough\DragThrough.csproj">
       <AdditionalProperties>EnableAutoUpdate=false;MicrosoftStoreBuild=true</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>

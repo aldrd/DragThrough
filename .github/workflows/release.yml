@@ -1,7 +1,7 @@
 name: Release
 
 # Builds the GitHub (self-updating) release and publishes it as the latest GitHub release.
-# The in-app updater reads releases/latest/download/publish.json and downloads ZombieBar.exe from
+# The in-app updater reads releases/latest/download/publish.json and downloads DragThrough.exe from
 # releases/download/<version>/, so the tag must be the bare four-part version (no "v" prefix) and the
 # release must be marked Latest.
 
@@ -68,10 +68,10 @@ jobs:
         run: |
           $out = 'installer/Output'
           $manifest = Get-Content "$out/publish.json" -Raw | ConvertFrom-Json
-          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath "$out/ZombieBar.exe").Hash
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath "$out/DragThrough.exe").Hash
           if ($manifest.version -ne '${{ steps.version.outputs.version }}') { throw "publish.json version is $($manifest.version)" }
-          if ($manifest.sha256 -ne $hash) { throw "publish.json sha256 does not match ZombieBar.exe" }
-          foreach ($f in 'ZombieBar.exe', 'publish.json', 'DragThrough-Setup.exe') {
+          if ($manifest.sha256 -ne $hash) { throw "publish.json sha256 does not match DragThrough.exe" }
+          foreach ($f in 'DragThrough.exe', 'publish.json', 'DragThrough-Setup.exe') {
             if (-not (Test-Path "$out/$f")) { throw "Missing release asset $f" }
           }
 
@@ -86,7 +86,7 @@ jobs:
           if ($LASTEXITCODE -eq 0) { throw "Release $version already exists; not overwriting a published release." }
 
           gh release create $version `
-            "$out/ZombieBar.exe" "$out/publish.json" "$out/DragThrough-Setup.exe" `
+            "$out/DragThrough.exe" "$out/publish.json" "$out/DragThrough-Setup.exe" `
             --title $version `
             --notes "Version $version" `
             --target '${{ github.sha }}' `
